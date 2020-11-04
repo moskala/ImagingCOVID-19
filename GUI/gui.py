@@ -1,0 +1,80 @@
+from kivy.app import App
+from kivy.uix.floatlayout import FloatLayout
+from kivy.factory import Factory
+from kivy.properties import ObjectProperty
+from kivy.uix.popup import Popup
+from kivy.core.image import Image as CoreImage
+from kivy.logger import Logger
+from kivy.uix.scatter import Scatter
+from kivy.uix.image import Image
+from pathlib import Path,PurePath
+import sys,os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
+from Anonimization_StrigOffMetaData_png_jpg import Anonymize
+
+
+import os
+
+
+class LoadDialog(FloatLayout):
+    load = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+
+class SaveDialog(FloatLayout):
+    save = ObjectProperty(None)
+    img = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+
+class Root(FloatLayout):
+    loadfile = ObjectProperty(None)
+    savefile = ObjectProperty(None)
+    image = ObjectProperty(None)
+
+    def dismiss_popup(self):
+        self._popup.dismiss()
+
+    def show_load(self):
+        content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+        self._popup = Popup(title="Load file", content=content,
+                            size_hint=(0.9, 0.9))
+        self._popup.open()
+
+    def show_save(self):
+        content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
+        self._popup = Popup(title="Save file", content=content,
+                            size_hint=(0.9, 0.9))
+        self._popup.open()
+
+    def load(self, path, filename):
+        # self.image = CoreImage(os.path.join(path, filename[0]))
+        # try:
+            # load the image
+        # picture = Image(source=os.path.join(path, filename[0]))
+            # add to the main field
+        # self.add_widget(picture)
+        # except Exception as e:
+           # Logger.exception('Pictures: Unable to load <%s>' % filename)
+        anonym = Anonymize()
+        newFile = anonym.MetadataStrip(os.path.join(path, filename[0]))
+        if(len(newFile)>0):
+            self.img.source = newFile
+            print(self.img.source)
+        # self.img.reload()
+        self.dismiss_popup()
+
+    
+
+
+class Editor(App):
+    pass
+
+
+Factory.register('Root', cls=Root)
+Factory.register('LoadDialog', cls=LoadDialog)
+# Factory.register('SaveDialog', cls=SaveDialog)
+# Factory.register('Picture', cls=SaveDialog)
+
+if __name__ == '__main__':
+    Editor().run()
