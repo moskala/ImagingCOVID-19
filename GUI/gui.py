@@ -1,3 +1,7 @@
+import matplotlib
+# garden install matplotlib xd w maja/.kivy - to sie dzieje tylko raz, nie wiem o co chodzi xd
+# matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
+import matplotlib.pyplot as plt
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.factory import Factory
@@ -7,13 +11,31 @@ from kivy.core.image import Image as CoreImage
 from kivy.logger import Logger
 from kivy.uix.scatter import Scatter
 from kivy.uix.image import Image
+from kivy.uix.slider import Slider
+
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+
+
 from pathlib import Path,PurePath
 import sys,os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
 from Anonimization_StrigOffMetaData_png_jpg import Anonymize
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR),"Methods"))
+from LungSegmentation_MethodA_dicom import SegmentationA
 
 
 import os
+
+
+class MyFigure(FigureCanvasKivyAgg):
+    def __init__(self, val=0, INPUT_FOLDER=Path('/Users/Maya/studia/4rok/inz/repo/ImagingCOVID-19/dicom test/03-03-2004-08186/79262/'), **kwargs):
+        sg = SegmentationA()
+        test_patient_scans = sg.load_scan(INPUT_FOLDER)
+        test_patient_images = sg.get_pixels_hu(test_patient_scans)
+        plt.imshow(test_patient_images[val], cmap='gray')
+        super(MyFigure, self).__init__(plt.gcf(), **kwargs)
+        self.howMany = len(test_patient_images)
 
 
 class LoadDialog(FloatLayout):
@@ -27,10 +49,19 @@ class SaveDialog(FloatLayout):
     cancel = ObjectProperty(None)
 
 
+
 class Root(FloatLayout):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
+    slider_val = ObjectProperty(None)
+
+    def slider_changed_value(self,value):
+        print(value)
+        if self.plot is not None and self.plot.howMany>=int(value):
+            self.photos.remove_widget(self.plot)
+            self.plot = MyFigure(int(value))
+            self.photos.add_widget(self.plot)
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -46,7 +77,7 @@ class Root(FloatLayout):
         self._popup = Popup(title="Save file", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
-
+    
     def load(self, path, filename):
         # self.image = CoreImage(os.path.join(path, filename[0]))
         # try:
@@ -57,11 +88,18 @@ class Root(FloatLayout):
         # except Exception as e:
            # Logger.exception('Pictures: Unable to load <%s>' % filename)
         anonym = Anonymize()
-        newFile = anonym.MetadataStrip(os.path.join(path, filename[0]))
-        if(len(newFile)>0):
-            self.img.source = newFile
-            print(self.img.source)
-        # self.img.reload()
+        
+        if(len(path)>0 and len(filename)==0):
+            print(path)
+            self.photos.remove_widget(self.plot)
+            self.plot = MyFigure(INPUT_FOLDER=path)
+            self.photos.add_widget(self.plot)
+        else:
+            newFile = anonym.MetadataStrip(os.path.join(path, filename[0]))
+            if(len(newFile)>0 and (newFile.__contains__("jpg") or newFile.__contains__("jpeg") or newFile.__contains__("png"))):
+                self.img.source = newFile
+                #print(self.img.source)
+            # self.img.reload()
         self.dismiss_popup()
 
     
@@ -69,6 +107,7 @@ class Root(FloatLayout):
 
 class Editor(App):
     pass
+    
 
 
 Factory.register('Root', cls=Root)

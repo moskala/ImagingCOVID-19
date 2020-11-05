@@ -1,23 +1,30 @@
 
 Root:
     img: img
-
+    plot: plot
+    photos: photos
     BoxLayout:
         orientation: 'vertical'
         BoxLayout:
             size_hint_y: None
-            height: 30
+            height: 50
             Button:
                 text: 'Load'
                 on_release: root.show_load()
+            Slider:
+                id: slid
+                step: 1
+                on_value: root.slider_changed_value(slid.value)
             # Button:
             #    text: 'Save'
             #    on_release: root.show_save()
-
         BoxLayout:
+            id: photos
             Image:
                 id: img
-                source: 'bck.png'
+                source: '3.jpg'
+            MyFigure:
+                id: plot
 
 <LoadDialog>:
     BoxLayout:
@@ -65,27 +72,3 @@ Root:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
 
-<Picture>:
-    # each time a picture is created, the image can delay the loading
-    # as soon as the image is loaded, ensure that the center is changed
-    # to the center of the screen.
-    on_size: self.center = win.Window.center
-    size: image.size
-    size_hint: None, None
-
-    Image:
-        id: image
-        source: root.source
-
-        # create initial image to be 400 pixels width
-        size: 400, 400 / self.image_ratio
-
-        # add shadow background
-        canvas.before:
-            Color:
-                rgba: 1,1,1,1
-            BorderImage:
-                source: 'shadow32.png'
-                border: (36,36,36,36)
-                size:(self.width+72, self.height+72)
-                pos: (-36,-36)
