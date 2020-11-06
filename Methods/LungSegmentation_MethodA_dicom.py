@@ -2,7 +2,7 @@
 import matplotlib
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import dicom
+import pydicom
 import os
 import scipy.ndimage as ndimage
 import matplotlib.pyplot as plt
@@ -19,7 +19,9 @@ class SegmentationA:
     # Load the scans in given folder path
     @staticmethod
     def load_scan(path):
-        slices = [dicom.read_file(os.path.join(path,s)) for s in os.listdir(path)]
+
+        slices = [pydicom.read_file(os.path.join(path, s)) for s in os.listdir(path)]
+
         slices.sort(key = lambda x: int(x.InstanceNumber))
         try:
             slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
@@ -83,7 +85,7 @@ class SegmentationA:
     @staticmethod
     def seperate_lungs(image):
         #Creation of the markers as shown above:
-        marker_internal, marker_external, marker_watershed = generate_markers(image)
+        marker_internal, marker_external, marker_watershed = SegmentationA.generate_markers(image)
         
         #Creation of the Sobel-Gradient
         sobel_filtered_dx = ndimage.sobel(image, 1)

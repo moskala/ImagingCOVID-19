@@ -1,6 +1,5 @@
 import matplotlib
 # garden install matplotlib xd w maja/.kivy - to sie dzieje tylko raz, nie wiem o co chodzi xd
-# matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 import matplotlib.pyplot as plt
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
@@ -12,24 +11,27 @@ from kivy.logger import Logger
 from kivy.uix.scatter import Scatter
 from kivy.uix.image import Image
 from kivy.uix.slider import Slider
-
+matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
-
-
-from pathlib import Path,PurePath
-import sys,os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
-from Anonimization_StrigOffMetaData_png_jpg import Anonymize
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR),"Methods"))
-from LungSegmentation_MethodA_dicom import SegmentationA
-
-
+from pathlib import Path, PurePath
+import sys
 import os
 
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR), "Methods"))
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
+
+from Anonimization_StrigOffMetaData_png_jpg import Anonymize
+from LungSegmentation_MethodA_dicom import SegmentationA
+
+
+MY_FOLDER = Path(r'D:/Studia/sem7/inzynierka/aplikacja/ImagingCOVID-19/dicom test/cancer_files')
+
+
 class MyFigure(FigureCanvasKivyAgg):
-    def __init__(self, val=0, INPUT_FOLDER=Path('/Users/Maya/studia/4rok/inz/repo/ImagingCOVID-19/dicom test/03-03-2004-08186/79262/'), **kwargs):
+
+    def __init__(self, val=0, INPUT_FOLDER=MY_FOLDER, **kwargs):
         sg = SegmentationA()
         test_patient_scans = sg.load_scan(INPUT_FOLDER)
         test_patient_images = sg.get_pixels_hu(test_patient_scans)
@@ -49,19 +51,20 @@ class SaveDialog(FloatLayout):
     cancel = ObjectProperty(None)
 
 
-
-class Root(FloatLayout):
+class RootWidget(FloatLayout):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
     slider_val = ObjectProperty(None)
+    plot = None
+    _popup = None
 
-    def slider_changed_value(self,value):
+    def slider_changed_value(self, value):
         print(value)
-        if self.plot is not None and self.plot.howMany>=int(value):
-            self.photos.remove_widget(self.plot)
+        if self.plot is not None and self.plot.howMany >= int(value):
+            self.slider_image.remove_widget(self.plot)
             self.plot = MyFigure(int(value))
-            self.photos.add_widget(self.plot)
+            self.slider_image.add_widget(self.plot)
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -81,36 +84,33 @@ class Root(FloatLayout):
     def load(self, path, filename):
         # self.image = CoreImage(os.path.join(path, filename[0]))
         # try:
-            # load the image
+        # load the image
         # picture = Image(source=os.path.join(path, filename[0]))
-            # add to the main field
+        # add to the main field
         # self.add_widget(picture)
         # except Exception as e:
-           # Logger.exception('Pictures: Unable to load <%s>' % filename)
+        # Logger.exception('Pictures: Unable to load <%s>' % filename)
         anonym = Anonymize()
         
-        if(len(path)>0 and len(filename)==0):
+        if len(path) > 0 and len(filename) == 0:
             print(path)
             self.photos.remove_widget(self.plot)
             self.plot = MyFigure(INPUT_FOLDER=path)
             self.photos.add_widget(self.plot)
         else:
             newFile = anonym.MetadataStrip(os.path.join(path, filename[0]))
-            if(len(newFile)>0 and (newFile.__contains__("jpg") or newFile.__contains__("jpeg") or newFile.__contains__("png"))):
+            if len(newFile) > 0 and (newFile.__contains__("jpg") or newFile.__contains__("jpeg") or newFile.__contains__("png")):
                 self.img.source = newFile
-                #print(self.img.source)
+                # print(self.img.source)
             # self.img.reload()
         self.dismiss_popup()
-
-    
 
 
 class Editor(App):
     pass
-    
 
 
-Factory.register('Root', cls=Root)
+# Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
 # Factory.register('SaveDialog', cls=SaveDialog)
 # Factory.register('Picture', cls=SaveDialog)

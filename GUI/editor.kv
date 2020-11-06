@@ -1,30 +1,52 @@
 
-Root:
+RootWidget:
+    id: root_widget
     img: img
     plot: plot
-    photos: photos
-    BoxLayout:
-        orientation: 'vertical'
-        BoxLayout:
-            size_hint_y: None
-            height: 50
+    slider_image: slider_image
+    StackLayout:
+        orientation: 'lr-tb'
+        StackLayout:
+            id: menu_panel
+            orientation: 'tb-lr'
+            width: root_widget.width * 0.2
+            size_hint_x: None
             Button:
+                id: button_load_image
                 text: 'Load'
+                size_hint_max_y: 50
                 on_release: root.show_load()
-            Slider:
-                id: slid
-                step: 1
-                on_value: root.slider_changed_value(slid.value)
-            # Button:
-            #    text: 'Save'
-            #    on_release: root.show_save()
+            Button:
+                id: button_anonymize
+                text: 'Anonymize'
+                size_hint_max_y: 50
+                disabled: True
         BoxLayout:
-            id: photos
-            Image:
-                id: img
-                source: '3.jpg'
-            MyFigure:
-                id: plot
+            id: images_panel
+            orientation: 'horizontal'
+            width: root_widget.width * 0.8
+            size_hint_x: None
+            BoxLayout:
+                id: simple_image
+                Image:
+                    id: img
+                    source: '3.jpg'
+            BoxLayout:
+                id: slider_image
+                orientation: 'vertical'
+                Slider:
+                    height: 50
+                    size_hint_y: None
+                    id: slid
+                    step: 1
+                    on_value: root.slider_changed_value(slid.value)
+                # Button:
+                #    text: 'Save'
+                #    on_release: root.show_save()
+                MyFigure:
+                    id: plot
+
+
 
 <LoadDialog>:
     BoxLayout:
