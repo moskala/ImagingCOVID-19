@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
@@ -56,15 +57,24 @@ class RootWidget(FloatLayout):
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
     slider_val = ObjectProperty(None)
+    current_val = 0
     plot = None
+
     _popup = None
 
     def slider_changed_value(self, value):
-        print(value)
-        if self.plot is not None and self.plot.howMany >= int(value):
-            self.slider_image.remove_widget(self.plot)
-            self.plot = MyFigure(int(value))
-            self.slider_image.add_widget(self.plot)
+        slice_number = self.current_val + int(value)
+
+        if slice_number < 0:
+            slice_number = 0
+
+        self.current_val = slice_number
+
+        if self.plot is not None and self.plot.howMany >= slice_number:
+            self.dicom_viewer.remove_widget(self.plot)
+            self.plot = MyFigure(slice_number)
+            self.dicom_viewer.add_widget(self.plot)
+            self.slide_number.text = str(slice_number)
 
     def dismiss_popup(self):
         self._popup.dismiss()

@@ -3,7 +3,8 @@ RootWidget:
     id: root_widget
     img: img
     plot: plot
-    slider_image: slider_image
+    dicom_viewer: dicom_viewer
+    slide_number: slide_number
     StackLayout:
         orientation: 'lr-tb'
         StackLayout:
@@ -32,14 +33,29 @@ RootWidget:
                     id: img
                     source: '3.jpg'
             BoxLayout:
-                id: slider_image
+                id: dicom_viewer
                 orientation: 'vertical'
-                Slider:
-                    height: 50
-                    size_hint_y: None
-                    id: slid
-                    step: 1
-                    on_value: root.slider_changed_value(slid.value)
+                BoxLayout:
+                    size_hint_max_y: 50
+                    orientation: 'horizontal'
+                    Button:
+                        id: button_prev
+                        text: 'Previous'
+                        on_press: root.slider_changed_value(-1)
+                    Label:
+                        id: slide_number
+                    Button:
+                        id: button_next
+                        text: 'Next'
+                        on_press: root.slider_changed_value(1)
+
+
+                # Slider:
+                #    height: 50
+                #    size_hint_y: None
+                #    id: slid
+                #    step: 1
+                #    on_value: root.slider_changed_value(slid.value)
                 # Button:
                 #    text: 'Save'
                 #    on_release: root.show_save()
