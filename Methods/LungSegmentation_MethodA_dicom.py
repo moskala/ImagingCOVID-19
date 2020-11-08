@@ -30,6 +30,7 @@ class SegmentationA:
             s.SliceThickness = slice_thickness
             
         return slices
+    
 
     @staticmethod
     def get_pixels_hu(scans):
@@ -83,7 +84,7 @@ class SegmentationA:
     @staticmethod
     def seperate_lungs(image):
         #Creation of the markers as shown above:
-        marker_internal, marker_external, marker_watershed = generate_markers(image)
+        marker_internal, marker_external, marker_watershed = SegmentationA.generate_markers(image)
         
         #Creation of the Sobel-Gradient
         sobel_filtered_dx = ndimage.sobel(image, 1)

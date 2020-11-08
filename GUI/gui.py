@@ -23,9 +23,10 @@ from Anonimization_StrigOffMetaData_png_jpg import Anonymize
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR),"Methods"))
 from LungSegmentation_MethodA_dicom import SegmentationA
-
+from LungSegmentation_MethodB_dicom import SegmentationB
 
 import os
+import dicom
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -36,7 +37,12 @@ class MyFigure(FigureCanvasKivyAgg):
         plt.imshow(test_patient_images[val], cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
         self.howMany = len(test_patient_images)
-
+        self.curPlt = plt.gcf()
+        self.image = test_patient_images[val]
+        self.scan = test_patient_scans[val]
+        self.path = INPUT_FOLDER
+        self.val = val
+        self.dicom = dicom.read_file(os.path.join(INPUT_FOLDER,os.listdir(INPUT_FOLDER)[val]))
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
@@ -65,6 +71,25 @@ class Root(FloatLayout):
 
     def dismiss_popup(self):
         self._popup.dismiss()
+
+    def lung_segment_binary(self):
+        sgmB = SegmentationB()
+        ct_scan = sgmB.read_ct_scan(self.plot.path) 
+        segmented_ct_scan = sgmB.segment_lung_from_ct_scan(ct_scan,self.plot.val)
+        # sgmB.plot_ct_scan(segmented_ct_scan,self.plot.val)
+        test = sgmB.get_segmented_lungs(self.img.getdata())
+        # plt.imshow(segmented_ct_scan,cmap='gray')
+        plt.imshow(test,cmap='gray')
+        plt.show()
+
+    def lung_segment_watershed(self):
+        sgm = SegmentationA()
+        img = self.plot.image
+        test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, test_marker_external, test_marker_watershed = sgm.seperate_lungs(img)
+        # print ("Segmented Lung")
+        plt.imshow(test_segmented, cmap='gray')
+        # plt.imshow(test_segmented)
+        plt.show()
 
     def show_load(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
