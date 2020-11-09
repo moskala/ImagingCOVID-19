@@ -28,8 +28,8 @@ def anonymize_selected_tags(input_file_path, output_file_path):
 # Przykład
 
 def sample_exec():
-    input_path = Path('sample_data') / 'MR_small.dcm'
-    output_path = Path('sample_data') / 'MR_small_anonymized.dcm'
+    input_path = Path('../sample_data') / 'MR_small.dcm'
+    output_path = Path('../sample_data') / 'MR_small_anonymized.dcm'
 
     anonymize_dicom(input_path, output_path)
 
