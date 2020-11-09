@@ -83,3 +83,7 @@ class SegmentationB:
     @staticmethod
     def segment_lung_from_ct_scan(ct_scan,val):
         return np.asarray(SegmentationB.get_segmented_lungs(ct_scan[val]))
+
+    @staticmethod
+    def segment_lung_from_ct_scan_all(ct_scan):
+        return np.asarray([SegmentationB.get_segmented_lungs(slice) for slice in ct_scan])

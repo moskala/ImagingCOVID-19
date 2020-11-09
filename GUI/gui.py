@@ -29,11 +29,13 @@ import os
 import dicom
 
 
+
 class MyFigure(FigureCanvasKivyAgg):
-    def __init__(self, val=0, INPUT_FOLDER=Path('/Users/Maya/studia/4rok/inz/repo/ImagingCOVID-19/dicom test/03-03-2004-08186/79262/'), **kwargs):
+    def __init__(self, val=0, INPUT_FOLDER=Path('/Users/Maya/studia/4rok/inz/repo/ImagingCOVID-19/dicom test/0.000000-CT114545RespCT  3.0  B30f  50 Ex-81163/'), **kwargs):
         sg = SegmentationA()
         test_patient_scans = sg.load_scan(INPUT_FOLDER)
         test_patient_images = sg.get_pixels_hu(test_patient_scans)
+        plt.axis('off')
         plt.imshow(test_patient_images[val], cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
         self.howMany = len(test_patient_images)
@@ -63,6 +65,7 @@ class Root(FloatLayout):
     slider_val = ObjectProperty(None)
 
     def slider_changed_value(self,value):
+        self.whichSlice.text = str(int(value))
         print(value)
         if self.plot is not None and self.plot.howMany>=int(value):
             self.photos.remove_widget(self.plot)
@@ -77,9 +80,9 @@ class Root(FloatLayout):
         ct_scan = sgmB.read_ct_scan(self.plot.path) 
         segmented_ct_scan = sgmB.segment_lung_from_ct_scan(ct_scan,self.plot.val)
         # sgmB.plot_ct_scan(segmented_ct_scan,self.plot.val)
-        test = sgmB.get_segmented_lungs(self.img.getdata())
+        # test = sgmB.get_segmented_lungs(self.img.getdata())
         # plt.imshow(segmented_ct_scan,cmap='gray')
-        plt.imshow(test,cmap='gray')
+        plt.imshow(segmented_ct_scan,cmap='gray')
         plt.show()
 
     def lung_segment_watershed(self):
@@ -119,6 +122,7 @@ class Root(FloatLayout):
             self.photos.remove_widget(self.plot)
             self.plot = MyFigure(INPUT_FOLDER=path)
             self.photos.add_widget(self.plot)
+            # self.slid.max = len(os.listdir(path))
         else:
             newFile = anonym.MetadataStrip(os.path.join(path, filename[0]))
             if(len(newFile)>0 and (newFile.__contains__("jpg") or newFile.__contains__("jpeg") or newFile.__contains__("png"))):

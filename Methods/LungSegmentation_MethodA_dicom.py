@@ -31,8 +31,22 @@ class SegmentationA:
             
         return slices
     
-
     @staticmethod
+    def load_scan2(folder_name):
+        # Read the slices from the dicom file
+        slices = [dicom.read_file(os.path.join(folder_name,filename)) for filename in os.listdir(folder_name)]
+        
+        # Sort the dicom slices in their respective order
+        slices.sort(key=lambda x: int(x.InstanceNumber))
+        
+        # Get the pixel values for all the slices
+        slices = np.stack([s.pixel_array for s in slices])
+        slices[slices == -2000] = 0
+        return slices
+
+    # jakie inty tutaj?
+    @staticmethod
+    
     def get_pixels_hu(scans):
         image = np.stack([s.pixel_array for s in scans])
         # Convert to int16 (from sometimes int16), 
@@ -46,14 +60,16 @@ class SegmentationA:
         # Convert to Hounsfield units (HU)
         intercept = scans[0].RescaleIntercept
         slope = scans[0].RescaleSlope
-        
+
         if slope != 1:
             image = slope * image.astype(np.float64)
             image = image.astype(np.int16)
-            
+        
         image += np.int16(intercept)
         
         return np.array(image, dtype=np.int16)
+
+        
     
     # Some of the starting Code is taken from ArnavJain, since it's more readable then my own
     @staticmethod
