@@ -7,7 +7,6 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
-from kivy.core.image import Image as CoreImage
 from kivy.logger import Logger
 from kivy.uix.scatter import Scatter
 from kivy.uix.image import Image
@@ -27,7 +26,6 @@ from LungSegmentation_MethodB_dicom import SegmentationB
 
 import os
 import dicom
-
 
 
 class MyFigure(FigureCanvasKivyAgg):

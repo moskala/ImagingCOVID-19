@@ -72,12 +72,12 @@ class SegmentationB:
         
         return im
 
-    @staticmethod
-    def plot_ct_scan(scan,val):
-        f, plots = plt.subplots(int(scan.shape[0] / 20) + 1, 4, sharex='col', sharey='row', figsize=(50, 50))
-        for i in range(0, scan.shape[0], 5):
-            plots[int(i / 20), int((i % 20) / 5)].axis('off')
-            plots[int(i / 20), int((i % 20) / 5)].imshow(scan[i], cmap=plt.cm.bone) 
+    # @staticmethod
+    # def plot_ct_scan(scan,val):
+    #     f, plots = plt.subplots(int(scan.shape[0] / 20) + 1, 4, sharex='col', sharey='row', figsize=(50, 50))
+    #     for i in range(0, scan.shape[0], 5):
+    #         plots[int(i / 20), int((i % 20) / 5)].axis('off')
+    #         plots[int(i / 20), int((i % 20) / 5)].imshow(scan[i], cmap=plt.cm.bone) 
 
                 
     @staticmethod
