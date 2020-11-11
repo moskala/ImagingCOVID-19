@@ -30,11 +30,10 @@ class SegmentationA:
             s.SliceThickness = slice_thickness
             
         return slices
-    
-    
+
+
     # jakie inty tutaj?
     @staticmethod
-    
     def get_pixels_hu(scans):
         image = np.stack([s.pixel_array for s in scans])
         # Convert to int16 (from sometimes int16), 
@@ -52,12 +51,10 @@ class SegmentationA:
         if slope != 1:
             image = slope * image.astype(np.float64)
             image = image.astype(np.int16)
-        
+
         image += np.int16(intercept)
         
         return np.array(image, dtype=np.int16)
-
-        
     
     # Some of the starting Code is taken from ArnavJain, since it's more readable then my own
     @staticmethod

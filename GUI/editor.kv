@@ -1,5 +1,6 @@
 
-Root:
+RootWidget:
+    id: root_widget
     whichSlice: whichSlice
     img: img
     plot: plot
@@ -10,13 +11,24 @@ Root:
         BoxLayout:
             size_hint_y: None
             height: 50
+    dicom_viewer: dicom_viewer
+    slide_number: slide_number
+    StackLayout:
+        orientation: 'lr-tb'
+        StackLayout:
+            id: menu_panel
+            orientation: 'tb-lr'
+            width: root_widget.width * 0.2
+            size_hint_x: None
             Button:
+                id: button_load_image
                 text: 'Load'
+                size_hint_max_y: 50
                 on_release: root.show_load()
             Slider:
                 id: slid
                 step: 1
-                
+
                 on_value: root.slider_changed_value(slid.value)
             Button:
                 text: 'Run segmentation A'
@@ -30,6 +42,11 @@ Root:
             # Button:
             #    text: 'Save'
             #    on_release: root.show_save()
+            Button:
+                id: button_anonymize
+                text: 'Anonymize'
+                size_hint_max_y: 50
+                disabled: True
         BoxLayout:
             id: photos
             Image:
@@ -37,8 +54,48 @@ Root:
                 source: '3.jpg'
             MyFigure:
                 id: plot
-        
-            
+
+
+            id: images_panel
+            orientation: 'horizontal'
+            width: root_widget.width * 0.8
+            size_hint_x: None
+            BoxLayout:
+                id: simple_image
+                Image:
+                    id: img
+                    source: '3.jpg'
+            BoxLayout:
+                id: dicom_viewer
+                orientation: 'vertical'
+                BoxLayout:
+                    size_hint_max_y: 50
+                    orientation: 'horizontal'
+                    Button:
+                        id: button_prev
+                        text: 'Previous'
+                        on_press: root.slider_changed_value(-1)
+                    Label:
+                        id: slide_number
+                    Button:
+                        id: button_next
+                        text: 'Next'
+                        on_press: root.slider_changed_value(1)
+
+
+                # Slider:
+                #    height: 50
+                #    size_hint_y: None
+                #    id: slid
+                #    step: 1
+                #    on_value: root.slider_changed_value(slid.value)
+                # Button:
+                #    text: 'Save'
+                #    on_release: root.show_save()
+                MyFigure:
+                    id: plot
+
+
 
 <LoadDialog>:
     BoxLayout:
