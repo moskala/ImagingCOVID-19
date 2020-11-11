@@ -12,7 +12,7 @@ from skimage import data
 from scipy import ndimage as ndi
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import dicom
+import pydicom
 import scipy.misc
 import numpy as np
 
@@ -20,7 +20,7 @@ class SegmentationB:
     @staticmethod
     def read_ct_scan(folder_name):
         # Read the slices from the dicom file
-        slices = [dicom.read_file(os.path.join(folder_name,filename)) for filename in os.listdir(folder_name)]
+        slices = [pydicom.read_file(os.path.join(folder_name,filename)) for filename in os.listdir(folder_name)]
         
         # Sort the dicom slices in their respective order
         slices.sort(key=lambda x: int(x.InstanceNumber))
