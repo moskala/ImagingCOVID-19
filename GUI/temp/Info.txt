@@ -1,0 +1,1 @@
+Folder do przechowywania plików tymczasowych - usuwać po sesji!

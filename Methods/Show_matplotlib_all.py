@@ -40,3 +40,25 @@ def show_jpg_png(file_path):
 # show_nii(r"D:\Studia\sem7\inzynierka\data\segmentation\ct_scan\coronacases_org_001.nii", 5)
 # show_jpg_png(r'D:\Studia\sem7\inzynierka\data\test\test\0.jpg')
 # show_jpg_png(r'D:\Studia\sem7\inzynierka\data\test\test\2237.png')
+
+def get_plot_data_dicom(file_path):
+    return pydicom.dcmread(file_path).pixel_array
+
+
+def get_plot_data_nii(file_path, value):
+
+    ct = nibabel.load(file_path)
+    ct_array = ct.get_fdata()
+    ct_array = ct_array.T
+
+    if value < 0:
+        value = 0
+    elif value >= len(ct_array):
+        value = len(ct_array) - 1
+
+    return ct_array[value]
+
+
+def get_plot_data_jpg_png(file_path):
+    return mpimg.imread(file_path)
+

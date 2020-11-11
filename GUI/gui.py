@@ -17,37 +17,36 @@ matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
-
+import pydicom
 from pathlib import Path
-import sys,os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
-from Anonimization_StrigOffMetaData_png_jpg import Anonymize
-from pathlib import Path, PurePath
 import sys
 import os
-
+sys.path.append(str(Path().resolve().parent / "Methods"))
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
+from Anonymize import Anonymization_Functions
+from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
+from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR), "Methods"))
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
 
-from Anonimization_StrigOffMetaData_png_jpg import Anonymize
-from LungSegmentation_MethodA_dicom import SegmentationA
 
-sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR),"Methods"))
-from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
-from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
+# from LungSegmentation_MethodA_dicom import SegmentationA
+#
+# sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR),"Methods"))
+# from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
+# from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 
 
-import pydicom
-MY_FOLDER = Path(r'D:/Studia/sem7/inzynierka/aplikacja/ImagingCOVID-19/dicom test/cancer_files')
+MY_FOLDER = Path()
 
 
 class MyFigure(FigureCanvasKivyAgg):
 
-    def __init__(self, val=0, INPUT_FOLDER=MY_FOLDER, **kwargs):
+    def __init__(self, val=0, input_folder=MY_FOLDER, **kwargs):
         sg = SegmentationA()
-        test_patient_scans = sg.load_scan(INPUT_FOLDER)
+        test_patient_scans = sg.load_scan(input_folder)
         test_patient_images = sg.get_pixels_hu(test_patient_scans)
         plt.axis('off')
         plt.imshow(test_patient_images[val], cmap='gray')
@@ -56,9 +55,10 @@ class MyFigure(FigureCanvasKivyAgg):
         self.curPlt = plt.gcf()
         self.image = test_patient_images[val]
         self.scan = test_patient_scans[val]
-        self.path = INPUT_FOLDER
+        self.path = input_folder
         self.val = val
-        self.dicom = pydicom.read_file(os.path.join(INPUT_FOLDER,os.listdir(INPUT_FOLDER)[val]))
+        self.dicom = pydicom.read_file(os.path.join(input_folder, os.listdir(input_folder)[val]))
+
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
@@ -138,7 +138,7 @@ class RootWidget(FloatLayout):
         # self.add_widget(picture)
         # except Exception as e:
         # Logger.exception('Pictures: Unable to load <%s>' % filename)
-        anonym = Anonymize()
+        anonym_file = Anonymize()
         
         if len(path) > 0 and len(filename) == 0:
             print(path)

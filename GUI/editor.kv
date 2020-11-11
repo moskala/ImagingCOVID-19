@@ -6,13 +6,16 @@ RootWidget:
     plot: plot
     photos: photos
     slid: slid
+    dicom_viewer: dicom_viewer
+    slide_number: slide_number
+
+
     BoxLayout:
         orientation: 'vertical'
         BoxLayout:
             size_hint_y: None
             height: 50
-    dicom_viewer: dicom_viewer
-    slide_number: slide_number
+
     StackLayout:
         orientation: 'lr-tb'
         StackLayout:
@@ -54,6 +57,7 @@ RootWidget:
                 source: '3.jpg'
             MyFigure:
                 id: plot
+
 
 
             id: images_panel

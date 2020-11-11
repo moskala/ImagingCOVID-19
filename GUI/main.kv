@@ -1,0 +1,53 @@
+RootWidget:
+    id: root_widget
+    plot: plot.__self__
+    left_panel: left_panel.__self__
+    menu_panel: menu_panel.__self__
+    BoxLayout:
+        orientation: 'horizontal'
+        id: whole_panel
+        StackLayout:
+            width: root_widget.width * 0.2
+            id: menu_panel
+            orientation: 'tb-lr'
+            size_hint_x: None
+            Button:
+                id: button_load_image
+                text: 'Load'
+                size_hint_max_y: 50
+                on_release: root.show_load()
+            Button:
+                id: button_segmentation_A
+                text: 'Segmentation\nWatershed'
+                size_hint_max_y: 50
+                on_release: root.lung_segment_watershed()
+            Button:
+                id: button_segmentation_binary
+                text: 'Segmentation\nBinary'
+                size_hint_max_y: 50
+                on_release: root.lung_segment_binary()
+        BoxLayout:
+            orientation: 'horizontal'
+            id: left_panel
+            MyFigure:
+                id: plot
+
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)
