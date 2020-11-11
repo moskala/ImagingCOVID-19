@@ -2,6 +2,7 @@ import nibabel
 import matplotlib.pyplot as plt
 import pydicom
 import matplotlib.image as mpimg
+from pathlib import Path
 
 
 def show_dicom(file_path):
@@ -45,6 +46,13 @@ def get_plot_data_dicom(file_path):
     return pydicom.dcmread(file_path).pixel_array
 
 
+def get_plot_data_dicom_all(folder_path):
+    array = []
+    for file in Path(folder_path).iterdir():
+        array.append(pydicom.dcmread(file).pixel_array)
+    return array
+
+
 def get_plot_data_nii(file_path, value):
 
     ct = nibabel.load(file_path)
@@ -57,6 +65,14 @@ def get_plot_data_nii(file_path, value):
         value = len(ct_array) - 1
 
     return ct_array[value]
+
+def get_plot_data_nii_all(file_path):
+
+    ct = nibabel.load(file_path)
+    ct_array = ct.get_fdata()
+    ct_array = ct_array.T
+
+    return ct_array
 
 
 def get_plot_data_jpg_png(file_path):

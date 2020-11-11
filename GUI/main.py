@@ -1,4 +1,5 @@
 import matplotlib
+matplotlib.use('Agg', force=True)  # comment this line to see effect
 import matplotlib.pyplot as plt
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
@@ -16,7 +17,7 @@ from pathlib import Path
 import sys
 import os
 
-matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
+# matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 sys.path.append(str(Path().resolve().parent / "Methods"))
@@ -27,6 +28,34 @@ import Show_matplotlib_all as show
 
 
 MY_FOLDER = Path()
+
+
+class ImageViewer:
+
+    slices = []
+    slice_no = 0
+    current_slice = None
+
+    def __init__(self, slices, value, current_slice=""):
+        self.slices = slices
+        self.slice_no = value
+        self.current_slice = current_slice
+
+    def get_current_slice(self):
+        self.current_slice = self.slices[self.slice_no]
+        return self.current_slice
+
+    def get_next_slice(self, value):
+        max_len = len(self.slices)
+
+        if value >= max_len:
+            self.slice_no = max_len - 1
+        elif value <= 0:
+            self.slice_no = 0
+        else:
+            self.slice_no = value
+
+        return self.slices[self.slice_no]
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -43,7 +72,6 @@ class MyFigure(FigureCanvasKivyAgg):
         # self.scan = test_patient_scans[val]
         # self.path = INPUT_FOLDER
         self.val = val
-
 
 
 class LoadDialog(FloatLayout):
@@ -67,6 +95,7 @@ class RootWidget(FloatLayout):
     current_val = 0
     plot = None
     result = None
+    slider = None
     label_info = "hello2"
     image_type_plain = False
     image_type_dicom = False
@@ -74,82 +103,66 @@ class RootWidget(FloatLayout):
     image_path = ""
     image_folder = ""
 
+    image_viewer = None
+
     _popup = None
 
-    # def slider_changed_value(self, value):
-    #     slice_number = self.current_val + int(value)
-    #
-    #     if slice_number < 0:
-    #         slice_number = 0
-    #
-    #     self.current_val = slice_number
-    #
-    #     if self.plot is not None and self.plot.howMany >= slice_number:
-    #         self.dicom_viewer.remove_widget(self.plot)
-    #         self.plot = MyFigure(slice_number)
-    #         self.dicom_viewer.add_widget(self.plot)
-    #         self.slide_number.text = str(slice_number)
+    def automatic_layer_choice(self):
+        pass
+
+    def slider_changed_value(self, value):
+        slice_no = int(value)
+        if self.plot is not None and self.image_viewer is not None:
+            self.left_panel.remove_widget(self.plot)
+            self.plot = MyFigure(image_data=self.image_viewer.get_next_slice(slice_no))
+            self.left_panel.add_widget(self.plot)
+
+    def load_next_slice(self, value):
+        diff = int(value)
+
+        if self.plot is not None and self.image_viewer is not None:
+            slice_no = self.image_viewer.slice_no + diff
+            self.left_panel.remove_widget(self.plot)
+            self.plot = MyFigure(image_data=self.image_viewer.get_next_slice(slice_no))
+            self.left_panel.add_widget(self.plot)
+
+
 
     def dismiss_popup(self):
         self._popup.dismiss()
 
     def lung_segment_binary(self):
-        sgmB = SegmentationB()
-        ct_scan = sgmB.read_ct_scan(self.image_folder)
-        segmented_ct_scan = sgmB.segment_lung_from_ct_scan(ct_scan, self.plot.val)
-        # sgmB.plot_ct_scan(segmented_ct_scan,self.plot.val)
-        # test = sgmB.get_segmented_lungs(self.img.getdata())
-        # plt.imshow(segmented_ct_scan,cmap='gray')
-        plt.imshow(segmented_ct_scan, cmap='gray')
-        plt.show()
-
-    # Chciałam tutaj żeby się nowy widget dodawał ale na razie nie działa
-    def lung_segment_binary_add_widget(self):
 
         if self.image_type_dicom is not True:
             print("This method is only for dicom files for now.")
             return
 
-        sgmB = SegmentationB()
-        # ct_scan = sgmB.read_ct_scan(self.plot.path)
-        ct_scan = sgmB.read_ct_scan(self.image_folder)
-        segmented_ct_scan = sgmB.segment_lung_from_ct_scan(ct_scan, self.plot.val)
-        # sgmB.plot_ct_scan(segmented_ct_scan,self.plot.val)
-        # test = sgmB.get_segmented_lungs(self.img.getdata())
+        print(self.image_folder)
+        ct_scan = SegmentationB.read_ct_scan(self.image_folder)
+        segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
+        print(segmented_ct_scan)
+        # return
+        plt.figure()
         plt.imshow(segmented_ct_scan, cmap='gray')
         plt.show()
-        # if self.result is not None:
-        #     self.left_panel.remove_widget(self.result)
-        #
-        # self.result = MyFigure(image_data=segmented_ct_scan)
-        # self.left_panel.add_widget(self.result)
-
 
     def lung_segment_watershed(self):
-        print("lung_segment_watershed")
+
         print(self.image_type_dicom)
         if self.image_type_dicom is not True:
             print("This method is only for dicom files for now.")
             return
 
-        # img = self.plot
-        sgm = SegmentationA()
-        test_patient_scans = sgm.load_scan(self.image_folder)
-        test_patient_images = sgm.get_pixels_hu(test_patient_scans)
-        img = sgm.preprocess_image(self.image_path)
-        test_segmented, _ = sgm.seperate_lungs(img)
-        # test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-        #     test_marker_external, test_marker_watershed = sgm.seperate_lungs(img)
-        # print ("Segmented Lung")
+        print(self.image_folder)
+        slices = SegmentationA.load_scan(self.image_folder)
+        arr = SegmentationA.get_pixels_hu(slices)
+        test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
+            test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
+        print(test_segmented)
+        # return
+        plt.figure()
         plt.imshow(test_segmented, cmap='gray')
-        # plt.imshow(test_segmented)
         plt.show()
-        # if self.result is not None:
-        #     self.left_panel.remove_widget(self.result)
-        #
-        # self.result = MyFigure(image_data=test_segmented)
-        # self.left_panel.add_widget(self.result)
-        # print("lung_segment_watershed")
 
     def show_load(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -189,24 +202,31 @@ class RootWidget(FloatLayout):
             self.set_format(False, False, True)
             anonymous_file = Anonymization_Functions.anonymize_png_jpg(filename, path, 'temp')
             plot_data = show.get_plot_data_jpg_png(anonymous_file)
+            self.image_viewer = ImageViewer([plot_data], 0)
 
         elif filename.endswith('.nii'):
             self.set_format(False, True, False)
             anonymous_file = Anonymization_Functions.anonymize_nii(filename, path, 'temp')
-            plot_data = show.get_plot_data_nii(anonymous_file, 0)
+            # plot_data = show.get_plot_data_nii(anonymous_file, 0)
+            self.image_viewer = ImageViewer(show.get_plot_data_nii_all(anonymous_file), 0)
 
         elif filename.endswith('.dcm') or filename.endswith('.DCM'):
             self.set_format(True, False, False)
             anonymous_file = Anonymization_Functions.anonymize_dicom(filename, path, 'temp')
-            plot_data = show.get_plot_data_dicom(anonymous_file)
+            #plot_data = show.get_plot_data_dicom(anonymous_file)
+            self.image_viewer = ImageViewer(show.get_plot_data_dicom_all(self.image_folder), 0)
 
         else:
             print("Not supported file format")
             return
-
+        # if self.slider is not None:
+        #     self.left_panel.remove_widget(self.slider)
         self.left_panel.remove_widget(self.plot)
-        self.plot = MyFigure(image_data=plot_data)
+        self.plot = MyFigure(image_data=self.image_viewer.get_current_slice())
         self.left_panel.add_widget(self.plot)
+        self.ids.side = Slider(min=0, max=len(self.image_viewer.slices), step=1, id="slid", value=0)
+        self.ids.side.value = 0
+        # self.left_panel.add_widget(self.slider)
         self.dismiss_popup()
 
 

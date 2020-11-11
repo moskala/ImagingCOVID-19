@@ -20,7 +20,7 @@ class SegmentationB:
     @staticmethod
     def read_ct_scan(folder_name):
         # Read the slices from the dicom file
-        slices = [pydicom.read_file(os.path.join(folder_name,filename)) for filename in os.listdir(folder_name)]
+        slices = [pydicom.dcmread(os.path.join(folder_name,filename)) for filename in os.listdir(folder_name)]
         
         # Sort the dicom slices in their respective order
         slices.sort(key=lambda x: int(x.InstanceNumber))

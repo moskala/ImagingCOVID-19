@@ -19,7 +19,7 @@ class SegmentationA:
     # Load the scans in given folder path
     @staticmethod
     def load_scan(path):
-        slices = [pydicom.read_file(os.path.join(path,s)) for s in os.listdir(path)]
+        slices = [pydicom.dcmread(os.path.join(path,s)) for s in os.listdir(path)]
         slices.sort(key = lambda x: int(x.InstanceNumber))
         try:
             slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
@@ -45,8 +45,10 @@ class SegmentationA:
         image[image == -2000] = 0
         
         # Convert to Hounsfield units (HU)
-        intercept = scans[0].RescaleIntercept
-        slope = scans[0].RescaleSlope
+        # intercept = scans[0].RescaleIntercept
+        # slope = scans[0].RescaleSlope
+        intercept = scans[0].RescaleIntercept if 'RescaleIntercept' in scans[0] else -1024
+        slope = scans[0].RescaleSlope if 'RescaleSlope' in scans[0] else 1
 
         if slope != 1:
             image = slope * image.astype(np.float64)

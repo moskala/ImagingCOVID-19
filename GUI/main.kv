@@ -3,6 +3,7 @@ RootWidget:
     plot: plot.__self__
     left_panel: left_panel.__self__
     menu_panel: menu_panel.__self__
+    slid: slid.__self__
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
@@ -26,9 +27,31 @@ RootWidget:
                 text: 'Segmentation\nBinary'
                 size_hint_max_y: 50
                 on_release: root.lung_segment_binary()
+            Button:
+                id: button_layers
+                text: 'Automatic\nlayer choice'
+                size_hint_max_y: 50
+                on_release: root.automatic_layer_choice()
         BoxLayout:
-            orientation: 'horizontal'
+            orientation: 'vertical'
             id: left_panel
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_max_y: 50
+                Button:
+                    text: "Prev"
+                    id: button_prev
+                    size_hint_max_x: 40
+                    on_release: root.load_next_slice(-1)
+                Slider:
+                    id: slid
+                    step: 1
+                    on_value: root.slider_changed_value(slid.value)
+                Button:
+                    text: "Next"
+                    id: button_next
+                    size_hint_max_x: 40
+                    on_release: root.load_next_slice(1)
             MyFigure:
                 id: plot
 
