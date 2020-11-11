@@ -1,4 +1,3 @@
-import matplotlib
 # garden install matplotlib xd w maja/.kivy - to sie dzieje tylko raz, nie wiem o co chodzi xd
 # matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 import matplotlib.pyplot as plt
@@ -7,25 +6,21 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
-from kivy.logger import Logger
-from kivy.uix.scatter import Scatter
-from kivy.uix.image import Image
-from kivy.uix.slider import Slider
 
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 
-from pathlib import Path,PurePath
+from pathlib import Path
 import sys,os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath("Anonimization_StrigOffMetaData_png_jpg.py"))))
 from Anonimization_StrigOffMetaData_png_jpg import Anonymize
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(CURRENT_DIR),"Methods"))
-from LungSegmentation_MethodA_dicom import SegmentationA
-from LungSegmentation_MethodB_dicom import SegmentationB
+from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
+from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 
 import os
-import dicom
+import pydicom
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -42,7 +37,7 @@ class MyFigure(FigureCanvasKivyAgg):
         self.scan = test_patient_scans[val]
         self.path = INPUT_FOLDER
         self.val = val
-        self.dicom = dicom.read_file(os.path.join(INPUT_FOLDER,os.listdir(INPUT_FOLDER)[val]))
+        self.dicom = pydicom.read_file(os.path.join(INPUT_FOLDER,os.listdir(INPUT_FOLDER)[val]))
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
