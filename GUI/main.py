@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Agg', force=True)  # comment this line to see effect
+# matplotlib.use('Agg', force=True)  # comment this line to see effect
 import matplotlib.pyplot as plt
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
@@ -17,7 +17,7 @@ from pathlib import Path
 import sys
 import os
 
-# matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
+matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 sys.path.append(str(Path().resolve().parent / "Methods"))
@@ -54,7 +54,7 @@ class ImageViewer:
             self.slice_no = 0
         else:
             self.slice_no = value
-
+        print(self.slice_no)
         return self.slices[self.slice_no]
 
 
@@ -68,6 +68,7 @@ class MyFigure(FigureCanvasKivyAgg):
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
         # self.howMany = len(test_patient_images)
         self.curPlt = plt.gcf()
+
         # self.image = test_patient_images[val]
         # self.scan = test_patient_scans[val]
         # self.path = INPUT_FOLDER
@@ -139,11 +140,12 @@ class RootWidget(FloatLayout):
 
         print(self.image_folder)
         ct_scan = SegmentationB.read_ct_scan(self.image_folder)
-        segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
+        segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, int(self.slid.value))
         print(segmented_ct_scan)
         # return
         plt.figure()
         plt.imshow(segmented_ct_scan, cmap='gray')
+        plt.axis('off')
         plt.show()
 
     def lung_segment_watershed(self):
@@ -157,11 +159,12 @@ class RootWidget(FloatLayout):
         slices = SegmentationA.load_scan(self.image_folder)
         arr = SegmentationA.get_pixels_hu(slices)
         test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-            test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
+            test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[int(self.slid.value)])
         print(test_segmented)
         # return
         plt.figure()
         plt.imshow(test_segmented, cmap='gray')
+        plt.axis('off')
         plt.show()
 
     def show_load(self):

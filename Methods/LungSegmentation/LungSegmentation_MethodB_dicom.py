@@ -15,6 +15,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import pydicom
 import scipy.misc
 import numpy as np
+import pylibjpeg
 
 class SegmentationB:
     @staticmethod
