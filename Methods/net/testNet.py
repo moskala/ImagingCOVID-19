@@ -7,44 +7,51 @@ import h5py
 import numpy as np
 import os
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-print('Loadinging model...\n')
-model = CovidNet(bna=True, bnd=True, hidden_size=1024, emmbedding_size=128).to(device)
+class Net:
+    @staticmethod
+    def load_model(path):
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-model.load_state_dict(
-    torch.load('saved/cont/best_checkpoint.pth', map_location=str(device))['state_dict'])
-model.eval()
+        print('Loading model...\n')
+        model = CovidNet(bna=True, bnd=True, hidden_size=1024, emmbedding_size=128).to(device)
+
+        model.load_state_dict(
+            torch.load(path, map_location=str(device))['state_dict'])
+        model.eval()
+        return device,model
 
 
+    @staticmethod
+    def predict(img, site, trans,path):
+        device,model = Net.load_model(path)
+        d = ['normal', 'COVID-19']
+        input = trans(img)
+        img = input.unsqueeze(0)
 
-def predict(img, site, trans):
-    d = ['normal', 'COVID-19']
-    input = trans(img)
-    img = input.unsqueeze(0)
+        input = Variable(img.to(device))
+        score, features = model(input, site)
+        probability = torch.nn.functional.softmax(score, dim=1)
+        max_value, index = torch.max(probability, 1)
 
-    input = Variable(img.to(device))
-    score, features = model(input, site)
-    probability = torch.nn.functional.softmax(score, dim=1)
-    max_value, index = torch.max(probability, 1)
+        return d[index.item()], probability, score
 
-    return d[index.item()], probability, score
-
-def testImage(path):
-    site = 'ucsd'
-    trans = transforms.Compose([transforms.Resize([224, 224]),
-                                transforms.ToTensor(),
-                                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-    img = Image.open(path).convert('RGB')
-    pred, prob, score = predict(img, site, trans)
-    print("pred: ",pred, " prob: ",prob, " score: ",score)
+    @staticmethod
+    def testImage(path,modelPath):
+        site = 'ucsd'
+        trans = transforms.Compose([transforms.Resize([224, 224]),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+        img = Image.open(path).convert('RGB')
+        pred, prob, score = Net.predict(img, site, trans,modelPath)
+        return pred
 
 # testImage(r"C:\Users\Maya\studia\4rok\inz\covidSeg\normal\normal-ct-chest1.jpg")
 
 # testImage(r"C:\Users\Maya\studia\4rok\inz\covidSeg\png\3.jpg")
 
 #C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\data\SARS-Cov-2\non-COVID
-# testImage(r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\data\SARS-Cov-2\non-COVID\Non-Covid (70).png")
+Net.testImage(r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\data\SARS-Cov-2\non-COVID\Non-Covid (70).png",r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth")
 
 # dataset = ['../data/COVID-CT',
 #            '../data/SARS-Cov-2'

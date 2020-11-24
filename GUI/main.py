@@ -17,7 +17,7 @@ from pathlib import Path
 import sys
 import os
 
-matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
+#matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 sys.path.append(str(Path().resolve().parent / "Methods"))
@@ -25,6 +25,8 @@ from Anonymize import Anonymization_Functions
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 import Show_matplotlib_all as show
+sys.path.append(str(Path().resolve().parent / "Methods/net"))
+from testNet import Net
 
 
 MY_FOLDER = Path()
@@ -132,6 +134,11 @@ class RootWidget(FloatLayout):
     def dismiss_popup(self):
         self._popup.dismiss()
 
+    def neural_network(self):
+        if(self.image_path is not None and (self.image_path.endswith(".jpg") or self.image_path.endswith(".jpeg") or self.image_path.endswith(".png")) ):
+            self.net_label.text = Net.testImage(self.image_path,r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth")
+        else:
+            self.net_label.text = "Network accepts only jpg or png files!"    
     def lung_segment_binary(self):
 
         if self.image_type_dicom is not True:
@@ -211,6 +218,7 @@ class RootWidget(FloatLayout):
             self.set_format(False, True, False)
             anonymous_file = Anonymization_Functions.anonymize_nii(filename, path, 'temp')
             # plot_data = show.get_plot_data_nii(anonymous_file, 0)
+            self.image_path = anonymous_file
             self.image_viewer = ImageViewer(show.get_plot_data_nii_all(anonymous_file), 0)
 
         elif filename.endswith('.dcm') or filename.endswith('.DCM'):
