@@ -19,34 +19,50 @@ RootWidget:
                 size_hint_max_y: 50
                 on_release: root.show_load()
             Button:
+                id: button_anonymize
+                text: 'Save anonymized\nimage'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                size_hint_max_y: 50
+                on_release: root.show_save()
+            Button:
                 id: button_segmentation_A
                 text: 'Segmentation\nWatershed'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 size_hint_max_y: 50
                 on_release: root.lung_segment_watershed()
             Button:
                 id: button_segmentation_binary
                 text: 'Segmentation\nBinary'
                 size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 on_release: root.lung_segment_binary()
             Button:
                 id: button_layers
                 text: 'Automatic\nlayer choice'
                 size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 on_release: root.automatic_layer_choice()
             Button:
                 id: button_net
                 text: 'Neural\nNetwork'
                 size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 on_release: root.neural_network()
             Label:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
-            Button:
-                id: button_anonymize
-                text: 'Save anonymized\nimage'
-                size_hint_max_y: 50
-                on_release: root.show_save()
+
         BoxLayout:
             orientation: 'vertical'
             id: left_panel
