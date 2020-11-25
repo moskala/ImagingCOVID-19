@@ -56,7 +56,6 @@ def get_anonymized_png_jpg(file_name: str, input_folder: str):
 
         return image_without_exif
 
-        print("File saved: {0}".format(output_file_path))
     except FileNotFoundError:
         print("File {0} not found".format(input_file_path))
     except Exception as ex:
