@@ -30,7 +30,9 @@ from net.testNet import Net
 
 
 MY_FOLDER = Path()
-MODEL_PATH = r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth"
+MODEL_PATH = r"D:\Studia\sem7\inzynierka\sieci\Contrastive-COVIDNet\saved\best_checkpoint.pth"
+GUI_FOLDER = r"D:\Studia\sem7\inzynierka\aplikacja\ImagingCOVID-19\GUI"
+START_IMAGE = "sample_image.jpg"
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -52,7 +54,6 @@ class LoadDialog(FloatLayout):
 
 
 class SaveDialog(FloatLayout):
-
     save = ObjectProperty(None)
     img = ObjectProperty(None)
     cancel = ObjectProperty(None)
@@ -69,7 +70,7 @@ class RootWidget(FloatLayout):
     result = None
     slider = None
 
-    image_object = None
+    image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
 
@@ -95,20 +96,20 @@ class RootWidget(FloatLayout):
         self._popup.dismiss()
 
     def neural_network(self):
-        if(self.image_path is not None and (self.image_path.endswith(".jpg") or self.image_path.endswith(".jpeg") or self.image_path.endswith(".png")) ):
-            self.net_label.text = Net.testImage(self.image_path, MODEL_PATH)
 
+        if self.image_object.file_type == ImageType.JPG or self.image_object.file_type == ImageType.PNG:
+            self.net_label.text = Net.testImage(self.image_path, MODEL_PATH)
         else:
             self.net_label.text = "Network accepts only jpg or png files!"
 
     def lung_segment_binary(self):
 
-        if self.image_type_dicom is not True:
+        if self.image_object.file_type != ImageType.DCM:
             print("This method is only for dicom files for now.")
             return
-
+        image_folder = self.image_object.src_folder
         print(self.image_folder)
-        ct_scan = SegmentationB.read_ct_scan(self.image_folder)
+        ct_scan = SegmentationB.read_ct_scan(image_folder)
         segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
 
         try:
@@ -122,13 +123,12 @@ class RootWidget(FloatLayout):
 
     def lung_segment_watershed(self):
 
-        print(self.image_type_dicom)
-        if self.image_type_dicom is not True:
+        if self.image_object.file_type != ImageType.DCM:
             print("This method is only for dicom files for now.")
             return
 
-        print(self.image_folder)
-        slices = SegmentationA.load_scan(self.image_folder)
+        image_folder = self.image_object.src_folder
+        slices = SegmentationA.load_scan(image_folder)
         arr = SegmentationA.get_pixels_hu(slices)
         test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
             test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
@@ -159,7 +159,7 @@ class RootWidget(FloatLayout):
             return ImageType.DCM
         elif filename.endswith('.nii'):
             return ImageType.NIFTI
-        elif filename.endswith('.jpg'):
+        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
             return ImageType.JPG
         elif filename.endswith('.png'):
             return ImageType.PNG
@@ -188,7 +188,6 @@ class RootWidget(FloatLayout):
         self.left_panel.add_widget(self.plot)
         self.ids.side = Slider(min=0, max=len(self.image_object.slices), step=1, id="slid", value=0)
         self.ids.side.value = 0
-        # self.left_panel.add_widget(self.slider)
         self.dismiss_popup()
 
     def get_root_path_for_load_dialog(self):

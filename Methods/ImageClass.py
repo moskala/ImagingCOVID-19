@@ -46,6 +46,9 @@ class ImageObject(object):
     def get_next_slice(self, value):
         pass
 
+    def get_file_path(self):
+        return str(Path(self.src_folder) / self.src_filename)
+
 
 class DicomImage(ImageObject):
     
