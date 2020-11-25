@@ -30,14 +30,17 @@ class SegmentationB:
         slices = np.stack([s.pixel_array for s in slices])
         slices[slices == -2000] = 0
         return slices
-    
+        
+    @staticmethod
+    def get12_range(array):
+        return 0.5*abs(max(array.flatten())-min(array.flatten()))
     @staticmethod
     def get_segmented_lungs(im):
         '''
         This funtion segments the lungs from the given 2D slice.
         '''
         # Convert into a binary image. 
-        binary = im < 604
+        binary = im < SegmentationB.get12_range(im)
         # plt.imshow(binary, cmap=plt.cm.gray)
         
         # Remove the blobs connected to the border of the image

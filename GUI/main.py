@@ -30,8 +30,8 @@ from net.testNet import Net
 
 
 MY_FOLDER = Path()
-MODEL_PATH = r"D:\Studia\sem7\inzynierka\sieci\Contrastive-COVIDNet\saved\best_checkpoint.pth"
-GUI_FOLDER = r"D:\Studia\sem7\inzynierka\aplikacja\ImagingCOVID-19\GUI"
+MODEL_PATH = r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth"
+GUI_FOLDER = r"C:\Users\Maya\studia\4rok\inz\repo\ImagingCOVID-19\GUI"
 START_IMAGE = "sample_image.jpg"
 
 
@@ -73,6 +73,7 @@ class RootWidget(FloatLayout):
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
+    
 
     def automatic_layer_choice(self):
         pass
@@ -117,7 +118,7 @@ class RootWidget(FloatLayout):
             image_folder = self.image_object.src_folder
 
             ct_scan = SegmentationB.read_ct_scan(image_folder)
-            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
+            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
 
             plt.figure()
             plt.imshow(segmented_ct_scan, cmap='gray')
@@ -137,7 +138,7 @@ class RootWidget(FloatLayout):
             slices = SegmentationA.load_scan(image_folder)
             arr = SegmentationA.get_pixels_hu(slices)
             test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
+                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
 
             plt.figure()
             plt.imshow(test_segmented, cmap='gray')
@@ -200,7 +201,7 @@ class RootWidget(FloatLayout):
         self.dismiss_popup()
 
     def get_root_path_for_load_dialog(self):
-        return str(Path(r"D:\Studia\sem7\inzynierka\aplikacja\test_data"))
+        return str(Path(r"C:\Users\Maya\studia\4rok\inz\covidSeg"))
 
     def save(self, path, filename):
         success = self.image_object.save_anonymized_file(filename, path)
