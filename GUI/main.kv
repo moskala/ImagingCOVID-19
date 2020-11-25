@@ -42,6 +42,11 @@ RootWidget:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
+            Button:
+                id: button_anonymize
+                text: 'Save anonymized\nimage'
+                size_hint_max_y: 50
+                on_release: root.show_save()
         BoxLayout:
             orientation: 'vertical'
             id: left_panel
@@ -73,6 +78,7 @@ RootWidget:
         orientation: "vertical"
         FileChooserListView:
             id: filechooser
+            path: r"D:\Studia\sem7\inzynierka\aplikacja\test_data"
 
         BoxLayout:
             size_hint_y: None
@@ -84,3 +90,30 @@ RootWidget:
             Button:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
+
+<SaveDialog>:
+    text_input: text_input
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            on_selection: text_input.text = self.selection and self.selection[0] or ''
+
+        TextInput:
+            id: text_input
+            size_hint_y: None
+            height: 30
+            multiline: False
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Save"
+                on_release: root.save(filechooser.path, text_input.text)
