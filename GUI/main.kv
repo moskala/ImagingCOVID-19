@@ -3,8 +3,9 @@ RootWidget:
     plot: plot.__self__
     left_panel: left_panel.__self__
     menu_panel: menu_panel.__self__
-    slid: slid.__self__
+    slider: slider.__self__
     net_label: net_result.__self__
+    slices_info: slices_info.__self__
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
@@ -62,6 +63,10 @@ RootWidget:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
+            Label:
+                id: slices_info
+                text: 'Slice: 1/1'
+                size_hint_max_y: 50
 
         BoxLayout:
             orientation: 'vertical'
@@ -75,9 +80,10 @@ RootWidget:
                     size_hint_max_x: 40
                     on_release: root.load_next_slice(-1)
                 Slider:
-                    id: slid
+                    id: slider
                     step: 1
-                    on_value: root.slider_changed_value(slid.value)
+                    range: (0, 0)
+                    on_value: root.slider_changed_value(slider.value)
                 Button:
                     text: "Next"
                     id: button_next

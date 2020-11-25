@@ -68,7 +68,7 @@ class RootWidget(FloatLayout):
 
     plot = None
     result = None
-    slider = None
+    # slider = None
 
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
@@ -83,14 +83,20 @@ class RootWidget(FloatLayout):
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
+            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+                                                            self.image_object.total_slice_number)
 
     def load_next_slice(self, value):
         shift = int(value)
         if self.plot is not None and self.image_object is not None:
-            slice_number = self.image_object.slice_no + shift
+            slice_number = self.image_object.current_slice_number + shift
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
+            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+                                                            self.image_object.total_slice_number)
+            self.slider.value = self.image_object.current_slice_number
+
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -184,8 +190,13 @@ class RootWidget(FloatLayout):
         self.left_panel.remove_widget(self.plot)
         self.plot = MyFigure(image_data=self.image_object.get_current_slice())
         self.left_panel.add_widget(self.plot)
-        self.ids.side = Slider(min=0, max=len(self.image_object.slices), step=1, id="slid", value=0)
-        self.ids.side.value = 0
+        self.slider.value = 0
+        self.slider.step = 1
+        self.slider.range = (0, self.image_object.total_slice_number-1)
+        self.slider.value_track = True
+
+        self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+                                                        self.image_object.total_slice_number)
         self.dismiss_popup()
 
     def get_root_path_for_load_dialog(self):

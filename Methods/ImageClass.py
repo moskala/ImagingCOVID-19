@@ -25,8 +25,6 @@ class ImageObject(object):
     file_type = None
     
     pixel_array = None
-    slices = []
-    slice_no = 0
     current_slice_number = 0
     image_object = None
     
