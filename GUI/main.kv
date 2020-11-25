@@ -3,8 +3,9 @@ RootWidget:
     plot: plot.__self__
     left_panel: left_panel.__self__
     menu_panel: menu_panel.__self__
-    slid: slid.__self__
+    slider: slider.__self__
     net_label: net_result.__self__
+    slices_info: slices_info.__self__
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
@@ -19,34 +20,54 @@ RootWidget:
                 size_hint_max_y: 50
                 on_release: root.show_load()
             Button:
+                id: button_anonymize
+                text: 'Save anonymized\nimage'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                size_hint_max_y: 50
+                on_release: root.show_save()
+            Button:
                 id: button_segmentation_A
                 text: 'Segmentation\nWatershed'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 size_hint_max_y: 50
                 on_release: root.lung_segment_watershed()
             Button:
                 id: button_segmentation_binary
                 text: 'Segmentation\nBinary'
                 size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 on_release: root.lung_segment_binary()
             Button:
                 id: button_layers
                 text: 'Automatic\nlayer choice'
                 size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 on_release: root.automatic_layer_choice()
             Button:
                 id: button_net
                 text: 'Neural\nNetwork'
                 size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
                 on_release: root.neural_network()
             Label:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
-            Button:
-                id: button_anonymize
-                text: 'Save anonymized\nimage'
+            Label:
+                id: slices_info
+                text: 'Slice: 1/1'
                 size_hint_max_y: 50
-                on_release: root.show_save()
+
         BoxLayout:
             orientation: 'vertical'
             id: left_panel
@@ -59,9 +80,10 @@ RootWidget:
                     size_hint_max_x: 40
                     on_release: root.load_next_slice(-1)
                 Slider:
-                    id: slid
+                    id: slider
                     step: 1
-                    on_value: root.slider_changed_value(slid.value)
+                    range: (0, 0)
+                    on_value: root.slider_changed_value(slider.value)
                 Button:
                     text: "Next"
                     id: button_next

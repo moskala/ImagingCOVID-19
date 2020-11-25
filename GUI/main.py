@@ -68,7 +68,7 @@ class RootWidget(FloatLayout):
 
     plot = None
     result = None
-    slider = None
+    # slider = None
 
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
@@ -84,14 +84,20 @@ class RootWidget(FloatLayout):
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
+            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+                                                            self.image_object.total_slice_number)
 
     def load_next_slice(self, value):
         shift = int(value)
         if self.plot is not None and self.image_object is not None:
-            slice_number = self.image_object.slice_no + shift
+            slice_number = self.image_object.current_slice_number + shift
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
+            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+                                                            self.image_object.total_slice_number)
+            self.slider.value = self.image_object.current_slice_number
+
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -105,43 +111,41 @@ class RootWidget(FloatLayout):
 
     def lung_segment_binary(self):
 
-        if self.image_object.file_type != ImageType.DCM:
-            print("This method is only for dicom files for now.")
-            return
-        image_folder = self.image_object.src_folder
-
-        ct_scan = SegmentationB.read_ct_scan(image_folder)
-        segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
-
         try:
+            if self.image_object.file_type != ImageType.DCM:
+                print("This method is only for dicom files for now.")
+                return
+            image_folder = self.image_object.src_folder
+
+            ct_scan = SegmentationB.read_ct_scan(image_folder)
+            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
+
             plt.figure()
             plt.imshow(segmented_ct_scan, cmap='gray')
             plt.axis('off')
             plt.show()
-        except:
-            print("can't show plot")
-            print(segmented_ct_scan)
+        except Exception as ex:
+            print(ex)
 
     def lung_segment_watershed(self):
 
-        if self.image_object.file_type != ImageType.DCM:
-            print("This method is only for dicom files for now.")
-            return
-
-        image_folder = self.image_object.src_folder
-        slices = SegmentationA.load_scan(image_folder)
-        arr = SegmentationA.get_pixels_hu(slices)
-        test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-            test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
-
         try:
+            if self.image_object.file_type != ImageType.DCM:
+                print("This method is only for dicom files for now.")
+                return
+
+            image_folder = self.image_object.src_folder
+            slices = SegmentationA.load_scan(image_folder)
+            arr = SegmentationA.get_pixels_hu(slices)
+            test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
+                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
+
             plt.figure()
             plt.imshow(test_segmented, cmap='gray')
             plt.axis('off')
             plt.show()
-        except:
-            print("can't show plot")
-            print(test_segmented)
+        except Exception as ex:
+            print(ex)
 
     def show_load(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -187,8 +191,13 @@ class RootWidget(FloatLayout):
         self.left_panel.remove_widget(self.plot)
         self.plot = MyFigure(image_data=self.image_object.get_current_slice())
         self.left_panel.add_widget(self.plot)
-        self.ids.side = Slider(min=0, max=len(self.image_object.slices), step=1, id="slid", value=0)
-        self.ids.side.value = 0
+        self.slider.value = 0
+        self.slider.step = 1
+        self.slider.range = (0, self.image_object.total_slice_number-1)
+        self.slider.value_track = True
+
+        self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+                                                        self.image_object.total_slice_number)
         self.dismiss_popup()
 
     def get_root_path_for_load_dialog(self):
