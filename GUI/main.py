@@ -26,10 +26,11 @@ from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 import Show_matplotlib_all as show
 from ImageClass import *
-from testNet import Net
+from net.testNet import Net
 
 
 MY_FOLDER = Path()
+MODEL_PATH = r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth"
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -95,7 +96,8 @@ class RootWidget(FloatLayout):
 
     def neural_network(self):
         if(self.image_path is not None and (self.image_path.endswith(".jpg") or self.image_path.endswith(".jpeg") or self.image_path.endswith(".png")) ):
-            self.net_label.text = Net.testImage(self.image_path,r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth")
+            self.net_label.text = Net.testImage(self.image_path, MODEL_PATH)
+
         else:
             self.net_label.text = "Network accepts only jpg or png files!"
 
