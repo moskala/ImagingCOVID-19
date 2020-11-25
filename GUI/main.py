@@ -1,5 +1,6 @@
 import matplotlib
-matplotlib.use('Agg', force=True)  # comment this line to see effect
+# matplotlib.use('Agg', force=True)  # comment this line to see effect
+# matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
@@ -21,41 +22,14 @@ import os
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 sys.path.append(str(Path().resolve().parent / "Methods"))
-from Anonymize import Anonymization_Functions
+
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 import Show_matplotlib_all as show
+from ImageClass import *
 
 
 MY_FOLDER = Path()
-
-
-class ImageViewer:
-
-    slices = []
-    slice_no = 0
-    current_slice = None
-
-    def __init__(self, slices, value, current_slice=""):
-        self.slices = slices
-        self.slice_no = value
-        self.current_slice = current_slice
-
-    def get_current_slice(self):
-        self.current_slice = self.slices[self.slice_no]
-        return self.current_slice
-
-    def get_next_slice(self, value):
-        max_len = len(self.slices)
-
-        if value >= max_len:
-            self.slice_no = max_len - 1
-        elif value <= 0:
-            self.slice_no = 0
-        else:
-            self.slice_no = value
-
-        return self.slices[self.slice_no]
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -92,18 +66,12 @@ class RootWidget(FloatLayout):
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
     slider_val = ObjectProperty(None)
-    current_val = 0
+
     plot = None
     result = None
     slider = None
-    label_info = "hello2"
-    image_type_plain = False
-    image_type_dicom = False
-    image_type_nii = False
-    image_path = ""
-    image_folder = ""
 
-    image_viewer = None
+    image_object = None
 
     _popup = None
 
@@ -111,22 +79,19 @@ class RootWidget(FloatLayout):
         pass
 
     def slider_changed_value(self, value):
-        slice_no = int(value)
-        if self.plot is not None and self.image_viewer is not None:
+        slice_number = int(value)
+        if self.plot is not None and self.image_object is not None:
             self.left_panel.remove_widget(self.plot)
-            self.plot = MyFigure(image_data=self.image_viewer.get_next_slice(slice_no))
+            self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
 
     def load_next_slice(self, value):
-        diff = int(value)
-
-        if self.plot is not None and self.image_viewer is not None:
-            slice_no = self.image_viewer.slice_no + diff
+        shift = int(value)
+        if self.plot is not None and self.image_object is not None:
+            slice_number = self.image_object.slice_no + shift
             self.left_panel.remove_widget(self.plot)
-            self.plot = MyFigure(image_data=self.image_viewer.get_next_slice(slice_no))
+            self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
-
-
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -140,11 +105,14 @@ class RootWidget(FloatLayout):
         print(self.image_folder)
         ct_scan = SegmentationB.read_ct_scan(self.image_folder)
         segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
-        print(segmented_ct_scan)
-        # return
-        plt.figure()
-        plt.imshow(segmented_ct_scan, cmap='gray')
-        plt.show()
+
+        try:
+            plt.figure()
+            plt.imshow(segmented_ct_scan, cmap='gray')
+            plt.show()
+        except:
+            print("can't show plot")
+            print(segmented_ct_scan)
 
     def lung_segment_watershed(self):
 
@@ -158,11 +126,14 @@ class RootWidget(FloatLayout):
         arr = SegmentationA.get_pixels_hu(slices)
         test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
             test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
-        print(test_segmented)
-        # return
-        plt.figure()
-        plt.imshow(test_segmented, cmap='gray')
-        plt.show()
+
+        try:
+            plt.figure()
+            plt.imshow(test_segmented, cmap='gray')
+            plt.show()
+        except:
+            print("can't show plot")
+            print(test_segmented)
 
     def show_load(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -176,57 +147,52 @@ class RootWidget(FloatLayout):
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
-    def set_format(self, dicom, nii, plain):
-        self.image_type_dicom = False
-        self.image_type_nii = False
-        self.image_type_plain = False
-
-        if dicom:
-            self.image_type_dicom = True
-        elif nii:
-            self.image_type_nii = True
-        else:
-            self.image_type_plain = True
+    def get_file_format(self, filename):
+        if filename.endswith('.dcm'):
+            return ImageType.DCM
+        elif filename.endswith('.nii'):
+            return ImageType.NIFTI
+        elif filename.endswith('.jpg'):
+            return ImageType.JPG
+        elif filename.endswith('.png'):
+            return ImageType.PNG
 
     def load(self, path, filename):
 
-        self.image_path = filename[0]
-        self.image_folder = path
-        filename = str(Path(filename[0]).name)
-        # print(filename)
-        # print(path)
+        image_folder = path
+        image_file_name = str(Path(filename[0]).name)
+
+        file_type = self.get_file_format(image_file_name)
+
+        if file_type == ImageType.DCM:
+            self.image_object = DicomImage(image_folder, image_file_name)
+        elif file_type == ImageType.NIFTI:
+            self.image_object = NiftiImage(image_folder, image_file_name)
+        elif file_type == ImageType.JPG:
+            self.image_object = JpgImage(image_folder, image_file_name)
+        elif file_type == ImageType.PNG:
+            self.image_object = PngImage(image_folder, image_file_name)
+
         if self.result is not None:
             self.left_panel.remove_widget(self.result)
 
-        if filename.endswith('.jpg') or filename.endswith('.png'):
-            self.set_format(False, False, True)
-            anonymous_file = Anonymization_Functions.anonymize_png_jpg(filename, path, 'temp')
-            plot_data = show.get_plot_data_jpg_png(anonymous_file)
-            self.image_viewer = ImageViewer([plot_data], 0)
-
-        elif filename.endswith('.nii'):
-            self.set_format(False, True, False)
-            anonymous_file = Anonymization_Functions.anonymize_nii(filename, path, 'temp')
-            # plot_data = show.get_plot_data_nii(anonymous_file, 0)
-            self.image_viewer = ImageViewer(show.get_plot_data_nii_all(anonymous_file), 0)
-
-        elif filename.endswith('.dcm') or filename.endswith('.DCM'):
-            self.set_format(True, False, False)
-            anonymous_file = Anonymization_Functions.anonymize_dicom(filename, path, 'temp')
-            #plot_data = show.get_plot_data_dicom(anonymous_file)
-            self.image_viewer = ImageViewer(show.get_plot_data_dicom_all(self.image_folder), 0)
-
-        else:
-            print("Not supported file format")
-            return
-        # if self.slider is not None:
-        #     self.left_panel.remove_widget(self.slider)
         self.left_panel.remove_widget(self.plot)
-        self.plot = MyFigure(image_data=self.image_viewer.get_current_slice())
+        self.plot = MyFigure(image_data=self.image_object.get_current_slice())
         self.left_panel.add_widget(self.plot)
-        self.ids.side = Slider(min=0, max=len(self.image_viewer.slices), step=1, id="slid", value=0)
+        self.ids.side = Slider(min=0, max=len(self.image_object.slices), step=1, id="slid", value=0)
         self.ids.side.value = 0
         # self.left_panel.add_widget(self.slider)
+        self.dismiss_popup()
+
+    def get_root_path_for_load_dialog(self):
+        return str(Path(r"D:\Studia\sem7\inzynierka\aplikacja\test_data"))
+
+    def save(self, path, filename):
+        success = self.image_object.save_anonymized_file(filename, path)
+        if success:
+            print('File saved')
+        else:
+            print('File not saved')
         self.dismiss_popup()
 
 
@@ -236,7 +202,7 @@ class Main(App):
 
 # Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
-# Factory.register('SaveDialog', cls=SaveDialog)
+Factory.register('SaveDialog', cls=SaveDialog)
 # Factory.register('Picture', cls=SaveDialog)
 
 if __name__ == '__main__':
