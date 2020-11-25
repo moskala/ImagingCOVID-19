@@ -100,7 +100,7 @@ RootWidget:
         orientation: "vertical"
         FileChooserListView:
             id: filechooser
-            path: r"C:\Users\Maya\studia\4rok\inz\covidSeg"
+            path: r"D:\Studia\sem7\inzynierka\aplikacja\test_data"
 
         BoxLayout:
             size_hint_y: None
@@ -122,6 +122,7 @@ RootWidget:
         FileChooserListView:
             id: filechooser
             on_selection: text_input.text = self.selection and self.selection[0] or ''
+            path: r"D:\Studia\sem7\inzynierka\aplikacja\test_data"
 
         TextInput:
             id: text_input

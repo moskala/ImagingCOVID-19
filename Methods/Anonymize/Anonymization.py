@@ -1,17 +1,8 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[13]:
-
-
 from pathlib import Path
 import nibabel
 from PIL import Image
 import dicomanonymizer
 import pydicom
-
-
-# In[6]:
 
 
 def get_anonymized_nifti(file_name: str, input_folder: str):
@@ -41,9 +32,6 @@ def get_anonymized_nifti(file_name: str, input_folder: str):
         print(ex)
 
     return None
-
-
-# In[8]:
 
 
 def get_anonymized_png_jpg(file_name: str, input_folder: str):
@@ -77,9 +65,6 @@ def get_anonymized_png_jpg(file_name: str, input_folder: str):
     return None
 
 
-# In[19]:
-
-
 def get_anonymized_dicom(file_name: str, input_folder: str):
     """
     Function performs anonymization of given file of dicom type.
@@ -105,29 +90,4 @@ def get_anonymized_dicom(file_name: str, input_folder: str):
 
     return None
 
-
-# In[ ]:
-
-
-# Testy
-
-
-# In[2]:
-
-
-# img = nibabel.load(r"D:\Studia\sem7\inzynierka\aplikacja\test_data\coronacases_org_001.nii")
-
-
-# In[12]:
-
-
-# img = anonymize_png_jpg("ct2.png", r"D:\Studia\sem7\inzynierka\aplikacja\test_data")
-# type(img)
-
-
-# In[20]:
-
-
-# dc = anonymize_dicom("Italy_case010000.dcm", r"D:\Studia\sem7\inzynierka\aplikacja\test_data")
-# type(dc)
 
