@@ -7,6 +7,7 @@ import os
 import scipy.ndimage as ndimage
 import matplotlib.pyplot as plt
 from pathlib import Path
+import pylibjpeg
 
 from skimage import measure, morphology, segmentation
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection

@@ -4,6 +4,7 @@ RootWidget:
     left_panel: left_panel.__self__
     menu_panel: menu_panel.__self__
     slid: slid.__self__
+    net_label: net_result.__self__
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
@@ -32,6 +33,15 @@ RootWidget:
                 text: 'Automatic\nlayer choice'
                 size_hint_max_y: 50
                 on_release: root.automatic_layer_choice()
+            Button:
+                id: button_net
+                text: 'Neural\nNetwork'
+                size_hint_max_y: 50
+                on_release: root.neural_network()
+            Label:
+                id: net_result
+                text: ''
+                size_hint_max_y: 50
         BoxLayout:
             orientation: 'vertical'
             id: left_panel
