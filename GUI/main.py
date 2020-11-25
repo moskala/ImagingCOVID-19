@@ -36,31 +36,33 @@ START_IMAGE = "sample_image.jpg"
 
 
 class MyFigure(FigureCanvasKivyAgg):
-
+    """This class is used to display an image in GUI"""
     def __init__(self, val=0, image_data=None, **kwargs):
+        """constructor"""
         if image_data is None:
             image_data = show.get_plot_data_jpg_png('sample_image.jpg')
         plt.axis('off')
         plt.imshow(image_data, cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
-        # self.howMany = len(test_patient_images)
         self.curPlt = plt.gcf()
         self.val = val
 
 
 class LoadDialog(FloatLayout):
+    """This class is used to run the load dialog"""
     load = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
 
 class SaveDialog(FloatLayout):
+    """This class is used to run the save dialog"""
     save = ObjectProperty(None)
     img = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
 
 class RootWidget(FloatLayout):
-
+    """This class contains the root element for gui and all the necessary methods"""
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
@@ -68,7 +70,6 @@ class RootWidget(FloatLayout):
 
     plot = None
     result = None
-    # slider = None
 
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
@@ -76,9 +77,11 @@ class RootWidget(FloatLayout):
     
 
     def automatic_layer_choice(self):
+        """not implemented yet"""
         pass
 
     def slider_changed_value(self, value):
+        """This function changes the displayed image when the slider is moved"""
         slice_number = int(value)
         if self.plot is not None and self.image_object is not None:
             self.left_panel.remove_widget(self.plot)
@@ -88,6 +91,7 @@ class RootWidget(FloatLayout):
                                                             self.image_object.total_slice_number)
 
     def load_next_slice(self, value):
+        """This function changes the displayed image when the buttons 'Next' and 'Prev" are pressed"""
         shift = int(value)
         if self.plot is not None and self.image_object is not None:
             slice_number = self.image_object.current_slice_number + shift
@@ -100,17 +104,18 @@ class RootWidget(FloatLayout):
 
 
     def dismiss_popup(self):
+        """This function closes popup windows"""
         self._popup.dismiss()
 
     def neural_network(self):
-
+        """This function runs the neural network process for the displayed image"""
         if self.image_object.file_type == ImageType.JPG or self.image_object.file_type == ImageType.PNG:
             self.net_label.text = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
         else:
             self.net_label.text = "Network accepts only jpg or png files!"
 
     def lung_segment_binary(self):
-
+        """This function runs binary lung segmentation"""
         try:
             if self.image_object.file_type != ImageType.DCM:
                 print("This method is only for dicom files for now.")
@@ -120,7 +125,6 @@ class RootWidget(FloatLayout):
             ct_scan = SegmentationB.read_ct_scan(image_folder)
             segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
 
-            plt.figure()
             plt.imshow(segmented_ct_scan, cmap='gray')
             plt.axis('off')
             plt.show()
@@ -128,7 +132,7 @@ class RootWidget(FloatLayout):
             print(ex)
 
     def lung_segment_watershed(self):
-
+        """This function runs watershed segmentation"""
         try:
             if self.image_object.file_type != ImageType.DCM:
                 print("This method is only for dicom files for now.")
@@ -140,7 +144,6 @@ class RootWidget(FloatLayout):
             test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
                 test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
 
-            plt.figure()
             plt.imshow(test_segmented, cmap='gray')
             plt.axis('off')
             plt.show()
@@ -148,18 +151,21 @@ class RootWidget(FloatLayout):
             print(ex)
 
     def show_load(self):
+        """This function runs load dialog"""
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
     def show_save(self):
+        """This function runs save dialog"""
         content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
         self._popup = Popup(title="Save file", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
     def get_file_format(self, filename):
+        """This function decides on the displayd image format"""
         if filename.endswith('.dcm'):
             return ImageType.DCM
         elif filename.endswith('.nii'):
@@ -170,7 +176,7 @@ class RootWidget(FloatLayout):
             return ImageType.PNG
 
     def load(self, path, filename):
-
+        """This function runs the load process for an image selected in the load dialog"""
         image_folder = path
         image_file_name = str(Path(filename[0]).name)
 
@@ -201,9 +207,11 @@ class RootWidget(FloatLayout):
         self.dismiss_popup()
 
     def get_root_path_for_load_dialog(self):
+        """This function gets the root folder for load dialog"""
         return str(Path(r"C:\Users\Maya\studia\4rok\inz\covidSeg"))
 
     def save(self, path, filename):
+        """This function runs the saving process after pressing 'Save anonymized file' button"""
         success = self.image_object.save_anonymized_file(filename, path)
         if success:
             print('File saved')
@@ -219,7 +227,6 @@ class Main(App):
 # Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
-# Factory.register('Picture', cls=SaveDialog)
 
 if __name__ == '__main__':
     Main().run()

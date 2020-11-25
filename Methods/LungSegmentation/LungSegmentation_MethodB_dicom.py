@@ -20,6 +20,15 @@ import pylibjpeg
 class SegmentationB:
     @staticmethod
     def read_ct_scan(folder_name):
+        """
+        Function reads a folder of .dcm files to a list of FileDataset objects
+        Then it extracts a numpy ndarray object called 'pixel_array' from each FileDataset
+        and stacks them together
+
+        :param folder_name: folder path
+        :return: slices: a stack of pixel arrays
+        """
+
         # Read the slices from the dicom file
         slices = [pydicom.dcmread(os.path.join(folder_name,filename)) for filename in os.listdir(folder_name)]
         
@@ -30,15 +39,24 @@ class SegmentationB:
         slices = np.stack([s.pixel_array for s in slices])
         slices[slices == -2000] = 0
         return slices
-        
+
     @staticmethod
     def get12_range(array):
+        """
+        Function finds a half of the range of given array
+
+        :param array: numpy ndarray
+        :return: int: 
+        """
         return 0.5*abs(max(array.flatten())-min(array.flatten()))
     @staticmethod
     def get_segmented_lungs(im):
-        '''
-        This funtion segments the lungs from the given 2D slice.
-        '''
+        """
+        This funtion segments the lungs from the given 2D slice in the form of numpy ndarray.
+
+        :param im: numpy ndarray of a 2D slice 
+        :return: im: numpy ndarray of a 2D slice with segmented lungs
+        """        
         # Convert into a binary image. 
         binary = im < SegmentationB.get12_range(im)
         # plt.imshow(binary, cmap=plt.cm.gray)
@@ -76,18 +94,24 @@ class SegmentationB:
         
         return im
 
-    # @staticmethod
-    # def plot_ct_scan(scan,val):
-    #     f, plots = plt.subplots(int(scan.shape[0] / 20) + 1, 4, sharex='col', sharey='row', figsize=(50, 50))
-    #     for i in range(0, scan.shape[0], 5):
-    #         plots[int(i / 20), int((i % 20) / 5)].axis('off')
-    #         plots[int(i / 20), int((i % 20) / 5)].imshow(scan[i], cmap=plt.cm.bone) 
-
                 
     @staticmethod
     def segment_lung_from_ct_scan(ct_scan,val):
+        """
+        This funtion performs segmentation of the lungs, given the stack of slices and the index.
+
+        :param ct_scan: a stack of numpy ndarrays
+        :param val: an index of wanted 2D slice to be segmented
+        :return: numpy ndarray of a 2D slice with segmented lungs
+        """  
         return np.asarray(SegmentationB.get_segmented_lungs(ct_scan[val]))
 
     @staticmethod
     def segment_lung_from_ct_scan_all(ct_scan):
+        """
+        This funtion performs segmentation of the lungs for all slices in the given stack.
+
+        :param ct_scan: a stack of numpy ndarrays
+        :return: numpy ndarray of a 2D slices with segmented lungs
+        """  
         return np.asarray([SegmentationB.get_segmented_lungs(slice) for slice in ct_scan])

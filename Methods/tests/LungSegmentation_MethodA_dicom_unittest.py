@@ -3,7 +3,6 @@ import unittest
 import sys, os
 import pydicom
 import numpy as np
-from importlib.metadata import version
 from pathlib import Path
 
 #sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'Methods'))

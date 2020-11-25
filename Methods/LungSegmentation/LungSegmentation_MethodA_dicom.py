@@ -1,7 +1,8 @@
-# %matplotlib inline
+# zrodlo: https://www.kaggle.com/ankasor/improved-lung-segmentation-using-watershed
+
 import matplotlib
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import numpy as np 
+import pandas as pd 
 import pydicom
 import os
 import scipy.ndimage as ndimage
@@ -12,14 +13,18 @@ import pylibjpeg
 from skimage import measure, morphology, segmentation
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-# Some constants 
 
-# zrodlo: https://www.kaggle.com/ankasor/improved-lung-segmentation-using-watershed
 class SegmentationA:
 
     # Load the scans in given folder path
     @staticmethod
     def load_scan(path):
+        """
+        Function reads a folder of .dcm files to a list of FileDataset objects
+
+        :param path: folder path
+        :return: slices: a list of FileDataset objects
+        """
         slices = [pydicom.dcmread(os.path.join(path,s)) for s in os.listdir(path)]
         slices.sort(key = lambda x: int(x.InstanceNumber))
         try:
@@ -36,6 +41,12 @@ class SegmentationA:
     # jakie inty tutaj?
     @staticmethod
     def get_pixels_hu(scans):
+        """
+        Function takes a list of FileDataset objects and converts each of them to Hounsfield units
+
+        :param scans: a list of FileDataset objects
+        :return: array: an array of pixel arrays in HU
+        """
         image = np.stack([s.pixel_array for s in scans])
         # Convert to int16 (from sometimes int16), 
         # should be possible as values should always be low enough (<32k)
@@ -62,6 +73,12 @@ class SegmentationA:
     # Some of the starting Code is taken from ArnavJain, since it's more readable then my own
     @staticmethod
     def generate_markers(image):
+        """
+        Function generates markers necessary for lung segmentation process
+
+        :param image: a pixel array
+        :return: marker_internal, marker_external, marker_watershed: np ndarrays of markers
+        """
         #Creation of the internal Marker
         marker_internal = image < -400
         marker_internal = segmentation.clear_border(marker_internal)
@@ -87,6 +104,13 @@ class SegmentationA:
 
     @staticmethod
     def seperate_lungs(image):
+        """
+        Function conducts lung segmentation process using watershed algorithm
+
+        :param image: a pixel array
+        :return: segmented, lungfilter, outline, watershed, sobel_gradient, marker_internal, marker_external, marker_watershed: 
+        np ndarrays of segmented lungs (segmented) and other markers used in the process
+        """
         #Creation of the markers as shown above:
         marker_internal, marker_external, marker_watershed = SegmentationA.generate_markers(image)
         
