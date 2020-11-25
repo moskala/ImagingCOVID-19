@@ -104,43 +104,41 @@ class RootWidget(FloatLayout):
 
     def lung_segment_binary(self):
 
-        if self.image_object.file_type != ImageType.DCM:
-            print("This method is only for dicom files for now.")
-            return
-        image_folder = self.image_object.src_folder
-
-        ct_scan = SegmentationB.read_ct_scan(image_folder)
-        segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
-
         try:
+            if self.image_object.file_type != ImageType.DCM:
+                print("This method is only for dicom files for now.")
+                return
+            image_folder = self.image_object.src_folder
+
+            ct_scan = SegmentationB.read_ct_scan(image_folder)
+            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
+
             plt.figure()
             plt.imshow(segmented_ct_scan, cmap='gray')
             plt.axis('off')
             plt.show()
-        except:
-            print("can't show plot")
-            print(segmented_ct_scan)
+        except Exception as ex:
+            print(ex)
 
     def lung_segment_watershed(self):
 
-        if self.image_object.file_type != ImageType.DCM:
-            print("This method is only for dicom files for now.")
-            return
-
-        image_folder = self.image_object.src_folder
-        slices = SegmentationA.load_scan(image_folder)
-        arr = SegmentationA.get_pixels_hu(slices)
-        test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-            test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
-
         try:
+            if self.image_object.file_type != ImageType.DCM:
+                print("This method is only for dicom files for now.")
+                return
+
+            image_folder = self.image_object.src_folder
+            slices = SegmentationA.load_scan(image_folder)
+            arr = SegmentationA.get_pixels_hu(slices)
+            test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
+                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[0])
+
             plt.figure()
             plt.imshow(test_segmented, cmap='gray')
             plt.axis('off')
             plt.show()
-        except:
-            print("can't show plot")
-            print(test_segmented)
+        except Exception as ex:
+            print(ex)
 
     def show_load(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
