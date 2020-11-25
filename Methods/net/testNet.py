@@ -1,4 +1,4 @@
-from model import *
+from net.model import *
 import torch
 from PIL import Image
 from torchvision import transforms
@@ -51,7 +51,7 @@ class Net:
 # testImage(r"C:\Users\Maya\studia\4rok\inz\covidSeg\png\3.jpg")
 
 #C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\data\SARS-Cov-2\non-COVID
-Net.testImage(r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\data\SARS-Cov-2\non-COVID\Non-Covid (70).png",r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth")
+# Net.testImage(r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\data\SARS-Cov-2\non-COVID\Non-Covid (70).png",r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth")
 
 # dataset = ['../data/COVID-CT',
 #            '../data/SARS-Cov-2'

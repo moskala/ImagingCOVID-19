@@ -98,7 +98,7 @@ class RootWidget(FloatLayout):
     def neural_network(self):
 
         if self.image_object.file_type == ImageType.JPG or self.image_object.file_type == ImageType.PNG:
-            self.net_label.text = Net.testImage(self.image_path, MODEL_PATH)
+            self.net_label.text = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
         else:
             self.net_label.text = "Network accepts only jpg or png files!"
 
@@ -108,7 +108,7 @@ class RootWidget(FloatLayout):
             print("This method is only for dicom files for now.")
             return
         image_folder = self.image_object.src_folder
-        print(self.image_folder)
+
         ct_scan = SegmentationB.read_ct_scan(image_folder)
         segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, 0)
 
