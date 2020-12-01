@@ -1,3 +1,6 @@
+#:import path pathlib
+# it means: import pathlib as path
+
 RootWidget:
     id: root_widget
     plot: plot.__self__
@@ -100,7 +103,7 @@ RootWidget:
         orientation: "vertical"
         FileChooserListView:
             id: filechooser
-            path: r"C:\Users\Maya\studia\4rok\inz\covidSeg"
+            path: str(path.Path().resolve().parent.parent / "images_data")
 
         BoxLayout:
             size_hint_y: None
@@ -122,6 +125,7 @@ RootWidget:
         FileChooserListView:
             id: filechooser
             on_selection: text_input.text = self.selection and self.selection[0] or ''
+            path: str(path.Path().resolve().parent.parent / "images_data")
 
         TextInput:
             id: text_input

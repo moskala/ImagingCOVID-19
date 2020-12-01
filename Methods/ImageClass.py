@@ -11,6 +11,9 @@ from enum import Enum
 
 
 class ImageType(Enum):
+    """
+    Enum type for representing image format.
+    """
     DCM = 0
     NIFTI = 1
     JPG = 2
@@ -18,14 +21,22 @@ class ImageType(Enum):
 
 
 class ImageObject(object):
-    
+    """
+    Base class for representing image object and performing methods dedicated for every image type.
+    """
+    # Path to source folder which stores file
     src_folder = None
+    # Filename with extension
     src_filename = None
 
+    # Type of image file specified by enum ImageType
     file_type = None
-    
+
+    # Numpy array of pixel data for image
     pixel_array = None
+    # Number of current layer of image
     current_slice_number = 0
+    # Image object depending on image type
     image_object = None
     
     def __init__(self, src_folder, filename):
@@ -36,20 +47,33 @@ class ImageObject(object):
         self.total_slice_number = 0
     
     def save_anonymized_file(self, filename, destination_folder):
+        """ Method saves current image to destination_folder as filename. """
         pass
     
     def get_current_slice(self):
+        """ Method returns array containing pixel data for current image. """
         pass
 
     def get_next_slice(self, value):
+        """
+        Method load next slice (for dicom or nifti images)
+        and returns array containing pixel data for given slice.
+        """
         pass
 
     def get_file_path(self):
+        """
+        Methods returns path to image file as string.
+        """
         return str(Path(self.src_folder) / self.src_filename)
 
 
 class DicomImage(ImageObject):
-    
+    """
+    Class for representing dicom image object.
+    """
+
+    # List containing paths to all dicom images in source folder
     slices_path_list = []
     
     def __init__(self, folder, filename):
@@ -93,6 +117,9 @@ class DicomImage(ImageObject):
         
 
 class NiftiImage(ImageObject):
+    """
+    Class for representing nifti1 image object.
+    """
     
     def __init__(self, folder, filename):
         
@@ -128,6 +155,9 @@ class NiftiImage(ImageObject):
 
 
 class JpgImage(ImageObject):
+    """
+    Class for representing jpg image object.
+    """
     
     def __init__(self, folder, filename):
         
@@ -156,6 +186,9 @@ class JpgImage(ImageObject):
 
 
 class PngImage(ImageObject):
+    """
+    Class for representing png image object.
+    """
     
     def __init__(self, folder, filename):
         

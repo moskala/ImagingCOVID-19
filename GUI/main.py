@@ -30,8 +30,8 @@ from net.testNet import Net
 
 
 MY_FOLDER = Path()
-MODEL_PATH = r"C:\Users\Maya\studia\4rok\inz\ai\Contrastive-COVIDNet\code\saved\best_checkpoint.pth"
-GUI_FOLDER = r"C:\Users\Maya\studia\4rok\inz\repo\ImagingCOVID-19\GUI"
+MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
+GUI_FOLDER = str(Path().resolve())
 START_IMAGE = "sample_image.jpg"
 
 
