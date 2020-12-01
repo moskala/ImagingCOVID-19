@@ -106,7 +106,9 @@ class DicomImage(ImageObject):
         if self.image_object is None:
             raise TypeError("Error occurred during loading data.")
         self.pixel_array = self.image_object.pixel_array
-        self.slices_path_list = list(Path(self.src_folder).iterdir())
+        # Get filenames of all dicom files in source folder
+        self.slices_path_list = [elem for elem in Path(self.src_folder).iterdir()
+                                 if elem.is_file() and elem.suffix[1:] in self.file_extensions]
         self.total_slice_number = len(self.slices_path_list)
     
     def save_anonymized_file(self, filename, destination_folder):
