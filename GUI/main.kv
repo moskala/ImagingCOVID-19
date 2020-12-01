@@ -101,7 +101,7 @@ RootWidget:
         size: root.size
         pos: root.pos
         orientation: "vertical"
-        FileChooserListView:
+        FileChooserIconView:
             id: filechooser
             path: str(path.Path().resolve().parent.parent / "images_data")
 
@@ -122,7 +122,7 @@ RootWidget:
         size: root.size
         pos: root.pos
         orientation: "vertical"
-        FileChooserListView:
+        FileChooserIconView:
             id: filechooser
             on_selection: text_input.text = self.selection and self.selection[0] or ''
             path: str(path.Path().resolve().parent.parent / "images_data")
