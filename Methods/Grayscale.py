@@ -1,11 +1,14 @@
 """
 Module Grayscale contains functions for converting images to grayscale.
+# Converting dicom to jpg issue:
+# https://github.com/pydicom/pydicom/issues/352
 """
 
 import numpy as np
 from pathlib import Path
 import pydicom
 from pydicom.pixel_data_handlers.util import apply_modality_lut
+import PixelArrays
 
 
 def convert_array_to_grayscale(array):
@@ -25,6 +28,17 @@ def convert_array_to_grayscale(array):
     array_gray = np.uint8(array)
 
     return array_gray
+
+
+def convert_rgb_to_grayscale(array):
+
+    if len(array.shape) == 3:
+        rgb_weights = [0.2989, 0.5870, 0.1140]
+        array_gray = np.dot(array[..., :3], rgb_weights)
+        array_gray = np.uint8(array_gray)
+        return array_gray
+    else:
+        return array
 
 
 def get_grayscale_from_FileDataset(dicomfile):
@@ -60,3 +74,22 @@ def get_grayscale_from_dicom(filename: str, src_folder: str):
 
     return gray_array
 
+
+def get_grayscale_from_jpg_png(filename: str, src_solder: str):
+    """
+
+    :param filename:
+    :param src_solder:
+    :return:
+    """
+    path = Path(src_solder) / filename
+    pixel_array = PixelArrays.get_pixel_array_jpg_png(str(path))
+    gray_array = convert_rgb_to_grayscale(pixel_array)
+    return gray_array
+
+
+def get_grayscale_from_nifti():
+
+
+    img = nib.load('my_image.nii')
+    print(img.dataobj.slope, img.dataobj.inter)
