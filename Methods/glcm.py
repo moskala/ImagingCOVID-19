@@ -1,13 +1,15 @@
 from skimage.feature import texture as ft
 import numpy as np
-import sys,os
+import sys,os,time
 from ImageClass import *
 from matplotlib import pyplot as plt
 from sklearn import svm
 from pathlib import Path
+from sklearn.model_selection import cross_val_score
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
-from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
+
+from LungSegmentation.LungSegmentation_MethodKMeans_AllTypes import *
 pi = np.pi
 class Matrix:
     image_array = None
@@ -38,6 +40,9 @@ class Model:
     def PredictModel(self,data):
         return self.model.predict(data)
 
+    def CrossValidate(self,data,labels,cv=5):
+        return cross_val_score(self.model,data,labels,cv=cv)
+
 class ImageEnsemble:
     folders = None
     dicoms = None
@@ -60,7 +65,7 @@ class ImageEnsemble:
         for dcm in self.dicoms:
             patient=[]
             for slc in dcm:
-                patient.append(SegmentationB.get_segmented_lungs(slc.get_current_slice()))
+                patient.append(make_lungmask(slc.get_current_slice()))
             self.lungs.append(patient)
         
 
@@ -83,13 +88,20 @@ class ImageEnsemble:
     
 
 
-
-e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\wloch1"])
+stime = time.time()
+e = ImageEnsemble(os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs"))
 e.MakeDicoms()
 e.GetLungs()
 e.GetMatrices()
 e.GetProps()
-print(e.props[0][65])
+print(e.props)
+print('Making matrices - execution time: ',time.time()-stime)
+# print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
+
+labels = ['covid','covid','covid','covid','covid','normal','normal','normal','normal','normal']
+model = Model()
+print(model.CrossValidate(e.props,labels))
+print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
 
 # plt.imshow(l[0][65],cmap='gray')
 # plt.show()

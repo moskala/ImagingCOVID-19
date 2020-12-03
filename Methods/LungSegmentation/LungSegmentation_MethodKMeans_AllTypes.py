@@ -19,7 +19,7 @@ from sklearn.cluster import KMeans
 # import PixelArrays
 from pathlib import Path
 import pylibjpeg
-import sys
+import sys,os
 
 sys.path.append(str(Path().resolve().parent))
 import Grayscale as gray
@@ -150,8 +150,30 @@ def make_lungmask(img, display=False):
 # print("Przyklad dicom Italy")
 # image = gray.get_grayscale_from_dicom("Italy_case010073.dcm", r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\wloch1")
 # image = gray.get_grayscale_from_dicom("ser204img00070.dcm", r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\chin")
-image = gray.get_grayscale_from_dicom("1-070.dcm", r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\zdrowy2\11-24-2003-RTRCCTTHORAX8FHighCONTRAST Adult-11396\0.000000-CTRespCT  3.0  B30f  50 Ex-14473")
-#dcm = DicomImage(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\chin",r"ser204img00070.dcm")
-mask = make_lungmask(image)
-plt.imshow(mask,cmap='gray')
-plt.show()
+# image = gray.get_grayscale_from_dicom("1-070.dcm", r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\zdrowy2\11-24-2003-RTRCCTTHORAX8FHighCONTRAST Adult-11396\0.000000-CTRespCT  3.0  B30f  50 Ex-14473")
+#c1
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c1"
+#z1
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z1"
+#c2
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c2"
+#z2
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z2"
+#c3
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c3"
+#z3
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z3"
+#c4
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c4"
+#z4
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z4"
+#c5
+#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c5"
+#z5
+# folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z5"
+# for slc in os.listdir(folder):
+#     image = gray.get_grayscale_from_dicom(slc, folder)
+#     #dcm = DicomImage(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\chin",r"ser204img00070.dcm")
+#     mask = make_lungmask(image)
+#     plt.imshow(mask,cmap='gray')
+#     plt.show()
