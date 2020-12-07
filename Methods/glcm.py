@@ -1,3 +1,4 @@
+from joblib import dump, load
 from skimage.feature import texture as ft
 import numpy as np
 import sys,os,time
@@ -22,12 +23,28 @@ class Matrix:
     def GetMatrixPatch(self,patch,distances,angles):
         return ft.greycomatrix(patch,distances,angles)
 
-    def GetProps(self):
+    def GetPropsFromMatrix(self):
+        # mtrx = self.GetMatrix()
+        # return [ft.greycoprops(mtrx,prop='contrast'),
+        #         ft.greycoprops(mtrx,prop='correlation'),
+        #         ft.greycoprops(mtrx,prop='energy'),
+        #         ft.greycoprops(mtrx,prop='homogeneity')]
         mtrx = self.GetMatrix()
-        return [ft.greycoprops(mtrx,prop='contrast'),
-                ft.greycoprops(mtrx,prop='correlation'),
-                ft.greycoprops(mtrx,prop='energy'),
-                ft.greycoprops(mtrx,prop='homogeneity')]
+        props = []
+        for c in list(ft.greycoprops(mtrx,prop='contrast')):
+            for i in c:
+                props.append(i) 
+        for c in list(ft.greycoprops(mtrx,prop='correlation')):
+            for i in c:
+                props.append(i) 
+        for c in list(ft.greycoprops(mtrx,prop='energy')):
+            for i in c:
+                props.append(i)  
+        for c in list(ft.greycoprops(mtrx,prop='homogeneity')):
+            for i in c:
+                props.append(i) 
+        #print("przykladowy kontrast dla 1 macierzy: ",ft.greycoprops(mtrx,prop='contrast'))
+        return props
 
 class Model:
     model = None
@@ -42,6 +59,14 @@ class Model:
 
     def CrossValidate(self,data,labels,cv=5):
         return cross_val_score(self.model,data,labels,cv=cv)
+        
+    def GetLabels(self):
+        labels = []
+        for i in range(50):
+            labels.append('covid')
+        for i in range(50):
+            labels.append('normal')
+        return labels
 
 class ImageEnsemble:
     folders = None
@@ -49,60 +74,65 @@ class ImageEnsemble:
     lungs = None
     matrices = None
     props = None
-    def __init__(self,folders):
-        self.folders = folders
+    def __init__(self,folders=None,gotFolders=False):
+        if(gotFolders):
+            self.folders = folders
     
-    def MakeDicoms(self):
-        self.dicoms=[]
-        for folder in self.folders:
-            patient=[]
-            for fl in os.listdir(folder):
-                patient.append(DicomImage(folder,fl))
-            self.dicoms.append(patient)
+    def MakeDicoms(self,single_folder=None,single_file=None):
+        # self.dicoms=[]
+        # for folder in self.folders:
+        #     patient=[]
+        #     for fl in os.listdir(folder):
+        #         patient.append(DicomImage(folder,fl))
+        #     self.dicoms.append(patient)
+        if(self.folders is None and single_file is not None):
+            self.dicoms=[]
+            self.dicoms.append(DicomImage(single_folder,single_file))
+        else:
+            self.dicoms=[]
+            for folder in self.folders:
+                for fl in os.listdir(folder):
+                    self.dicoms.append(DicomImage(folder,fl))
 
     def GetLungs(self):
         self.lungs = []
         for dcm in self.dicoms:
-            patient=[]
-            for slc in dcm:
-                patient.append(make_lungmask(slc.get_current_slice()))
-            self.lungs.append(patient)
+            self.lungs.append(make_lungmask(dcm.get_current_slice()))
         
 
     def GetMatrices(self):
         self.matrices=[]
-        for patient in self.lungs:
-            arrays=[]
-            for array in patient:
-                arrays.append(Matrix(array))
-            self.matrices.append(arrays)
+        for lung in self.lungs:
+            self.matrices.append(Matrix(lung))
     
     def GetProps(self):
         self.props=[]
-        for arrays in self.matrices:
-            pp=[]
-            for array in arrays:
-                pp.append(array.GetProps())
-            self.props.append(pp)
+        for array in self.matrices:
+            self.props.append(array.GetPropsFromMatrix())
+            
 
     
 
 
-stime = time.time()
-e = ImageEnsemble(os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs"))
-e.MakeDicoms()
-e.GetLungs()
-e.GetMatrices()
-e.GetProps()
-print(e.props)
-print('Making matrices - execution time: ',time.time()-stime)
-# print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
+# stime = time.time()
+# e = ImageEnsemble(os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs"))
+# e.MakeDicoms()
+# e.GetLungs()
+# e.GetMatrices()
+# e.GetProps()
+# print(len(e.props))
+# print(len(e.props[0]))
+# print(len(e.props[1]))
+# print(e.props[0])
+# print('Making matrices - execution time: ',time.time()-stime)
+# # print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
 
-labels = ['covid','covid','covid','covid','covid','normal','normal','normal','normal','normal']
-model = Model()
-print(model.CrossValidate(e.props,labels))
-print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
+# model = Model()
+# labels = model.GetLabels()
+# model.FitModel(e.props,labels)
+# print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
 
+# dump(model.model, 'glcmModelFitFinal.joblib') 
 # plt.imshow(l[0][65],cmap='gray')
 # plt.show()
 

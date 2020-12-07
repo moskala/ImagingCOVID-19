@@ -168,9 +168,9 @@ def make_lungmask(img, display=False):
 #z4
 #folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z4"
 #c5
-#folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c5"
-#z5
-# folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z5"
+# folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\c5"
+# #z5
+# # folder = r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs\z5"
 # for slc in os.listdir(folder):
 #     image = gray.get_grayscale_from_dicom(slc, folder)
 #     #dcm = DicomImage(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\chin",r"ser204img00070.dcm")
