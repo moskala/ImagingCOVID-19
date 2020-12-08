@@ -9,7 +9,7 @@ from pathlib import Path
 import pydicom
 from pydicom.pixel_data_handlers.util import apply_modality_lut
 import PixelArrays
-
+import pylibjpeg
 
 def convert_array_to_grayscale(array):
     """
