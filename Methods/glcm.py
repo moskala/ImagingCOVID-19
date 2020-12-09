@@ -59,8 +59,9 @@ class Model:
 
     def CrossValidate(self,data,labels,cv=5):
         return cross_val_score(self.model,data,labels,cv=cv)
-        
-    def GetLabels(self):
+
+    @staticmethod    
+    def GetLabels():
         labels = []
         for i in range(50):
             labels.append('covid')
