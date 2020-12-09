@@ -7,6 +7,7 @@ from skimage import measure
 from sklearn.cluster import KMeans
 from pathlib import Path
 import sys
+import scipy.ndimage as ndimage
 
 sys.path.append(str(Path().resolve().parent))
 import Grayscale as gray
@@ -116,10 +117,13 @@ def make_lungmask(img, display=False):
     mask1 = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
     # Improved due to covid changes
     mask2 = morphology.area_closing(mask1, connectivity=2)
+
     # Cropped image and mask
-    segmented, crop_mask = crop_mask_image(img, mask2)
-    # Segmented image and final mask
-    final_segment, final_mask = apply_convex_polygon(segmented, crop_mask)
+    crop_img, crop_mask = crop_mask_image(img, mask2)
+    # Find contours and fill mask
+    filled_mask = find_contours(crop_mask)
+    # Find convex polygon and change mask
+    final_segment, final_mask = apply_convex_polygon(crop_img, filled_mask)
 
     if display:
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
@@ -144,17 +148,36 @@ def make_lungmask(img, display=False):
     return final_segment
 
 
+def find_contours(mask):
+    row_size = mask.shape[0]
+    col_size = mask.shape[1]
+
+    # Create an empty image to store the masked array
+    mask_spline = np.ndarray(mask.shape, dtype=np.int8)
+    mask_spline[:] = 0
+
+    contours = measure.find_contours(mask, 0)
+
+    contours = list(filter(lambda contour: len(contour[:, 1]) > 100, contours))
+
+    for contour in contours:
+        mask_spline[np.round(contour[:, 0]).astype('int'), np.round(contour[:, 1]).astype('int')] = 1
+        mask_spline = ndimage.binary_fill_holes(mask_spline)
+
+    return mask_spline
+
+
 # Przykładowe wywołania z rysowaniem
 # print("Przyklad dicom Italy")
 # image = gray.get_grayscale_from_dicom("Italy_case010060.dcm",
 #                                       str(Path().resolve().parent.parent.parent / "images_data" / "pacjent_dcm" ))
 # mask = make_lungmask(image, True)
-
+#
 # print("Przyklad jpg")
 # image = gray.get_grayscale_from_jpg_png("covid5.jpg",
 #                                         str(Path().resolve().parent.parent.parent / "images_data"))
 # mask = make_lungmask(image, True)
-
+#
 # print("Przyklad dicom China")
 # image = gray.get_grayscale_from_dicom("ser203img00109.dcm",
 #                                       str(Path().resolve().parent.parent.parent / "images_data"))
