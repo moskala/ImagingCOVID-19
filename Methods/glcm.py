@@ -115,27 +115,28 @@ class ImageEnsemble:
     
 
 
-# stime = time.time()
-# e = ImageEnsemble(os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs"))
-# e.MakeDicoms()
-# e.GetLungs()
-# e.GetMatrices()
-# e.GetProps()
-# print(len(e.props))
-# print(len(e.props[0]))
-# print(len(e.props[1]))
-# print(e.props[0])
-# print('Making matrices - execution time: ',time.time()-stime)
-# # print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
+stime = time.time()
+flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")]
+e = ImageEnsemble(flds,gotFolders=True)
+e.MakeDicoms()
+e.GetLungs()
+e.GetMatrices()
+e.GetProps()
+print(len(e.props))
+print(len(e.props[0]))
+print(len(e.props[1]))
+print(e.props[0])
+print('Making matrices - execution time: ',time.time()-stime)
+# print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
 
-# model = Model()
-# labels = model.GetLabels()
-# model.FitModel(e.props,labels)
-# print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
+model = Model()
+labels = model.GetLabels()
+model.FitModel(e.props,labels)
+print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
 
-# dump(model.model, 'glcmModelFitFinal.joblib') 
-# plt.imshow(l[0][65],cmap='gray')
-# plt.show()
+dump(model.model, 'glcmModelFitFinal.joblib') 
+plt.imshow(l[0][65],cmap='gray')
+plt.show()
 
 
 

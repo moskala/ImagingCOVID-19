@@ -112,7 +112,6 @@ def make_lungmask(img, display=False):
     for N in good_labels:
         mask = mask + np.where(labels == N, 1, 0)
 
->>>>>>> am/grayscale
     # Oryginal mask
     mask1 = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
     # Improved due to covid changes
@@ -161,4 +160,4 @@ def make_lungmask(img, display=False):
 # image = gray.get_grayscale_from_dicom("ser203img00109.dcm",
 #                                       str(Path().resolve().parent.parent.parent / "images_data"))
 # mask = make_lungmask(image, True)
->>>>>>> am/grayscale
+

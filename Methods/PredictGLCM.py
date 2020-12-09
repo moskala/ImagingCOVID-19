@@ -21,7 +21,7 @@ def PredictGLCM(folder,file,model_path):
     e.GetLungs()
     e.GetMatrices()
     e.GetProps()
-    return model.predict(e.props)
+    return model.predict(e.props[0].reshape(1,-1))
 
 
 
