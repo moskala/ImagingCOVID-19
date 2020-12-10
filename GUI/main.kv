@@ -86,6 +86,14 @@ RootWidget:
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.alexnet()
+            Button:
+                id: button_result
+                text: 'Show Result'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.showResultPopUp()
             Label:
                 id: net_result
                 text: ''
@@ -167,3 +175,33 @@ RootWidget:
             Button:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
+
+<ResultPopup@Popup>:
+    id: result_popup
+    auto_dismiss: False
+    title: 'Result popup'
+    size_hint: (.8, .8)
+    BoxLayout:
+        orientation: 'vertical'
+        GridLayout:
+            cols: 2
+            rows: 2
+            Label
+                text: 'Hello'
+                size_hint_x: None
+            Label
+                text: 'world'
+            Label
+                text: 'Hello'
+                size_hint_x: None
+            Label
+                text: 'world'
+        BoxLayout:
+            size_hint_max_y: 80
+            Button:
+                text: 'Generate report'
+                disabled: True
+                on_release: result_popup.dismiss()
+            Button:
+                text: 'Close me'
+                on_release: result_popup.dismiss()

@@ -16,6 +16,7 @@ import pydicom
 from pathlib import Path
 import sys
 import os
+from kivy.factory import Factory
 
 # matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
@@ -252,6 +253,13 @@ class RootWidget(FloatLayout):
         else:
             print('File not saved')
         self.dismiss_popup()
+
+    def showResultPopUp(self):
+        Factory.ResultPopup().open()
+
+    # def dismissPopUp(self):
+    #     print('Popup', instance, 'is being dismissed but is prevented!')
+    #     return True
 
 
 class Main(App):
