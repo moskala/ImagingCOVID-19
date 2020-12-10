@@ -28,10 +28,16 @@ import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as segmentation
 import Show_matplotlib_all as show
 from ImageClass import *
 from net.testNet import Net
+from PredictGLCM import *
+from PredictAlexnet import *
 
 
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
+MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
+MODEL_ALEX_EXTRACT_PATH = str(Path().resolve().parent.parent / "models" / "featureExtraction.joblib")
+MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCAFeatures.joblib")
+MODEL_ALEX_SVM_PATH = str(Path().resolve().parent.parent / "models" / "alexnetModel.joblib")
 GUI_FOLDER = str(Path().resolve())
 START_IMAGE = "sample_image.jpg"
 
@@ -114,6 +120,22 @@ class RootWidget(FloatLayout):
             self.net_label.text = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
         else:
             self.net_label.text = "Network accepts only jpg or png files!"
+
+    def glcm(self):
+        prediction = PredictGLCM(self.image_object.src_folder,self.image_object.src_filename, MODEL_GLCM_PATH)
+        print(prediction)
+        if(prediction[0]=='normal'):
+            self.net_label.text = "Normal"
+        else:
+            self.net_label.text = "COVID-19"
+    
+    def alexnet(self):
+        prediction = PredictAlex(self.image_object.src_folder,self.image_object.src_filename, MODEL_ALEX_EXTRACT_PATH,MODEL_ALEX_DATA_PATH,MODEL_ALEX_SVM_PATH)
+        print(prediction)
+        if(prediction[0]=='normal'):
+            self.net_label.text = "Normal"
+        else:
+            self.net_label.text = "COVID-19"
 
     def lung_segment_binary(self):
         """This function runs binary lung segmentation"""

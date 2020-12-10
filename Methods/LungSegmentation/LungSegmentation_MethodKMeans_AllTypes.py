@@ -186,3 +186,4 @@ def get_segmented_lungs(filename, folder):
 # image = gray.get_grayscale_from_dicom("ser203img00109.dcm",
 #                                       str(Path().resolve().parent.parent.parent / "images_data"))
 # mask = make_lungmask(image, True)
+
