@@ -24,6 +24,7 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
+import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as segmentation
 import Show_matplotlib_all as show
 from ImageClass import *
 from net.testNet import Net
@@ -167,6 +168,17 @@ class RootWidget(FloatLayout):
                 test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
 
             plt.imshow(test_segmented, cmap='gray')
+            plt.axis('off')
+            plt.show()
+        except Exception as ex:
+            print(ex)
+
+    def lung_segment_kmeans(self):
+        try:
+            img_filename = self.image_object.src_filename
+            img_folder = self.image_object.src_folder
+            segment = segmentation.get_segmented_lungs(img_filename, img_folder)
+            plt.imshow(segment, cmap='gray')
             plt.axis('off')
             plt.show()
         except Exception as ex:

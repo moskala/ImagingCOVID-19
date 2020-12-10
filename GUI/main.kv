@@ -47,6 +47,14 @@ RootWidget:
                 valign: 'middle'
                 on_release: root.lung_segment_binary()
             Button:
+                id: button_segmentation_KMeansBinary
+                text: 'Segmentation\nKMeans'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                size_hint_max_y: 50
+                on_release: root.lung_segment_kmeans()
+            Button:
                 id: button_layers
                 text: 'Automatic\nlayer choice'
                 size_hint_max_y: 50
