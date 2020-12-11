@@ -11,6 +11,7 @@ from pydicom.pixel_data_handlers.util import apply_modality_lut
 import PixelArrays
 import pylibjpeg
 
+
 def convert_array_to_grayscale(array):
     """
     Function rescale values of given array between 0-255
@@ -89,7 +90,18 @@ def get_grayscale_from_jpg_png(filename: str, src_solder: str):
 
 
 def get_grayscale_from_nifti():
-
-
+    raise NotImplementedError("Needs to be added")
     img = nib.load('my_image.nii')
     print(img.dataobj.slope, img.dataobj.inter)
+
+
+def get_grayscale_from_jpg_png(array):
+    """
+    Converts jpg and png files to grayscale.
+    :param array:
+    :return:
+    """
+    array = convert_rgb_to_grayscale(array)
+    array = convert_rgb_to_grayscale(array)
+
+    return array
