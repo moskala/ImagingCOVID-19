@@ -19,6 +19,8 @@ import os
 from kivy.factory import Factory
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
 # matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
@@ -287,6 +289,10 @@ class RootWidget(FloatLayout):
         popup = Factory.ResultPopup()
         popup.content.add_widget(grid, index=1, canvas='before')
         popup.open()
+
+    # def __init__(self, *args, **kwargs):
+    #     super(RootWidget, self).__init__(*args, **kwargs)
+
 
 
 class Main(App):

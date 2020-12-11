@@ -9,6 +9,7 @@ RootWidget:
     slider: slider.__self__
     net_label: net_result.__self__
     slices_info: slices_info.__self__
+    # dd_btn: btn_dropout
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
@@ -98,10 +99,6 @@ RootWidget:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
-            Label:
-                id: slices_info
-                text: 'Slice: 1/1'
-                size_hint_max_y: 50
 
         BoxLayout:
             orientation: 'vertical'
@@ -124,8 +121,14 @@ RootWidget:
                     id: button_next
                     size_hint_max_x: 40
                     on_release: root.load_next_slice(1)
+            Label:
+                id: slices_info
+                text: 'Slice: 1/1'
+                size_hint_max_y: 50
+                size: self.size
             MyFigure:
                 id: plot
+
 
 
 <LoadDialog>:
@@ -193,3 +196,19 @@ RootWidget:
             Button:
                 text: 'Close me'
                 on_release: result_popup.dismiss()
+
+<CustomDropDown>:
+    Button:
+        text: 'My first Item'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item1')
+    Label:
+        text: 'Unselectable item'
+        size_hint_y: None
+        height: 44
+    Button:
+        text: 'My second Item'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item2')
