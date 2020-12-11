@@ -93,7 +93,7 @@ RootWidget:
                 text_size: self.size
                 halign: 'center'
                 valign: 'middle'
-                on_release: root.showResultPopUp()
+                on_release: root.show_result_popup()
             Label:
                 id: net_result
                 text: ''
@@ -183,21 +183,9 @@ RootWidget:
     size_hint: (.8, .8)
     BoxLayout:
         orientation: 'vertical'
-        GridLayout:
-            cols: 2
-            rows: 2
-            Label
-                text: 'Hello'
-                size_hint_x: None
-            Label
-                text: 'world'
-            Label
-                text: 'Hello'
-                size_hint_x: None
-            Label
-                text: 'world'
+        padding: [5, 5, 5, 5]
         BoxLayout:
-            size_hint_max_y: 80
+            size_hint_max_y: 50
             Button:
                 text: 'Generate report'
                 disabled: True

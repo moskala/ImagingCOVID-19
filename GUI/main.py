@@ -17,7 +17,8 @@ from pathlib import Path
 import sys
 import os
 from kivy.factory import Factory
-
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 # matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
@@ -74,7 +75,8 @@ class RootWidget(FloatLayout):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
-    slider_val = ObjectProperty(None)
+    # slider_val = ObjectProperty(None)
+    result_grid = ObjectProperty(None)
 
     plot = None
     result = None
@@ -176,9 +178,7 @@ class RootWidget(FloatLayout):
 
     def lung_segment_kmeans(self):
         try:
-            img_filename = self.image_object.src_filename
-            img_folder = self.image_object.src_folder
-            segment = segmentation.get_segmented_lungs(img_filename, img_folder)
+            segment = self.image_object.get_segmented_lungs()
             plt.imshow(segment, cmap='gray')
             plt.axis('off')
             plt.show()
@@ -200,7 +200,7 @@ class RootWidget(FloatLayout):
         self._popup.open()
 
     def get_file_format(self, filename):
-        """This function decides on the displayd image format"""
+        """This function decides on the displayed image format"""
         if filename.endswith('.dcm'):
             return ImageType.DCM
         elif filename.endswith('.nii'):
@@ -254,12 +254,23 @@ class RootWidget(FloatLayout):
             print('File not saved')
         self.dismiss_popup()
 
-    def showResultPopUp(self):
-        Factory.ResultPopup().open()
-
-    # def dismissPopUp(self):
-    #     print('Popup', instance, 'is being dismissed but is prevented!')
-    #     return True
+    def show_result_popup(self):
+        properties = self.image_object.get_info()
+        grid = GridLayout(cols=2,
+                          row_force_default=True,
+                          row_default_height=40,
+                          padding=[2, 2, 2, 2],
+                          spacing=[10, 5])
+        for key, value in properties.items():
+            prop_name = Label(text=(key+":"), size_hint_x=None, width=200, halign='right')
+            prop_value = Label(text=str(value))
+            prop_name.bind(size=prop_name.setter('text_size'))
+            prop_value.bind(size=prop_value.setter('text_size'))
+            grid.add_widget(prop_name)
+            grid.add_widget(prop_value)
+        popup = Factory.ResultPopup()
+        popup.content.add_widget(grid, index=1, canvas='before')
+        popup.open()
 
 
 class Main(App):
