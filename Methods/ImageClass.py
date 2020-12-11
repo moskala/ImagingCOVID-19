@@ -8,6 +8,12 @@ import numpy as np
 
 from PIL import Image  
 from enum import Enum
+import CTWindowing as window
+import Grayscale as gray
+import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as sgKmeans
+import LungSegmentation.LungSegmentation_MethodB_dicom as sgBinary
+import LungSegmentation.LungSegmentation_MethodA_dicom as sgWatershed
+
 
 
 class ImageType(Enum):
@@ -18,6 +24,9 @@ class ImageType(Enum):
     NIFTI = 1
     JPG = 2
     PNG = 3
+
+    def __str__(self):
+        return self.name
 
 
 class ImageObject(object):
@@ -87,6 +96,32 @@ class ImageObject(object):
 
         return filename
 
+    def check_ct_window(self):
+        ct_window, array = window.check_array_window_or_cut(self.pixel_array)
+        return ct_window
+
+    def get_info(self):
+        array = self.pixel_array
+        height = array.shape[0]
+        width = array.shape[0]
+        ct_window = self.check_ct_window()
+        properties = {
+            "Filename": self.src_filename,
+            "File type": self.file_type,
+            "Height": height,
+            "Width": width,
+            "CT Window Type": ct_window
+        }
+
+        return properties
+
+    def get_segmented_lungs(self):
+        """
+        Methods makes lung segmentations.
+        :return: numpy array with segmented area of lungs
+        """
+        raise NotImplementedError("Method should be overrided in derived classes.")
+
 
 class DicomImage(ImageObject):
     """
@@ -140,7 +175,16 @@ class DicomImage(ImageObject):
         
         self.image_object = anonym.get_anonymized_dicom(self.src_filename, self.src_folder)
         self.pixel_array = self.image_object.pixel_array
-        return self.pixel_array 
+        return self.pixel_array
+
+    def check_ct_window(self):
+        array = window.check_dicom_lut(self.src_filename, self.src_folder)
+        ct_window, array = window.check_array_window_or_cut(array)
+        return ct_window
+
+    def get_segmented_lungs(self):
+        gray_img = gray.get_grayscale_from_FileDataset(self.image_object)
+        return sgKmeans.make_lungmask(gray_img, False)
         
 
 class NiftiImage(ImageObject):
@@ -185,6 +229,9 @@ class NiftiImage(ImageObject):
             
         return self.pixel_array[self.current_slice_number]
 
+    def get_segmented_lungs(self):
+        raise TypeError("Nifti images not supported yet")
+
 
 class JpgImage(ImageObject):
     """
@@ -220,6 +267,10 @@ class JpgImage(ImageObject):
     
     def get_next_slice(self, value):
         return self.pixel_array
+
+    def get_segmented_lungs(self):
+        gray_img = gray.get_grayscale_from_jpg_png(self.pixel_array)
+        return sgKmeans.make_lungmask(gray_img, False)
 
 
 class PngImage(ImageObject):
@@ -257,4 +308,6 @@ class PngImage(ImageObject):
     def get_next_slice(self, value):
         return self.pixel_array
 
-
+    def get_segmented_lungs(self):
+        gray_img = gray.get_grayscale_from_jpg_png(self.pixel_array)
+        return sgKmeans.make_lungmask(gray_img, False)

@@ -123,8 +123,10 @@ def make_lungmask(img, display=False):
     # Find contours and fill mask
     filled_mask = find_contours(crop_mask)
     # Find convex polygon and change mask
-    final_segment, final_mask = apply_convex_polygon(crop_img, filled_mask)
+    # final_segment, final_mask = apply_convex_polygon(crop_img, filled_mask)
     # print("Original shape: {0} Cropped_shape: {1}".format(img.shape, final_segment.shape))
+    final_mask = filled_mask
+    final_segment = final_mask*crop_img
     if display:
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
         ax1.set_title("Original")
@@ -149,8 +151,6 @@ def make_lungmask(img, display=False):
 
 
 def find_contours(mask):
-    row_size = mask.shape[0]
-    col_size = mask.shape[1]
 
     # Create an empty image to store the masked array
     mask_spline = np.ndarray(mask.shape, dtype=np.int8)
@@ -166,10 +166,6 @@ def find_contours(mask):
 
     return mask_spline
 
-
-def get_segmented_lungs(filename, folder):
-    gray_img = gray.get_grayscale_from_dicom(filename, folder)
-    return make_lungmask(gray_img, False)
 
 # Przykładowe wywołania z rysowaniem
 # print("Przyklad dicom Italy")
