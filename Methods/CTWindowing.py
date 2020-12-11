@@ -16,6 +16,16 @@ class CTWindow(Enum):
     BoneWindow = 2
     GrayscaleWindow = 3
 
+    def __str__(self):
+        dictionary = {
+            0: "Soft Tissue Window",
+            1: "Lung Window",
+            2: "Bone Window",
+            3: "Grayscale"
+        }
+
+        return dictionary[self.value]
+
 
 # Przedziały wartości dla poszczególnych typów okna, ważna kolejność!
 intervals = {
@@ -24,7 +34,6 @@ intervals = {
   CTWindow.BoneWindow: (-700, 1300),
   CTWindow.LungWindow: (-1200, 800),
 }
-
 
 def check_array_window(array):
     """Function chcecks in which CT window array values are."""
@@ -60,7 +69,6 @@ def check_array_window_or_cut(array):
     if ct_window is None or ct_window is CTWindow.BoneWindow:
         array = cut_to_lung_window(array)
         ct_window = check_array_window(array)
-    
     return ct_window, array
 
 
@@ -77,6 +85,7 @@ def check_dicom_lut(file, folder):
 
 
 def check_dicom_lut_windowing(file, folder):
+    raise NotImplementedError("Needs to be checked")
     path = Path(folder) / file
     # Get dicom file
     dicomfile = pydicom.dcmread(path)
