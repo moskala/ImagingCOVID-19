@@ -32,6 +32,11 @@ def convert_array_to_grayscale(array):
 
 
 def convert_rgb_to_grayscale(array):
+    """
+    Functions gets array with RGB values and coverts them into grayscale.
+    :param array: 3-dim numpy array with RGB values
+    :return: 2-dim numpy array with values in 0-255
+    """
 
     if len(array.shape) == 3:
         rgb_weights = [0.2989, 0.5870, 0.1140]
