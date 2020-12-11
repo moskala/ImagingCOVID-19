@@ -125,20 +125,32 @@ class RootWidget(FloatLayout):
             self.net_label.text = "Network accepts only jpg or png files!"
 
     def glcm(self):
-        prediction = PredictGLCM(self.image_object.src_folder,self.image_object.src_filename, MODEL_GLCM_PATH)
-        print(prediction)
-        if(prediction[0]=='normal'):
-            self.net_label.text = "Normal"
-        else:
-            self.net_label.text = "COVID-19"
+        """Classification using GLCM method."""
+        try:
+            prediction = PredictGLCM(self.image_object.src_folder,self.image_object.src_filename, MODEL_GLCM_PATH)
+            print(prediction)
+            if prediction[0] == 'normal':
+                self.net_label.text = "Normal"
+            else:
+                self.net_label.text = "COVID-19"
+        except Exception as error:
+            print(error)
     
     def alexnet(self):
-        prediction = PredictAlex(self.image_object.src_folder,self.image_object.src_filename, MODEL_ALEX_EXTRACT_PATH,MODEL_ALEX_DATA_PATH,MODEL_ALEX_SVM_PATH)
-        print(prediction)
-        if(prediction[0]=='normal'):
-            self.net_label.text = "Normal"
-        else:
-            self.net_label.text = "COVID-19"
+        """Classification using Alexnet method."""
+        try:
+            prediction = PredictAlex(self.image_object.src_folder,
+                                     self.image_object.src_filename,
+                                     MODEL_ALEX_EXTRACT_PATH,
+                                     MODEL_ALEX_DATA_PATH,
+                                     MODEL_ALEX_SVM_PATH)
+            print(prediction)
+            if prediction[0] == 'normal':
+                self.net_label.text = "Normal"
+            else:
+                self.net_label.text = "COVID-19"
+        except Exception as error:
+            print(error)
 
     def lung_segment_binary(self):
         """This function runs binary lung segmentation"""
@@ -255,6 +267,10 @@ class RootWidget(FloatLayout):
         self.dismiss_popup()
 
     def show_result_popup(self):
+        """
+        Function creates adn show PopUp in application with some data about image.
+        :return: None
+        """
         properties = self.image_object.get_info()
         grid = GridLayout(cols=2,
                           row_force_default=True,
