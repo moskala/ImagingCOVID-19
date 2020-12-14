@@ -5,6 +5,8 @@ from pathlib import Path
 sys.path.append(str(Path().resolve().parent))
 from glcm import *
 
+'''this script tests glcm model prediction for exemplary folder'''
+
 model = load('glcmModelFitFinal.joblib') 
 
 e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"])

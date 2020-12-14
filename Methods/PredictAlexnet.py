@@ -7,6 +7,7 @@ from glcm import *
 from alexnet import Alex
 
 def PredictAlex(folder,fil,modelAlex,features,svm):
+    '''this function is used by gui when button "Alexnet" is clicked'''
     e = ImageEnsemble()
     e.MakeDicoms(folder,fil)
     e.GetLungs()
@@ -17,5 +18,6 @@ def PredictAlex(folder,fil,modelAlex,features,svm):
     newfts.append(testft[0])
     pcafts = alex.DoPCA(newfts)
     model=load(svm)
+    print(pcafts[len(pcafts)-1].reshape(1, -1))
     return model.predict(pcafts[len(pcafts)-1].reshape(1, -1))
     
