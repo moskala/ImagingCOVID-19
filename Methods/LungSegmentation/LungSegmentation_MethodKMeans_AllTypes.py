@@ -141,7 +141,7 @@ def make_lungmask(img, display=False):
         ax4.axis('off')
 
         plt.show()
-
+   
     return final_segment
 
 

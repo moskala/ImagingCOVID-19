@@ -78,6 +78,14 @@ RootWidget:
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.alexnet()
+            Button:
+                id: button_net
+                text: 'Haralick'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.haralick()
             Label:
                 id: net_result
                 text: ''

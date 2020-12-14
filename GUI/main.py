@@ -29,14 +29,20 @@ from ImageClass import *
 from net.testNet import Net
 from PredictGLCM import *
 from PredictAlexnet import *
+from PredictHaralick import *
+from joblib import load
 
 
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
 MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
 MODEL_ALEX_EXTRACT_PATH = str(Path().resolve().parent.parent / "models" / "featureExtraction.joblib")
-MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCAFeatures.joblib")
-MODEL_ALEX_SVM_PATH = str(Path().resolve().parent.parent / "models" / "alexnetModel.joblib")
+# MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
+MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCAFeatures50.joblib")
+# MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
+MODEL_ALEX_SVM_PATH = str(Path().resolve().parent.parent / "models" / "alexnetModel50.joblib")
+# MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
+MODEL_HARALICK_PATH = str(Path().resolve().parent.parent / "models" / "haralickSVM.joblib")
 GUI_FOLDER = str(Path().resolve())
 START_IMAGE = "sample_image.jpg"
 
@@ -130,6 +136,14 @@ class RootWidget(FloatLayout):
     
     def alexnet(self):
         prediction = PredictAlex(self.image_object.src_folder,self.image_object.src_filename, MODEL_ALEX_EXTRACT_PATH,MODEL_ALEX_DATA_PATH,MODEL_ALEX_SVM_PATH)
+        print(prediction)
+        if(prediction[0]=='normal'):
+            self.net_label.text = "Normal"
+        else:
+            self.net_label.text = "COVID-19"
+    
+    def haralick(self):
+        prediction = PredictHaralick(self.image_object.src_folder,self.image_object.src_filename, MODEL_HARALICK_PATH)
         print(prediction)
         if(prediction[0]=='normal'):
             self.net_label.text = "Normal"

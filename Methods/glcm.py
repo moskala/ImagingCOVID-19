@@ -10,7 +10,7 @@ from sklearn.model_selection import cross_val_score
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
 '''this script contains classes necessary to implement GLCM classification method'''
-
+from Grayscale import *
 from LungSegmentation.LungSegmentation_MethodKMeans_AllTypes import *
 pi = np.pi
 class Matrix:
@@ -91,7 +91,7 @@ class ImageEnsemble:
     def GetLungs(self):
         self.lungs = []
         for dcm in self.dicoms:
-            self.lungs.append(make_lungmask(dcm.get_current_slice()))
+            self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm.get_current_slice()))))
         
 
     def GetMatrices(self):
@@ -108,28 +108,28 @@ class ImageEnsemble:
     
 
 
-stime = time.time()
-flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")]
-e = ImageEnsemble(flds,gotFolders=True)
-e.MakeDicoms()
-e.GetLungs()
-e.GetMatrices()
-e.GetProps()
-print(len(e.props))
-print(len(e.props[0]))
-print(len(e.props[1]))
-print(e.props[0])
-print('Making matrices - execution time: ',time.time()-stime)
-# print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
+# stime = time.time()
+# flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")]
+# e = ImageEnsemble(flds,gotFolders=True)
+# e.MakeDicoms()
+# e.GetLungs()
+# e.GetMatrices()
+# e.GetProps()
+# print(len(e.props))
+# print(len(e.props[0]))
+# print(len(e.props[1]))
+# print(e.props[0])
+# print('Making matrices - execution time: ',time.time()-stime)
+# # print(len(e.props)," ",len(e.props[0])," ",len(e.props[0][0]))
 
-model = Model()
-labels = model.GetLabels()
-model.FitModel(e.props,labels)
-print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
+# model = Model()
+# labels = model.GetLabels()
+# model.FitModel(e.props,labels)
+# print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
 
-dump(model.model, 'glcmModelFitFinal.joblib') 
-plt.imshow(l[0][65],cmap='gray')
-plt.show()
+# dump(model.model, 'glcmModelFitFinal.joblib') 
+# plt.imshow(l[0][65],cmap='gray')
+# plt.show()
 
 
 
