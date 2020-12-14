@@ -24,7 +24,7 @@ def get_pixel_array(file_path, file_type, value=0):
         return ct_array[value]
 
 
-def get_dicom(file_path):
+def show_dicom(file_path):
     dcm = pydicom.dcmread(file_path)
 
     plt.axis('off')
@@ -32,7 +32,7 @@ def get_dicom(file_path):
     plt.show()
 
 
-def get_nii(file_path, value):
+def show_nii(file_path, value):
     ct = nibabel.load(file_path)
     ct_array = ct.get_fdata()
     ct_array = ct_array.T
@@ -47,7 +47,7 @@ def get_nii(file_path, value):
     plt.show()
 
 
-def get_jpg_png(file_path):
+def show_jpg_png(file_path):
     img = mpimg.imread(file_path)
 
     plt.axis('off')
@@ -61,18 +61,18 @@ def get_jpg_png(file_path):
 # show_jpg_png(r'D:\Studia\sem7\inzynierka\data\test\test\0.jpg')
 # show_jpg_png(r'D:\Studia\sem7\inzynierka\data\test\test\2237.png')
 
-def get_plot_data_dicom(file_path):
+def get_pixel_array_dicom(file_path):
     return pydicom.dcmread(file_path).pixel_array
 
 
-def get_plot_data_dicom_all(folder_path):
+def get_pixel_array_dicom_all(folder_path):
     array = []
     for file in Path(folder_path).iterdir():
         array.append(pydicom.dcmread(file).pixel_array)
     return array
 
 
-def get_plot_data_nii(file_path, value):
+def get_pixel_array_nii(file_path, value):
 
     ct = nibabel.load(file_path)
     ct_array = ct.get_fdata()
@@ -85,7 +85,8 @@ def get_plot_data_nii(file_path, value):
 
     return ct_array[value]
 
-def get_plot_data_nii_all(file_path):
+
+def get_pixel_array_nii_all(file_path):
 
     ct = nibabel.load(file_path)
     ct_array = ct.get_fdata()
@@ -94,6 +95,6 @@ def get_plot_data_nii_all(file_path):
     return ct_array
 
 
-def get_plot_data_jpg_png(file_path):
+def get_pixel_array_jpg_png(file_path: str):
     return mpimg.imread(file_path)
 

@@ -18,6 +18,6 @@ def PredictAlex(folder,fil,modelAlex,features,svm):
     newfts.append(testft[0])
     pcafts = alex.DoPCA(newfts)
     model=load(svm)
-    print(pcafts[len(pcafts)-1].reshape(1, -1))
+    model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
     return model.predict(pcafts[len(pcafts)-1].reshape(1, -1))
     

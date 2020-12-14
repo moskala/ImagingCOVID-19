@@ -9,7 +9,7 @@ from glcm import *
 
 model = load('glcmModelFitFinal.joblib') 
 
-e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"])
+e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"],gotFolders=True)
 e.MakeDicoms()
 e.GetLungs()
 e.GetMatrices()
