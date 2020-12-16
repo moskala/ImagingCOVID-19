@@ -10,6 +10,7 @@ import pydicom
 from pydicom.pixel_data_handlers.util import apply_modality_lut
 import PixelArrays
 import pylibjpeg
+import nibabel as nib
 
 
 def convert_array_to_grayscale(array):
@@ -103,32 +104,51 @@ def get_grayscale_from_dicom(filename: str, src_folder: str):
     return gray_array
 
 
-def get_grayscale_from_jpg_png(filename: str, src_solder: str):
+def get_grayscale_from_jpg_png(filename: str, src_folder: str):
     """
 
-    :param filename:
-    :param src_solder:
+    :param filename: filename of jpg or png file
+    :param src_folder: source folder which contains file
     :return:
     """
-    path = Path(src_solder) / filename
+    path = Path(src_folder) / filename
     pixel_array = PixelArrays.get_pixel_array_jpg_png(str(path))
-    gray_array = convert_rgb_to_grayscale(pixel_array)
+    if len(pixel_array.shape) == 3:
+        gray_array = convert_rgb_to_grayscale(pixel_array)
+    elif np.max(pixel_array) > 255 or np.min(pixel_array) < 0:
+        raise ValueError("Image not in grayscale: {0}".format(path))
+    else:
+        gray_array = pixel_array
     return gray_array
 
 
-def get_grayscale_from_nifti():
-    raise NotImplementedError("Needs to be added")
-    img = nib.load('my_image.nii')
-    print(img.dataobj.slope, img.dataobj.inter)
-
-
-def get_grayscale_from_jpg_png(array):
+def get_grayscale_from_nifti(filename: str, src_folder: str, global_gray=False):
     """
-    Converts jpg and png files to grayscale.
-    :param array:
-    :return:
+    Function opens nifti file from given folder and returns it's pixel array in grayscale.
+    If global_gray parameter is set to True, values for black and white boundaries are taken from all slices,
+    otherwise they are computed for each slice separately.
+    :param filename: filename of nifti file
+    :param src_folder: source folder which contains file
+    :param global_gray: boolean indicator of way to computer white and black boundaries
+    :return: numpy array with all slices in grayscale
     """
-    array = convert_rgb_to_grayscale(array)
-    array = convert_rgb_to_grayscale(array)
+    # After loading, rescale operation is already applied
+    img = nib.load(Path(src_folder) / filename)
+    ct_arrays = img.get_fdata()
+    ct_arrays = ct_arrays.T
+    if global_gray:
+        gray_arrays = convert_array_to_grayscale(ct_arrays)
+    else:
+        gray_arrays = np.array([convert_array_to_grayscale(ct_arrays[i]) for i in range(ct_arrays.shape[0])])
 
-    return array
+    return gray_arrays
+
+
+def get_grayscale_from_nifti_slice(filename: str, src_solder: str, slice_number):
+    # After loading, rescale operation is already applied
+    img = nib.load(Path(src_solder) / filename)
+    ct_arrays = img.get_fdata()
+    ct_arrays = ct_arrays.T
+    gray_array = convert_array_to_grayscale(ct_arrays[slice_number])
+
+    return gray_array

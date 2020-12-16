@@ -46,6 +46,48 @@ class TestGrayscaleMethods(unittest.TestCase):
                 self.assertTrue(min_val >= 0)
                 self.assertTrue(max_val <= 255)
 
+    def test_get_grayscale_from_nii(self):
+        nii_folder = str(self.test_data_folder)
+
+        for file_name in param.param_list_nii[0:1]:
+            with self.subTest("Test for file: {0}".format(file_name)):
+                gray_array = \
+                    gray.get_grayscale_from_nifti(file_name, nii_folder)
+                self.assertIsNotNone(gray_array)
+                min_val = np.min(gray_array)
+                max_val = np.max(gray_array)
+                self.assertTrue(gray_array.ndim >= 2)
+                self.assertTrue(min_val >= 0)
+                self.assertTrue(max_val <= 255)
+
+    def test_get_grayscale_from_jpg(self):
+        folder = str(self.test_data_folder)
+
+        for file_name in param.param_list_jpg:
+            with self.subTest("Test for file: {0}".format(file_name)):
+                gray_array = \
+                    gray.get_grayscale_from_jpg_png(file_name, folder)
+                self.assertIsNotNone(gray_array)
+                min_val = np.min(gray_array)
+                max_val = np.max(gray_array)
+                self.assertTrue(gray_array.ndim == 2)
+                self.assertTrue(min_val >= 0)
+                self.assertTrue(max_val <= 255)
+
+    def test_get_grayscale_from_pnd(self):
+        folder = str(self.test_data_folder)
+
+        for file_name in param.param_list_png:
+            with self.subTest("Test for file: {0}".format(file_name)):
+                gray_array = \
+                    gray.get_grayscale_from_jpg_png(file_name, folder)
+                self.assertIsNotNone(gray_array)
+                min_val = np.min(gray_array)
+                max_val = np.max(gray_array)
+                self.assertTrue(gray_array.ndim == 2)
+                self.assertTrue(min_val >= 0)
+                self.assertTrue(max_val <= 255)
+
 
 if __name__ == '__main__':
     unittest.main()
