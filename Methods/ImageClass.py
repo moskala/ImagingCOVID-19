@@ -178,7 +178,7 @@ class DicomImage(ImageObject):
         return self.pixel_array
 
     def check_ct_window(self):
-        array = window.check_dicom_lut(self.src_filename, self.src_folder)
+        array = window.get_array_dicom_lut(self.src_filename, self.src_folder)
         ct_window, array = window.check_array_window_or_cut(array)
         return ct_window
 

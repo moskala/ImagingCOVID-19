@@ -31,6 +31,28 @@ def convert_array_to_grayscale(array):
     return array_gray
 
 
+def convert_array_to_black_white_range(array, black=0, white=255):
+    """
+    Function rescale array to gray scale.
+    :param array: array to be rescaled
+    :param black: value correspondent to black level 0
+    :param white: value correspondent to white level 1
+    :return: rescaled array in gray
+    """
+    # convert to float to avoid overflow or underflow losses
+    arr = array.copy().astype(float)
+    diff = np.abs(white - black)
+    arr -= (black - 1)
+    # values below zero are black
+    arr = np.where(arr < 0, 0, arr)
+    arr *= 254.0 / diff
+    # values above 255 are white
+    arr = np.where(arr > 255, 255, arr)
+    # convert array to int
+    arr = arr.astype(int)
+    return arr
+
+
 def convert_rgb_to_grayscale(array):
     """
     Functions gets array with RGB values and coverts them into grayscale.
