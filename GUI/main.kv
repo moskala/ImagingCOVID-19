@@ -62,6 +62,30 @@ RootWidget:
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.neural_network()
+            Button:
+                id: button_net
+                text: 'GLCM'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.glcm()
+            Button:
+                id: button_net
+                text: 'Alexnet'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.alexnet()
+            Button:
+                id: button_net
+                text: 'Haralick'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.haralick()
             Label:
                 id: net_result
                 text: ''
