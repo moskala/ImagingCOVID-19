@@ -1,4 +1,4 @@
-#from alexnet_pytorch import AlexNet #- to trzeba tylko raz uruchomic?
+from alexnet_pytorch import AlexNet #- to trzeba tylko raz uruchomic?
 from glcm import *
 import torch
 from glcm import *
@@ -9,8 +9,11 @@ import Grayscale as gray
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from joblib import dump, load
+import math
+import numpy as np
 
 class Alex:
+    '''this class uses pytorch pretrained alexnet to extract deep features from pixel arrays'''
     alex = None
     def __init__(self,model=None):
         if(model is None):
@@ -49,8 +52,10 @@ class Alex:
             newfts.append(newM)
         return newfts
     
-    def DoPCA(self,features,n=100):
+    def DoPCA(self,features,n=50):
         pca = PCA(n_components=n)
+        mn = math.inf
+        mx=-math.inf
         pcafts=[]
         for ft in features:
             pcaM=[]
@@ -58,26 +63,46 @@ class Alex:
                 for row in matrix:
                     for col in row:
                         pcaM.append(col)
-                #t = pca.fit_transform(matrix.reshape(1,-1))
+                        if(col>mx):
+                            mx=col
+                        if(col<mn):
+                            mn=col
             pcafts.append(pcaM)
-        # print(len(pcafts))
-        # for p in pcafts:
-        #     print(len(p))
         pcafts = pca.fit_transform(pcafts)
         return pcafts
 
+# 10
 
 # start = time.time()
-# e = ImageEnsemble(os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs"))
+# e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"],gotFolders=True)
+# e.MakeDicoms()
+# e.GetLungs()
+
+
+
+# alex = Alex()
+# fts = alex.GetFeaturesFromList(e.lungs)
+# first = fts[0].squeeze(0).detach().numpy()
+# dets = []
+# for matrix in first:
+#     dets.append(np.linalg.det(matrix))
+# print(dets)
+# wszystkie
+
+# start = time.time()
+# e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
 # e.MakeDicoms()
 # e.GetLungs()
 
 # alex = Alex()
 # fts = alex.GetFeaturesFromList(e.lungs)
 
+
+
 # # standaryzacja
 # newfts=alex.ChangeDimAndStandardize(fts)
-# pcafts = alex.DoPCA(newfts)
+# dump(newfts,'csPrePCAFeatures50.joblib')
+# # pcafts = alex.DoPCA(newfts)
 # print(pcafts)
 
 # # svm

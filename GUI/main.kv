@@ -95,6 +95,14 @@ RootWidget:
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.show_result_popup()
+            Button:
+                id: button_net
+                text: 'Haralick'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.haralick()
             Label:
                 id: net_result
                 text: ''
@@ -128,7 +136,6 @@ RootWidget:
                 size: self.size
             MyFigure:
                 id: plot
-
 
 
 <LoadDialog>:
