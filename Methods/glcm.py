@@ -39,7 +39,7 @@ class Matrix:
                 props.append(i)  
         for c in list(ft.greycoprops(mtrx,prop='homogeneity')):
             for i in c:
-                props.append(i) 
+                props.append(i)
         return props
 
 class Model:
@@ -65,7 +65,7 @@ class Model:
         for i in range(50):
             labels.append('normal')
         return labels
-    
+
 
 class ImageEnsemble:
     '''this class hold a collection of dicom images as well as their respective segmented lungs'''
@@ -127,7 +127,7 @@ class ImageEnsemble:
 # model.FitModel(e.props,labels)
 # print('Making matrices + 5-fold x validation - execution time: ',time.time()-stime)
 
-# dump(model.model, 'glcmModelFitFinal.joblib') 
+# dump(model.model, 'glcmModelFitFinal.joblib')
 # plt.imshow(l[0][65],cmap='gray')
 # plt.show()
 

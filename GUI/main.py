@@ -16,7 +16,11 @@ import pydicom
 from pathlib import Path
 import sys
 import os
-
+from kivy.factory import Factory
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
 # matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
@@ -24,6 +28,7 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
+import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as segmentation
 import Show_matplotlib_all as show
 from ImageClass import *
 from net.testNet import Net
@@ -78,7 +83,8 @@ class RootWidget(FloatLayout):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
-    slider_val = ObjectProperty(None)
+    # slider_val = ObjectProperty(None)
+    result_grid = ObjectProperty(None)
 
     plot = None
     result = None
@@ -127,21 +133,33 @@ class RootWidget(FloatLayout):
             self.net_label.text = "Network accepts only jpg or png files!"
 
     def glcm(self):
-        prediction = PredictGLCM(self.image_object.src_folder,self.image_object.src_filename, MODEL_GLCM_PATH)
-        print(prediction)
-        if(prediction[0]=='normal'):
-            self.net_label.text = "Normal"
-        else:
-            self.net_label.text = "COVID-19"
+        """Classification using GLCM method."""
+        try:
+            prediction = PredictGLCM(self.image_object.src_folder,self.image_object.src_filename, MODEL_GLCM_PATH)
+            print(prediction)
+            if prediction[0] == 'normal':
+                self.net_label.text = "Normal"
+            else:
+                self.net_label.text = "COVID-19"
+        except Exception as error:
+            print(error)
     
     def alexnet(self):
-        prediction = PredictAlex(self.image_object.src_folder,self.image_object.src_filename, MODEL_ALEX_EXTRACT_PATH,MODEL_ALEX_DATA_PATH,MODEL_ALEX_SVM_PATH)
-        print(prediction)
-        if(prediction[0]=='normal'):
-            self.net_label.text = "Normal"
-        else:
-            self.net_label.text = "COVID-19"
-    
+        """Classification using Alexnet method."""
+        try:
+            prediction = PredictAlex(self.image_object.src_folder,
+                                     self.image_object.src_filename,
+                                     MODEL_ALEX_EXTRACT_PATH,
+                                     MODEL_ALEX_DATA_PATH,
+                                     MODEL_ALEX_SVM_PATH)
+            print(prediction)
+            if prediction[0] == 'normal':
+                self.net_label.text = "Normal"
+            else:
+                self.net_label.text = "COVID-19"
+        except Exception as error:
+            print(error)
+
     def haralick(self):
         prediction = PredictHaralick(self.image_object.src_folder,self.image_object.src_filename, MODEL_HARALICK_PATH)
         print(prediction)
@@ -186,6 +204,15 @@ class RootWidget(FloatLayout):
         except Exception as ex:
             print(ex)
 
+    def lung_segment_kmeans(self):
+        try:
+            segment = self.image_object.get_segmented_lungs()
+            plt.imshow(segment, cmap='gray')
+            plt.axis('off')
+            plt.show()
+        except Exception as ex:
+            print(ex)
+
     def show_load(self):
         """This function runs load dialog"""
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -201,7 +228,7 @@ class RootWidget(FloatLayout):
         self._popup.open()
 
     def get_file_format(self, filename):
-        """This function decides on the displayd image format"""
+        """This function decides on the displayed image format"""
         if filename.endswith('.dcm'):
             return ImageType.DCM
         elif filename.endswith('.nii'):
@@ -254,6 +281,32 @@ class RootWidget(FloatLayout):
         else:
             print('File not saved')
         self.dismiss_popup()
+
+    def show_result_popup(self):
+        """
+        Function creates adn show PopUp in application with some data about image.
+        :return: None
+        """
+        properties = self.image_object.get_info()
+        grid = GridLayout(cols=2,
+                          row_force_default=True,
+                          row_default_height=40,
+                          padding=[2, 2, 2, 2],
+                          spacing=[10, 5])
+        for key, value in properties.items():
+            prop_name = Label(text=(key+":"), size_hint_x=None, width=200, halign='right')
+            prop_value = Label(text=str(value))
+            prop_name.bind(size=prop_name.setter('text_size'))
+            prop_value.bind(size=prop_value.setter('text_size'))
+            grid.add_widget(prop_name)
+            grid.add_widget(prop_value)
+        popup = Factory.ResultPopup()
+        popup.content.add_widget(grid, index=1, canvas='before')
+        popup.open()
+
+    # def __init__(self, *args, **kwargs):
+    #     super(RootWidget, self).__init__(*args, **kwargs)
+
 
 
 class Main(App):

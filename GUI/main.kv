@@ -9,6 +9,7 @@ RootWidget:
     slider: slider.__self__
     net_label: net_result.__self__
     slices_info: slices_info.__self__
+    # dd_btn: btn_dropout
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
@@ -47,6 +48,14 @@ RootWidget:
                 valign: 'middle'
                 on_release: root.lung_segment_binary()
             Button:
+                id: button_segmentation_KMeansBinary
+                text: 'Segmentation\nKMeans'
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                size_hint_max_y: 50
+                on_release: root.lung_segment_kmeans()
+            Button:
                 id: button_layers
                 text: 'Automatic\nlayer choice'
                 size_hint_max_y: 50
@@ -79,6 +88,14 @@ RootWidget:
                 valign: 'middle'
                 on_release: root.alexnet()
             Button:
+                id: button_result
+                text: 'Show Result'
+                size_hint_max_y: 50
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                on_release: root.show_result_popup()
+            Button:
                 id: button_net
                 text: 'Haralick'
                 size_hint_max_y: 50
@@ -89,10 +106,6 @@ RootWidget:
             Label:
                 id: net_result
                 text: ''
-                size_hint_max_y: 50
-            Label:
-                id: slices_info
-                text: 'Slice: 1/1'
                 size_hint_max_y: 50
 
         BoxLayout:
@@ -116,6 +129,11 @@ RootWidget:
                     id: button_next
                     size_hint_max_x: 40
                     on_release: root.load_next_slice(1)
+            Label:
+                id: slices_info
+                text: 'Slice: 1/1'
+                size_hint_max_y: 50
+                size: self.size
             MyFigure:
                 id: plot
 
@@ -167,3 +185,37 @@ RootWidget:
             Button:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
+
+<ResultPopup@Popup>:
+    id: result_popup
+    auto_dismiss: False
+    title: 'Result popup'
+    size_hint: (.8, .8)
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [5, 5, 5, 5]
+        BoxLayout:
+            size_hint_max_y: 50
+            Button:
+                text: 'Generate report'
+                disabled: True
+                on_release: result_popup.dismiss()
+            Button:
+                text: 'Close me'
+                on_release: result_popup.dismiss()
+
+<CustomDropDown>:
+    Button:
+        text: 'My first Item'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item1')
+    Label:
+        text: 'Unselectable item'
+        size_hint_y: None
+        height: 44
+    Button:
+        text: 'My second Item'
+        size_hint_y: None
+        height: 44
+        on_release: root.select('item2')
