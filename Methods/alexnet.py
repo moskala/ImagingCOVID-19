@@ -10,6 +10,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from joblib import dump, load
 import math
+import numpy as np
 
 class Alex:
     '''this class uses pytorch pretrained alexnet to extract deep features from pixel arrays'''
@@ -70,6 +71,23 @@ class Alex:
         pcafts = pca.fit_transform(pcafts)
         return pcafts
 
+# 10
+
+# start = time.time()
+# e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"],gotFolders=True)
+# e.MakeDicoms()
+# e.GetLungs()
+
+
+
+# alex = Alex()
+# fts = alex.GetFeaturesFromList(e.lungs)
+# first = fts[0].squeeze(0).detach().numpy()
+# dets = []
+# for matrix in first:
+#     dets.append(np.linalg.det(matrix))
+# print(dets)
+# wszystkie
 
 # start = time.time()
 # e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
@@ -78,6 +96,8 @@ class Alex:
 
 # alex = Alex()
 # fts = alex.GetFeaturesFromList(e.lungs)
+
+
 
 # # standaryzacja
 # newfts=alex.ChangeDimAndStandardize(fts)

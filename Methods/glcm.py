@@ -46,7 +46,7 @@ class Model:
     '''this class contains SVM SVC model and implements basic model functionalities as well as label generation method for train data'''
     model = None
     def __init__(self):
-        self.model = svm.SVC()
+        self.model = svm.SVC(kernel='linear')
     
     def FitModel(self,data,labels):
         self.model.fit(data,labels)

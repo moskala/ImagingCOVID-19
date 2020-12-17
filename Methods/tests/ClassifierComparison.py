@@ -20,11 +20,11 @@ from glcm import *
 # e.GetProps()
 
 # y_test = model.predict(e.props)
-y_pred = []
-for i in range(11):
-    y_pred.append('normal')
-for i in range(9):
-    y_pred.append('covid')
+# y_pred = []
+# for i in range(11):
+#     y_pred.append('normal')
+# for i in range(9):
+#     y_pred.append('covid')
 # # Model Accuracy: how often is the classifier correct?
 # print("Accuracy:",metrics.accuracy_score( y_pred,y_test))
 # # Model Precision: what percentage of positive tuples are labeled as such?
@@ -43,25 +43,25 @@ start = time.time()
 # dcms = []
 # dcms.append(test_folder)
 
-e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"],gotFolders=True)
-e.MakeDicoms()
-e.GetLungs()
+# e = ImageEnsemble([r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\csTest"],gotFolders=True)
+# e.MakeDicoms()
+# e.GetLungs()
 
 alex = Alex(load('featureExtraction.joblib'))
-testft = alex.GetFeaturesFromList(e.lungs)
-print("przed change dim")
-print(len(testft))
-print(len(testft[0]))
-testft = alex.ChangeDimAndStandardize(testft,isTensor=True)
-print("po change dim")
-print(len(testft))
-print(len(testft[0]))
+# testft = alex.GetFeaturesFromList(e.lungs)
+# print("przed change dim")
+# print(len(testft))
+# print(len(testft[0]))
+# testft = alex.ChangeDimAndStandardize(testft,isTensor=True)
+# print("po change dim")
+# print(len(testft))
+# print(len(testft[0]))
 newfts = load('csPrePCAFeatures.joblib')
 print("zaladowane macierze")
 print(len(newfts))
 print(len(newfts[0]))
-for f in testft:
-    newfts.append(f)
+# for f in testft:
+#     newfts.append(f)
 print(len(newfts))
 print(len(newfts[0]))
 pcafts = alex.DoPCA(newfts)
@@ -78,14 +78,15 @@ for i in range(50):
 
 # print(len(pcafts))
 model=load('alexnetModel.joblib')
-model.fit(pcafts[0:100],labels)
-y_test2 = model.predict(pcafts[100:120])
-print(y_test2)
-print("Execution time: ",time.time()-start)
-print("Accuracy:",metrics.accuracy_score( y_pred,y_test2))
-# Model Precision: what percentage of positive tuples are labeled as such?
+print(cross_val_score(model,pcafts,labels))
+# model.fit(pcafts[0:100],labels)
+# y_test2 = model.predict(pcafts[100:120])
+# print(y_test2)
+# print("Execution time: ",time.time()-start)
+# print("Accuracy:",metrics.accuracy_score( y_pred,y_test2))
+# # Model Precision: what percentage of positive tuples are labeled as such?
 
-print("Precision:",metrics.precision_score(np.array(y_pred),y_test2,pos_label='covid'))
+# print("Precision:",metrics.precision_score(np.array(y_pred),y_test2,pos_label='covid'))
 
-# Model Recall: what percentage of positive tuples are labelled as such?
-print("Recall:",metrics.recall_score(np.array(y_pred),y_test2,pos_label='covid'))
+# # Model Recall: what percentage of positive tuples are labelled as such?
+# print("Recall:",metrics.recall_score(np.array(y_pred),y_test2,pos_label='covid'))
