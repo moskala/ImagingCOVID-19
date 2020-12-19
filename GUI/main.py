@@ -15,7 +15,8 @@ from kivy.uix.slider import Slider
 import pydicom
 from pathlib import Path
 import sys
-import os
+import csv
+import os,time
 from kivy.factory import Factory
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
@@ -37,6 +38,9 @@ from PredictAlexnet import *
 from PredictHaralick import *
 from joblib import load
 
+sys.path.append(str(Path().resolve().parent / "Methods" / "Analysis"))
+from Analysis import *
+from Result import *
 
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
@@ -77,6 +81,38 @@ class SaveDialog(FloatLayout):
     img = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
+class ResultPopup(Popup):
+    analysis = ObjectProperty(None)
+    content = ObjectProperty(None)
+    def __init__(self,analysis):
+        super().__init__()
+        self.analysis = analysis
+    def generate_report(self,folder,filename):
+        outputFile = folder+'/'+filename
+        with open(outputFile, mode='w') as analysis_file:
+            analysis_writer = csv.writer(analysis_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            if(self.analysis is None):
+                print("No analisys has been made yet")
+                return
+            for result in self.analysis.result_list:
+                file_name, lung_image, image_height, image_width, scale, result_str = result.get_object_properties()
+                method = result.get_method_name()
+                analysis_writer.writerow(['Analysis no: ', self.analysis.result_list.index(result)])
+                analysis_writer.writerow(['File name', file_name])
+                analysis_writer.writerow(['Image height', image_height])
+                analysis_writer.writerow(['Image width', image_width])
+                analysis_writer.writerow(['CT Window Type', scale])
+                analysis_writer.writerow(['Method', method])
+                analysis_writer.writerow(['Result', result_str])
+                analysis_writer.writerow([])
+        self._popup.dismiss()
+
+    def show_save(self):
+        """This function runs save dialog"""
+        content = SaveDialog(save=self.generate_report, cancel=self.dismiss)
+        self._popup = Popup(title="Save file", content=content,
+                            size_hint=(0.9, 0.9))
+        self._popup.open()
 
 class RootWidget(FloatLayout):
     """This class contains the root element for gui and all the necessary methods"""
@@ -92,6 +128,8 @@ class RootWidget(FloatLayout):
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
+
+    analysis = None
     
 
     def automatic_layer_choice(self):
@@ -143,6 +181,7 @@ class RootWidget(FloatLayout):
                 self.net_label.text = "COVID-19"
         except Exception as error:
             print(error)
+        self.add_result_to_analysis(False)
     
     def alexnet(self):
         """Classification using Alexnet method."""
@@ -159,6 +198,7 @@ class RootWidget(FloatLayout):
                 self.net_label.text = "COVID-19"
         except Exception as error:
             print(error)
+        self.add_result_to_analysis(True)
 
     def haralick(self):
         prediction = PredictHaralick(self.image_object.src_folder,self.image_object.src_filename, MODEL_HARALICK_PATH)
@@ -167,6 +207,7 @@ class RootWidget(FloatLayout):
             self.net_label.text = "Normal"
         else:
             self.net_label.text = "COVID-19"
+        self.add_result_to_analysis(False)
 
     def lung_segment_binary(self):
         """This function runs binary lung segmentation"""
@@ -204,6 +245,15 @@ class RootWidget(FloatLayout):
         except Exception as ex:
             print(ex)
 
+    def add_result_to_analysis(self,isAlex):
+        properties = self.image_object.get_info()
+        if(isAlex):
+            result = AlexnetResult(self.net_label.text,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+        else:
+            result = HaralickGlcmResult(self.net_label.text,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+        self.analysis.add_to_list(result)
+        print('Added following result to collection: ',result.get_object_properties())
+
     def lung_segment_kmeans(self):
         try:
             segment = self.image_object.get_segmented_lungs()
@@ -215,6 +265,7 @@ class RootWidget(FloatLayout):
 
     def show_load(self):
         """This function runs load dialog"""
+        self.analysis = Analysis()
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content,
                             size_hint=(0.9, 0.9))
@@ -226,6 +277,8 @@ class RootWidget(FloatLayout):
         self._popup = Popup(title="Save file", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
+
+
 
     def get_file_format(self, filename):
         """This function decides on the displayed image format"""
@@ -300,7 +353,7 @@ class RootWidget(FloatLayout):
             prop_value.bind(size=prop_value.setter('text_size'))
             grid.add_widget(prop_name)
             grid.add_widget(prop_value)
-        popup = Factory.ResultPopup()
+        popup = Factory.ResultPopup(analysis = self.analysis)
         popup.content.add_widget(grid, index=1, canvas='before')
         popup.open()
 
