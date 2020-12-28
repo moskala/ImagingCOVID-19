@@ -2,13 +2,15 @@ import numpy as np
 from skimage import measure
 from scipy import interpolate
 from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
 
 
 def crop_mask_image(img, mask):
 
     labels = measure.label(mask)
     regions = measure.regionprops(labels)
-
+    if len(regions) == 0:
+        return img, mask
     # Find boundries of regions
     min_row = (min(regions, key=lambda region: region.bbox[0])).bbox[0]
     min_col = (min(regions, key=lambda region: region.bbox[1])).bbox[1]
@@ -86,6 +88,12 @@ def fill_polygon_points(img, points):
     # Zwórcić uwagę na obroty!
     return mask
 
+
+def compare_plots(image1, image2):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
+    ax1.imshow(image1)
+    ax2.imshow(image2)
+    plt.show()
 
 # import matplotlib.pyplot as plt
 #
