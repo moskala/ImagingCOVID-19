@@ -8,54 +8,12 @@ from sklearn.cluster import KMeans
 from pathlib import Path
 import sys
 import scipy.ndimage as ndimage
+from LungSegmentationUtilities import *
 
 sys.path.append(str(Path().resolve().parent))
 import Grayscale as gray
 
 
-def crop_mask_image(img, mask):
-
-    labels = measure.label(mask)
-    regions = measure.regionprops(labels)
-
-    # Find boundries of regions
-    min_row = (min(regions, key=lambda region: region.bbox[0])).bbox[0]
-    min_col = (min(regions, key=lambda region: region.bbox[1])).bbox[1]
-    max_row = (max(regions, key=lambda region: region.bbox[2])).bbox[2]
-    max_col = (max(regions, key=lambda region: region.bbox[3])).bbox[3]
-
-    # Crop images
-    shift = 4
-    crop_mask = mask[(min_row - shift):(max_row + shift), (min_col - shift):(max_col + shift)]
-    crop_image = img[(min_row - shift):(max_row + shift), (min_col - shift):(max_col + shift)]
-
-    return crop_image, crop_mask
-
-
-def apply_convex_polygon(img, mask):
-    labels = measure.label(mask)
-    regions = measure.regionprops(labels)
-
-    n_col = int(mask.shape[1] / 3)
-    n_row = 3 * int(mask.shape[0] / 4)
-
-    # Create an empty image to store the masked array
-    mask_convex = mask.copy()
-
-    for region in regions:
-        convex = region.convex_image
-        crop = region.image
-        minr, minc, maxr, maxc = region.bbox
-        crop[n_row:, 0:n_col] = (crop[n_row:, 0:n_col] == 1) | (convex[n_row:, 0:n_col] == 1)
-        crop[n_row:, 2 * n_col:] = (crop[n_row:, 2 * n_col:] == 1) | (convex[n_row:, 2 * n_col:] == 1)
-        mask_convex[minr:maxr, minc:maxc] = crop
-
-    segmentation = mask_convex * img
-
-    return segmentation, mask_convex
-
-
-# Standardize the pixel values
 def make_lungmask(img, display=False):
     img_copy = img.copy()
     row_size = img.shape[0]
@@ -121,7 +79,7 @@ def make_lungmask(img, display=False):
     # Cropped image and mask
     crop_img, crop_mask = crop_mask_image(img, mask2)
     # Find contours and fill mask
-    filled_mask = find_contours(crop_mask)
+    filled_mask = fill_contours(crop_mask, min_length=100)
     # Find convex polygon and change mask
     # final_segment, final_mask = apply_convex_polygon(crop_img, filled_mask)
     # print("Original shape: {0} Cropped_shape: {1}".format(img.shape, final_segment.shape))
@@ -148,23 +106,6 @@ def make_lungmask(img, display=False):
         plt.show()
 
     return final_segment
-
-
-def find_contours(mask):
-
-    # Create an empty image to store the masked array
-    mask_spline = np.ndarray(mask.shape, dtype=np.int8)
-    mask_spline[:] = 0
-
-    contours = measure.find_contours(mask, 0)
-
-    contours = list(filter(lambda contour: len(contour[:, 1]) > 100, contours))
-
-    for contour in contours:
-        mask_spline[np.round(contour[:, 0]).astype('int'), np.round(contour[:, 1]).astype('int')] = 1
-        mask_spline = ndimage.binary_fill_holes(mask_spline)
-
-    return mask_spline
 
 
 # Przykładowe wywołania z rysowaniem
