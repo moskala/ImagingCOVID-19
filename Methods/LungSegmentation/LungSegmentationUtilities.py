@@ -3,7 +3,7 @@ from skimage import measure
 from scipy import interpolate
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
-
+# TODO comments
 
 def crop_mask_image(img, mask):
 
@@ -76,8 +76,11 @@ def fill_contours(mask, min_length=0, smoothing=True):
 
 
 def smooth_contours(x, y):
-    tck, u = interpolate.splprep([x, y], s=0)
-    out = interpolate.splev(u, tck)
+    if len(x) >= 4:
+        tck, u = interpolate.splprep([x, y], s=0)
+        out = interpolate.splev(u, tck)
+    else:
+        out = [x, y]
     return out
 
 
@@ -86,6 +89,21 @@ def fill_polygon_points(img, points):
     ImageDraw.Draw(image).polygon(points, outline=1, fill=1)
     mask = np.array(image)
     # Zwórcić uwagę na obroty!
+    return mask
+
+
+def fill_selected_regions_on_mask(image_size, regions_points):
+    # Check dimension of image
+    if len(image_size) != 2:
+        raise ValueError("Image size should have 2 dim but has {0}".format(len(image_size)))
+    # Create empty mask
+    mask = np.zeros(image_size)
+    # Fill mask with given regions, apply smoothing
+    for pts in regions_points:
+        temp = np.zeros(image_size)
+        temp = fill_polygon_points(temp, pts)
+        mask = (mask == 1) | (temp == 1)
+
     return mask
 
 
