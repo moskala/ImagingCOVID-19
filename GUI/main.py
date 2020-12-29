@@ -2,6 +2,8 @@ import matplotlib
 # matplotlib.use('Agg', force=True)  # comment this line to see effect
 import matplotlib.pyplot as plt
 from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Ellipse,Rectangle
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.factory import Factory
@@ -10,11 +12,12 @@ from kivy.uix.popup import Popup
 from kivy.core.image import Image as CoreImage
 from kivy.logger import Logger
 from kivy.uix.scatter import Scatter
-from kivy.uix.image import Image
+from kivy.uix.image import Image as UixImage
 from kivy.uix.slider import Slider
 import pydicom
 from pathlib import Path
 import sys
+from PIL import Image
 import csv
 import os,time
 from kivy.factory import Factory
@@ -24,7 +27,9 @@ from kivy.uix.button import Button
 from kivy.uix.dropdown import DropDown
 # matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
-
+from jinja2 import Environment, BaseLoader
+import pdfkit
+from Pdf import *
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
@@ -36,7 +41,11 @@ from net.testNet import Net
 from PredictGLCM import *
 from PredictAlexnet import *
 from PredictHaralick import *
+from Grayscale import * 
 from joblib import load
+import imageio
+from datetime import date
+
 
 sys.path.append(str(Path().resolve().parent / "Methods" / "Analysis"))
 from Analysis import *
@@ -56,6 +65,13 @@ GUI_FOLDER = str(Path().resolve())
 START_IMAGE = "sample_image.jpg"
 
 
+class MyPaintWidget(Widget):
+    def on_touch_down(self, touch):
+        with self.canvas:
+            Color(1, 1, 0)
+            d = 30.
+            Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
+
 class MyFigure(FigureCanvasKivyAgg):
     """This class is used to display an image in GUI"""
     def __init__(self, val=0, image_data=None, **kwargs):
@@ -66,8 +82,186 @@ class MyFigure(FigureCanvasKivyAgg):
         plt.imshow(image_data, cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
         self.curPlt = plt.gcf()
+        self.image_data = image_data
         self.val = val
 
+
+class MyPaintFigure(MyFigure):
+    draw_points=None
+    def __init__(self,image_data,**kwargs):
+        super().__init__(image_data=image_data)
+        self.draw_points=[]
+    def on_touch_down(self, touch):
+        with self.canvas:
+            Color(1, 1, 0)
+            touch.apply_transform_2d(self.to_widget)
+            d = 5.
+            Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
+            print((touch.x-self.pos[0],touch.y-self.pos[1]))
+            print(self.draw_points)
+    def get_points(self):
+        return self.draw_points
+
+class MyImage(UixImage):
+    draw_points=None
+    img_width = None
+    img_height=None
+    def __init__(self,image_data,**kwargs):
+        image = Image.fromarray(convert_array_to_grayscale(image_data))
+        image.save('test.jpg')
+        super().__init__(source='test.jpg')
+        self.draw_points=[]
+        self.img_width = image.width
+        self.img_height = image.height
+        #os.remove('test.jpg')
+    def on_touch_down(self, touch):
+        new_img_width =self.size[1]*self.img_width/ self.img_height
+        margin = (self.size[0]-new_img_width)/2+self.pos[0]
+        print('margin ',margin)
+        with self.canvas:
+            Color(1, 1, 0)
+            print('self ',self)
+            print('self size ',self.size)
+            print('self pos ',self.pos)
+            print('touch ',touch.x-margin,touch.y-self.pos[1])
+            d = 5.
+            Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
+            if(touch.y-self.pos[1]<self.size[1]):
+                self.draw_points.append((int(touch.x-margin),int(touch.y-self.pos[1])))
+    def get_points(self):
+        return self.draw_points
+
+
+class ResultPopup(Popup):
+    analysis = ObjectProperty(None)
+    content = ObjectProperty(None)
+    def __init__(self,analysis):
+        super().__init__()
+        self.analysis = analysis
+    def calculate_results(self):
+        how_many_results = [0,0,0] #0-normal,1-covid,2-undefined
+        for key in self.analysis.dictionary:
+            how_many_results_temp = [0,0]
+            for result in self.analysis.dictionary[key]:
+                if(result=='COVID-19'):
+                    how_many_results_temp[1]+=1
+                elif(result=='Normal'):
+                    how_many_results_temp[0]+=1
+            if(how_many_results_temp[0]>0 and how_many_results_temp[1]==0):
+                how_many_results[0]+=1
+            elif(how_many_results_temp[1]>0 and how_many_results_temp[0]==0):
+                how_many_results[1]+=1
+            else:
+                how_many_results[2]+=1
+        return how_many_results
+    def get_result_array(self,result,withHeaders = False):
+        res = result.get_object_properties_list()
+        res.pop(1)
+        res.append(result.get_method_name())
+        res.insert(0,self.analysis.result_list.index(result)+1)
+        if(withHeaders):
+            headers = result.get_object_properties_headers()
+            nres = np.asarray(res)
+            nheaders = np.asarray(headers)
+            # array with one result
+            nres = np.column_stack((nheaders,nres))
+            return nres
+        else:
+            return res
+    def generate_report(self,folder,filename):
+        outputFile = folder+'/'+filename
+        if(self.analysis is None):
+                print("No analisys has been made yet")
+                return
+        else:
+            dateStr = 'Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
+            how_many_slices_analized = len(self.analysis.dictionary.keys())
+            how_many_slices_total = self.analysis.slices_number
+            how_many_results = self.calculate_results()
+            sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
+            snumbers = np.asarray(self.analysis.get_analysis_summary_numbers(how_many_slices_total,how_many_slices_analized,how_many_results))
+            snumbers = np.column_stack((sheaders,snumbers))
+            if(filename.__contains__('.csv')):
+                with open(outputFile, mode='a') as analysis_file:
+                    # add title
+                    analysis_file.write(dateStr)
+                    analysis_file.write('\n')
+                    analysis_file.write('Analysis details\n')
+                    analysis_file.write('\n')
+                    # add all results
+                    for result in self.analysis.result_list:
+                        # array with one result
+                        nres = self.get_result_array(result)
+                        np.savetxt(analysis_file,nres,delimiter=',',fmt='%s')
+                        analysis_file.write("\n")
+                    # summary
+                    analysis_file.write('\n')
+                    analysis_file.write('Summary\n')
+                    analysis_file.write('\n')
+                    np.savetxt(analysis_file,snumbers,delimiter=',',fmt='%s')
+                    analysis_file.write("\n")
+                    self._popup.dismiss()
+            else: #pdf
+                pdf = PDF()
+                pdf.add_page()
+                # width and height for A4
+                pdf_w=210
+                pdf_h=297
+                font_size = 11
+                epw = pdf.w - 2*pdf.l_margin
+                # title
+                pdf.ln(font_size)
+                pdf.set_font_characteristics(font_size=font_size,isBold=True)
+                pdf.cell(epw, 0.0, dateStr, align='C')
+                pdf.ln(3*font_size)
+                # set font
+                pdf.set_font_characteristics(font_size=font_size)
+                pdf.cell(epw, 0.0, 'Analysis details', align='C')
+                pdf.ln(font_size)
+                for result in self.analysis.result_list:
+                    if(self.analysis.result_list.index(result)==0):
+                        # array with one result
+                        nres = np.transpose(self.get_result_array(result,withHeaders=True))
+                        for row in nres:
+                            for col in row:
+                                pdf.cell(epw/7, font_size, str(col), border=1)
+                            pdf.ln(font_size)
+                    else:
+                        nres = np.transpose(self.get_result_array(result))
+                        for col in nres:
+                            pdf.cell(epw/7, font_size, str(col), border=1)
+                        pdf.ln(font_size)
+                pdf.ln(3*font_size)
+                pdf.cell(epw, 0.0, 'Analized images', align='C')  
+                pdf.ln(font_size)
+                for result in self.analysis.result_list:
+                    res = result.get_object_properties_list()
+                    lungs = res[1]
+                    lung_image = convert_array_to_grayscale(lungs)
+                    im = Image.fromarray(lung_image)
+                    temp_image = folder+'/test.jpg'
+                    imageio.imwrite(temp_image, lung_image)
+                    pdf.add_image_basic(temp_image,res[2]/5,res[3]/5)
+                    os.remove(temp_image)
+                    pdf.ln(font_size)
+
+                pdf.ln(3*font_size)
+                pdf.cell(epw, 0.0, 'Summary', align='C') 
+                pdf.ln(font_size)
+                for row in snumbers:
+                    for col in row:
+                        pdf.cell(epw/2, font_size, str(col), border=1)
+                    pdf.ln(font_size)  
+                #saving
+                pdf.output(outputFile,'F')
+                self._popup.dismiss()
+
+    def show_save(self):
+        """This function runs save dialog"""
+        content = SaveDialog(save=self.generate_report, cancel=self.dismiss)
+        self._popup = Popup(title="Save file", content=content,
+                            size_hint=(0.9, 0.9))
+        self._popup.open()
 
 class LoadDialog(FloatLayout):
     """This class is used to run the load dialog"""
@@ -81,38 +275,9 @@ class SaveDialog(FloatLayout):
     img = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
-class ResultPopup(Popup):
-    analysis = ObjectProperty(None)
+class DrawDialog(Popup):
     content = ObjectProperty(None)
-    def __init__(self,analysis):
-        super().__init__()
-        self.analysis = analysis
-    def generate_report(self,folder,filename):
-        outputFile = folder+'/'+filename
-        with open(outputFile, mode='w') as analysis_file:
-            analysis_writer = csv.writer(analysis_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            if(self.analysis is None):
-                print("No analisys has been made yet")
-                return
-            for result in self.analysis.result_list:
-                file_name, lung_image, image_height, image_width, scale, result_str = result.get_object_properties()
-                method = result.get_method_name()
-                analysis_writer.writerow(['Analysis no: ', self.analysis.result_list.index(result)])
-                analysis_writer.writerow(['File name', file_name])
-                analysis_writer.writerow(['Image height', image_height])
-                analysis_writer.writerow(['Image width', image_width])
-                analysis_writer.writerow(['CT Window Type', scale])
-                analysis_writer.writerow(['Method', method])
-                analysis_writer.writerow(['Result', result_str])
-                analysis_writer.writerow([])
-        self._popup.dismiss()
-
-    def show_save(self):
-        """This function runs save dialog"""
-        content = SaveDialog(save=self.generate_report, cancel=self.dismiss)
-        self._popup = Popup(title="Save file", content=content,
-                            size_hint=(0.9, 0.9))
-        self._popup.open()
+        
 
 class RootWidget(FloatLayout):
     """This class contains the root element for gui and all the necessary methods"""
@@ -128,9 +293,24 @@ class RootWidget(FloatLayout):
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
-
+    draw = None
     analysis = None
     
+    def analize_drawn(self):
+        print(self.draw.draw_points)
+    def draw_lesions(self):
+        """
+        Function creates draw lesions popup
+        :return: None
+        """
+        print('draw lesions')
+        try:
+            popup = Factory.DrawDialog()
+            self.draw = MyImage(image_data=self.plot.image_data)
+            popup.draw_panel.add_widget(self.draw)
+            popup.open()
+        except Exception as error:
+            print(error)
 
     def automatic_layer_choice(self):
         """not implemented yet"""
@@ -252,7 +432,14 @@ class RootWidget(FloatLayout):
         else:
             result = HaralickGlcmResult(self.net_label.text,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
         self.analysis.add_to_list(result)
-        print('Added following result to collection: ',result.get_object_properties())
+        #dict
+        if(properties["Filename"] in self.analysis.dictionary):
+            self.analysis.dictionary[properties["Filename"]].append(self.net_label.text)
+        else:
+            temp_list = [self.net_label.text]
+            print(properties["Filename"],type(properties["Filename"]))
+            self.analysis.dictionary.update({properties["Filename"]: temp_list})
+        print('Added following result to collection: ',result.get_object_properties_list())
 
     def lung_segment_kmeans(self):
         try:
@@ -265,7 +452,7 @@ class RootWidget(FloatLayout):
 
     def show_load(self):
         """This function runs load dialog"""
-        self.analysis = Analysis()
+        
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content,
                             size_hint=(0.9, 0.9))
@@ -321,6 +508,8 @@ class RootWidget(FloatLayout):
         self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                         self.image_object.total_slice_number)
         self.dismiss_popup()
+        # new analysis initialization
+        self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
 
     def get_root_path_for_load_dialog(self):
         """This function gets the root folder for load dialog"""

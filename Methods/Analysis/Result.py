@@ -14,8 +14,29 @@ class Result():
         self.image_width = image_width
         self.file_name = file_name
 
-    def get_object_properties(self):
-        return self.file_name,self.lung_image,self.image_height,self.image_width,self.scale,self.result
+    def get_object_properties_headers(self):
+        res = []
+        res.append('Analysis no')
+        res.append('File name')
+        res.append('Image height')
+        res.append('Image width')
+        res.append('CT Window Type')
+        res.append('Result')
+        res.append('Method')
+        return res
+
+    def get_object_properties_list(self):
+        res = []
+        res.append(self.file_name)
+        res.append(self.lung_image)
+        res.append(self.image_height)
+        res.append(self.image_width)
+        res.append(self.scale)
+        res.append(self.result)
+        return res
+
+    
+
 
     def to_csv(self):
         pass

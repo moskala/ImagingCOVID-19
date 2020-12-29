@@ -107,6 +107,12 @@ RootWidget:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
+            Button:
+                text: 'Draw lesions'
+                on_release: root.draw_lesions()
+            Button:
+                text: 'Analize drawn'
+                on_release: root.analize_drawn()
 
         BoxLayout:
             orientation: 'vertical'
@@ -157,10 +163,25 @@ RootWidget:
             Button:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
+<DrawDialog@Popup>:
+    id: draw_dialog
+    title: 'Draw dialog'
+    draw_panel:draw_panel.__self__
+    BoxLayout:
+        
+        orientation: 'vertical'
+        BoxLayout:
+            id: draw_panel
+        BoxLayout:
+            size_hint_max_y: 50
+            Button:
+                text: 'Done'
+                on_release: draw_dialog.dismiss()
 
 <SaveDialog>:
     text_input: text_input
     BoxLayout:
+        id: save
         size: root.size
         pos: root.pos
         orientation: "vertical"
@@ -180,7 +201,7 @@ RootWidget:
             height: 30
             Button:
                 text: "Cancel"
-                on_release: root.cancel()
+                on_release: save.dismiss()
 
             Button:
                 text: "Save"
