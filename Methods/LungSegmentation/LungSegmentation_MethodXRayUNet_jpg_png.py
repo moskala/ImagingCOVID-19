@@ -11,7 +11,8 @@ from Grayscale import get_grayscale_from_jpg_png
 from LungSegmentationUtilities import fill_contours
 
 MODEL_WEIGHTS = str(Path().resolve().parent.parent.parent / "models" / "cxr_reg_weights.best.hdf5")
-
+INPUT_DIMENSION = 512
+# TODO komentarze!
 
 def unet(input_size=(256, 256, 1)):
     """
@@ -61,43 +62,43 @@ def unet(input_size=(256, 256, 1)):
     return Model(inputs=[inputs], outputs=[conv10])
 
 
-def prepare_model(dim=512):
+def prepare_model(dim=INPUT_DIMENSION):
     model = unet(input_size=(dim, dim, 1))
     model.load_weights(MODEL_WEIGHTS)
     return model
 
 
-def predict_single_lung_mask(image_name, image_folder, dim=512):
+def predict_single_lung_mask(image_name, image_folder, dim=INPUT_DIMENSION):
     img = get_grayscale_from_jpg_png(image_name, image_folder)
     resized = cv2.resize(img, (dim, dim))
     reshaped = np.array(resized).reshape(dim, dim, 1)
-    model = prepare_model(512)
+    model = prepare_model(dim)
     prediction = model.predict(np.array([reshaped]))
     return np.squeeze(prediction)
 
 
-def predict_multiple_lung_mask(images_names, images_folder, dim=512):
+def predict_multiple_lung_mask(images_names, images_folder, dim=INPUT_DIMENSION):
     images = [get_grayscale_from_jpg_png(name, images_folder) for name in images_names]
     resized = [cv2.resize(img, (dim, dim)) for img in images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
-    model = prepare_model(512)
+    model = prepare_model(INPUT_DIMENSION)
     predictions = model.predict(np.array(reshaped))  # TODO przetestować wydajność
     # predictions = [model.predict(np.array([img])) for img in reshaped]
     return [np.squeeze(pred) for pred in predictions]
 
 
-def predict_single_lung_mask_from_array(grayscale_image, dim=512):
+def predict_single_lung_mask_from_array(grayscale_image, dim=INPUT_DIMENSION):
     resized = cv2.resize(grayscale_image, (dim, dim))
     reshaped = np.array(resized).reshape(dim, dim, 1)
-    model = prepare_model(512)
+    model = prepare_model(INPUT_DIMENSION)
     prediction = model.predict(np.array([reshaped]))
     return np.squeeze(prediction)
 
 
-def predict_multiple_lung_mask_from_array(grayscale_images, dim=512):
+def predict_multiple_lung_mask_from_array(grayscale_images, dim=INPUT_DIMENSION):
     resized = [cv2.resize(img, (dim, dim)) for img in grayscale_images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
-    model = prepare_model(512)
+    model = prepare_model(INPUT_DIMENSION)
     predictions = model.predict(np.array(reshaped))  # TODO przetestować wydajność
     # predictions = [model.predict(np.array([img])) for img in reshaped]
     return [np.squeeze(pred) for pred in predictions]
@@ -117,6 +118,15 @@ def prepare_image_to_segmentation(image):
     img = img.astype(np.uint8)
     equ = cv2.equalizeHist(img)
     return equ / 255
+
+
+def make_lungmask(filename, folder):
+    image = get_grayscale_from_jpg_png(filename, folder)
+    img_to_process = prepare_image_to_segmentation(image)
+    mask = predict_single_lung_mask_from_array(img_to_process)
+    mask = adjust_mask(mask)
+    segment = mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION))
+    return segment
 
 #Testowanie
 # import os
@@ -144,3 +154,6 @@ def prepare_image_to_segmentation(image):
 # compare_plots(image, mask)
 # compare_plots(image, mask*cv2.resize(image, (512, 512)))
 # compare_plots(masks_normal[0], masks_normal[1])
+
+# mask = make_lungmask(covid[10], str(covid_folder))
+# compare_plots(get_grayscale_from_jpg_png(covid[10], str(covid_folder)), mask)
