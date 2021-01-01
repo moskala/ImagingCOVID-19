@@ -122,6 +122,9 @@ class ImageObject(object):
         """
         raise NotImplementedError("Method should be overrided in derived classes.")
 
+    def get_size(self):
+        return self.pixel_array.shape[0], self.pixel_array.shape[1]
+
 
 class DicomImage(ImageObject):
     """

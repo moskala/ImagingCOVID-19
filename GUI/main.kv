@@ -163,15 +163,15 @@ RootWidget:
             Button:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
+
 <DrawDialog@Popup>:
     id: draw_dialog
     title: 'Draw dialog'
-    draw_panel:draw_panel.__self__
+#    draw_panel: draw_panel.__self__
+    popup_content: popup_content.__self__
     BoxLayout:
-        
+        id: popup_content
         orientation: 'vertical'
-        BoxLayout:
-            id: draw_panel
         BoxLayout:
             size_hint_max_y: 50
             Button:
@@ -239,3 +239,47 @@ RootWidget:
         size_hint_y: None
         height: 44
         on_release: root.select('item2')
+
+<draw@Popup>:
+    StackLayout:
+        id : aa
+        orientation: 'lr-tb'
+
+        canvas:
+            Color:
+                rgba: 1,1,1,1
+            Rectangle:
+                pos: 0, self.height*0.9
+                size: self.width, self.height*0.1
+
+        Image:
+            id: im
+            size_hint_y: 0.1
+            source: 'Images\login\cptbanner.jpg'
+            allow_stretch: True
+            keep_ratio: True
+
+<DrawDialogAla@Popup>:
+    id: draw_dialog
+    title: 'Draw dialog'
+    draw_panel: draw_panel.__self__
+    popup_content: popup_content.__self__
+    BoxLayout:
+        id: popup_content
+        orientation: 'vertical'
+        padding: 0, 0, 0, 0
+        BoxLayout:
+            id: draw_panel
+            size: draw_dialog.width, draw_dialog.height*0.5
+            canvas:
+                Color:
+                    rgba: 0,1,0,1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+        BoxLayout:
+            size_hint_max_y: 50
+            size: draw_dialog.width, draw_dialog.height*0.2
+            Button:
+                text: 'Done'
+                on_release: draw_dialog.dismiss()
