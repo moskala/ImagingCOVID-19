@@ -1,9 +1,16 @@
-import matplotlib.pyplot as plt
+# Kivy imports
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+
+# Python imports
+import matplotlib.pyplot as plt
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path().resolve().parent / "Methods"))
-import PlotUtilities as show
+from PlotUtilities import get_plot_data_jpg_png
+
+
+START_IMAGE = "sample_image.jpg"
 
 
 class MyFigure(FigureCanvasKivyAgg):
@@ -11,7 +18,7 @@ class MyFigure(FigureCanvasKivyAgg):
     def __init__(self, val=0, image_data=None, **kwargs):
         """constructor"""
         if image_data is None:
-            image_data = show.get_plot_data_jpg_png('../sample_image.jpg')
+            image_data = get_plot_data_jpg_png(START_IMAGE)
         plt.axis('off')
         plt.imshow(image_data, cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)

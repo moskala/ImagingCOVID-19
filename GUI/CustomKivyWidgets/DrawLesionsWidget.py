@@ -1,92 +1,185 @@
-import matplotlib
-# matplotlib.use('Agg', force=True)  # comment this line to see effect
-import matplotlib.pyplot as plt
-from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.graphics import Color, Ellipse,Rectangle
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.factory import Factory
-from kivy.properties import ObjectProperty
-from kivy.uix.popup import Popup
-from kivy.core.image import Image as CoreImage
-from kivy.logger import Logger
-from kivy.uix.scatter import Scatter
+# Kivy imports
+from kivy.graphics import Color, Ellipse, Rectangle, Line
 from kivy.uix.image import Image as UixImage
-from kivy.uix.slider import Slider
-from kivy.graphics.texture import Texture
-from kivy.core.window import Window
-import pydicom
+from kivy.core.image import Image as CoreImage
+
+# Python imports
 from pathlib import Path
 import sys
 from PIL import Image as PilImage
-import csv
-import os, time
-from kivy.factory import Factory
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.dropdown import DropDown
-# matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+
+# Implemented methods imports
 sys.path.append(str(Path().resolve().parent / "Methods"))
 from Grayscale import *
 
 
+class MyDrawFigure(UixImage):
 
-class MyDrawFigure(FigureCanvasKivyAgg):
+    marked_regions = []
+    current_marked_points = []
 
     def __init__(self, image_data=None, **kwargs):
-        plt.axis('off')
-        plt.imshow(image_data, cmap='gray')
-        super().__init__(plt.gcf(), **kwargs)
+
+        image = PilImage.fromarray(convert_array_to_grayscale(image_data))
         self.img_width = image_data.shape[1]
         self.img_height = image_data.shape[0]
-        self.id = "hello"
-        self.padding = 0, 0, 0, 0
-        self.margin = 0, 0, 0, 0
-        # self.pos = self.setter('pos')
+        image.save('temp.jpg')
+        super().__init__(source='temp.jpg', **kwargs)
+        self.id = "draw_figure"
+        self.allow_stretch = True
+        self.draw_rectangle()
 
-    def set_canvas(self):
+    def get_image_position(self, size):
+        curr_img_width, curr_img_height = self.calculate_image_size(size)
+        margin_horizontal, margin_vertical = self.calculate_margins(size, curr_img_width, curr_img_height)
+        x0 = self.pos[0] + margin_horizontal
+        y0 = self.pos[1] + margin_vertical
+        return x0, y0
+
+    def calculate_image_size(self, size):
+        border = min(size)
+        if size[0] < size[1]:
+            ratio = border / self.img_width
+        else:
+            ratio = border / self.img_height
+
+        curr_img_width = ratio * self.img_width
+        curr_img_height = ratio * self.img_height
+
+        return curr_img_width, curr_img_height
+
+    def calculate_margins(self, size, image_width, image_height):
+
+        margin_horizontal = (size[0] - image_width) / 2
+        margin_vertical = (size[1] - image_height) / 2
+        # margin_horizontal = max(margin_horizontal, 0) # TODO dlaczego są ujemne czasem?
+        # margin_vertical = max(margin_vertical, 0)
+        return margin_horizontal, margin_vertical
+
+    def update_size(self, instance, new_size):
+        # print("self", self.size)
+        # print("inst", instance.size)
+        # print("new", new_size)
+        # print("pos", instance.pos)
+        diff = np.subtract(new_size, self.size)
+
+        if not np.any(diff):
+            return
+        # print("difference", diff)
+        self.redraw_regions(new_size, self.pos)
+
+    def on_touch_down(self, touch):
+        # print('self id', self.id)
+        # print('self size ', self.size)
+        # print('self pos ', self.pos)
+        # print('touch ', touch.x, touch.y)
+        # print('window', Window.size)
+        # print('hint', self.pos_hint)
+
+        curr_img_width, curr_img_height = self.calculate_image_size(self.size)
+
+        ratio_horizontal = curr_img_width / self.img_width
+        ratio_vertical = curr_img_height / self.img_height
+        x0, y0 = self.get_image_position(self.size)
+
+        x = (touch.x - x0) / ratio_vertical
+        y = (touch.y - y0) / ratio_horizontal
+        # print("x, y", x, y)
+
+        if 0 <= x and x <= self.img_width and y >=0 and y <= self.img_height:
+            self.current_marked_points.append((x, y))
+            with self.canvas.after:
+                Color(1, 0, 0)
+                d = 5.
+                Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
+
+        return super(MyDrawFigure, self).on_touch_down(touch)
+
+    def add_new_region(self, *args):
+        self.marked_regions.append(list(self.current_marked_points))
+        self.current_marked_points = []
+        self.redraw_regions()
+
+    def delete_current_region(self, *args):
+        self.current_marked_points = []
+        self.redraw_regions()
+
+    def calculate_coefficients(self, size, pos):
+        curr_img_width, curr_img_height = self.calculate_image_size(size)
+        margin_horizontal, margin_vertical = self.calculate_margins(size, curr_img_width, curr_img_height)
+
+        ratio_horizontal = curr_img_width / self.img_width
+        ratio_vertical = curr_img_height / self.img_height
+        ax = ratio_horizontal
+        bx = pos[0] + margin_horizontal
+        ay = ratio_vertical
+        by = pos[1] + margin_vertical
+        return ax, bx, ay, by
+
+    def redraw_regions(self, size=None, pos=None):
+
+        if size is None:
+            size = self.size
+            pos = self.pos
+        ax, bx, ay, by = self.calculate_coefficients(size, pos)
+
+        self.canvas.after.clear()
+        self.update_rect(size)
+
         with self.canvas.after:
-            Color(0, 1, 0, 1)  # blue; colors range from 0-1 not 0-255
-            Rectangle(size=self.size, pos=self.pos)
+            for region in self.marked_regions:
+                new_points = [(x * ax + bx,
+                               y * ay + by)
+                              for x, y in region]
+                for x1, y1 in new_points:
+                    Color(1, 1, 0, 1)
+                    d = 5.
+                    Ellipse(pos=(x1 - d / 2, y1 - d / 2), size=(d, d))
+
+                points_flatten = list(sum(new_points, ()))
+                Line(points=points_flatten, width=1, close=True)
+
+    def get_regions(self):
+        return self.marked_regions
+
+    def finish_drawing(self):
+        if self.current_marked_points:
+            self.add_new_region()
+
+    # TODO wykorzystać lub usunąć
+    def draw_mask(self, mask):
+        image = PilImage.fromarray(convert_array_to_grayscale(mask))
+        image.save('temp_mask.jpg')
+        texture = CoreImage('temp_mask.jpg').texture
+
+        x, y = self.get_image_position(self.size)
+        w, h = self.calculate_image_size(self.size)
+
+        with self.canvas.before:
+            Color(1, 0, 0, 0.5)  # green; colors range from 0-1 instead of 0-255
+            self.rect = Rectangle(texture=texture,
+                                  size=(w, h),
+                                  pos=(x, y))
+
+    def draw_rectangle(self):
+
+        x, y = self.get_image_position(self.size)
+        w, h = self.calculate_image_size(self.size)
+
+        with self.canvas.before:
+            Color(1, 0, 0, 0.5)  # green; colors range from 0-1 instead of 0-255
+            self.rect = Rectangle(size=(w, h),
+                                  pos=(x, y))
+
+    def update_rect(self, size):
+
+        x, y = self.get_image_position(size)
+        w, h = self.calculate_image_size(size)
+        self.rect.pos = (x, y)
+        self.rect.size = (w, h)
 
 
-
-# class MyPaintWidget(Widget):
-#     def on_touch_down(self, touch):
-#         with self.canvas:
-#             Color(1, 1, 0)
-#             d = 30.
-#             Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
-
-
-
-
-
-
-# class MyPaintFigure(MyFigure):
-#
-#     draw_points = None
-#
-#     def __init__(self, image_data, **kwargs):
-#         super().__init__(image_data=image_data)
-#         self.draw_points = []
-#
-#     def on_touch_down(self, touch):
-#         with self.canvas:
-#             Color(1, 1, 0)
-#             touch.apply_transform_2d(self.to_widget)
-#             d = 5.
-#             Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
-#             print((touch.x-self.pos[0], touch.y-self.pos[1]))
-#             print(self.draw_points)
-#
-#     def get_points(self):
-#         return self.draw_points
-
-
+# TODO wykorzystac lub usunac
 class MyImage(UixImage):
 
     draw_points = None
@@ -94,7 +187,7 @@ class MyImage(UixImage):
     img_height = None
 
     def __init__(self, image_data, **kwargs):
-        image = Image.fromarray(convert_array_to_grayscale(image_data))
+        image = PilImage.fromarray(convert_array_to_grayscale(image_data))
         image.save('test.jpg')
         super().__init__(source='test.jpg')
         self.draw_points = []
@@ -107,9 +200,10 @@ class MyImage(UixImage):
         margin = (self.size[0]-new_img_width) / 2 + self.pos[0]
         print('margin ', margin)
         with self.canvas:
-            Color(1, 1, 0)
+            Color(1, 1, 0, 1)
             print('self ', self)
             print('self size ', self.size)
+
             print('self pos ', self.pos)
             print('touch ', touch.x-margin, touch.y-self.pos[1])
             d = 5.
@@ -119,121 +213,3 @@ class MyImage(UixImage):
 
     def get_points(self):
         return self.draw_points
-
-from functools import partial
-from random import random as r
-
-class MyImageAla(BoxLayout):
-
-    draw_points = None
-    img_width = None
-    img_height = None
-    image = None
-
-    def add_rects(self, label, wid, count, *largs):
-        label.text = str(int(label.text) + count)
-        with wid.canvas:
-            for x in range(count):
-                Color(r(), 1, 1, mode='hsv')
-                Rectangle(pos=(r() * wid.width + wid.x,
-                               r() * wid.height + wid.y), size=(20, 20))
-
-    def double_rects(self, label, wid, *largs):
-        count = int(label.text)
-        self.add_rects(label, wid, count, *largs)
-
-    def reset_rects(self, label, wid, *largs):
-        label.text = '0'
-        wid.canvas.clear()
-
-    def __init__(self):
-        super().__init__(orientation='vertical')
-        wid = Widget()
-
-        label = Label(text='0')
-
-        btn_add100 = Button(text='+ 100 rects',
-                            on_press=partial(self.add_rects, label, wid, 100))
-
-        btn_add500 = Button(text='+ 500 rects',
-                            on_press=partial(self.add_rects, label, wid, 500))
-
-        btn_double = Button(text='x 2',
-                            on_press=partial(self.double_rects, label, wid))
-
-        btn_reset = Button(text='Reset',
-                           on_press=partial(self.reset_rects, label, wid))
-
-        layout = BoxLayout(size_hint=(1, None), height=50)
-        layout.add_widget(btn_add100)
-        layout.add_widget(btn_add500)
-        layout.add_widget(btn_double)
-        layout.add_widget(btn_reset)
-        layout.add_widget(label)
-
-        # box = BoxLayout(orientation='vertical')
-        self.add_widget(wid)
-        self.add_widget(layout)
-
-        # return box
-
-    #
-    # def __init__(self, image_object: ImageObject, **kwargs):
-    #     super().__init__()
-    #     self.draw_points = []
-    #     w, h = image_object.get_size()
-    #     self.img_width = w
-    #     self.img_height = h
-    #     print(w)
-    #     print(h)
-    #     # os.remove('test.jpg')
-    #     self.image = convert_array_to_grayscale(image_object.pixel_array)
-    #     # texture = Texture.create(size=(w, h))
-    #     # texture.blit_buffer(img.flatten(), colorfmt='rgb', bufferfmt='ubyte')
-    #     # w_img = Image(size=(w, h), texture=texture)
-    #     print(self.pos)
-    #     print(Window.size)
-    #
-    #     # with self.canvas:
-    #     #     Rectangle(texture=texture, pos=self.pos, size=self.size)
-    #
-    # def _update_rect(self, instance, value):
-    #     self.rect.pos = instance.pos
-    #     self.rect.size = instance.size
-    #
-    # def load_image_on_canvas(self):
-    #     print(self.size)
-    #     # with self.canvas.before:
-    #     #     Color(0, 1, 0, 1)  # green; colors range from 0-1 not 0-255
-    #     #     self.rect = Rectangle(size=(self.img_width, self.img_height), pos=self.parent.pos)
-    #
-    #     # self.bind(size=self._update_rect, pos=self._update_rect)
-    #     # texture = Texture.create(size=(self.img_width, self.img_height))
-    #     # texture.blit_buffer(self.image.flatten(), colorfmt='rgb', bufferfmt='ubyte')
-    #     # print("Texture created")
-    #     print(self.parent.pos)
-    #     print(self.parent.size)
-    #     with self.canvas:
-    #         # Rectangle(texture=texture, pos=self.pos, size=self.size)
-    #         Color(0, 1, 0, 1)  # green; colors range from 0-1 not 0-255
-    #         self.rect = Rectangle(size=(100, 100), pos=self.parent.pos)
-    #
-    #     print(type(self.parent))
-    #     # print(self.parent.id)
-
-    # def on_touch_down(self, touch):
-    #     new_img_width = self.size[1] * self.img_width / self.img_height
-    #     margin = (self.size[0] - new_img_width) / 2 + self.pos[0]
-    #     print('margin ', margin)
-    #     with self.canvas:
-    #         Color(1, 1, 0)
-    #         print('self ', self)
-    #         print('self size ', self.size)
-    #         print('self pos ', self.pos)
-    #         print('touch ', touch.x - margin, touch.y - self.pos[1])
-    #         d = 5.
-    #         Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
-    #         if touch.y - self.pos[1] < self.size[1]:
-    #             self.draw_points.append((int(touch.x - margin), int(touch.y - self.pos[1])))
-
-

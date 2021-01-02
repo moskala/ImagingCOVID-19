@@ -3,15 +3,15 @@ from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
-from kivy.core.window import Window
 from kivy.factory import Factory
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 
 # Custom kivy widgets imports
 from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog, DrawDialogAla
-from CustomKivyWidgets.ShowImageWidget import MyFigure
+from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
 from CustomKivyWidgets.DrawLesionsWidget import MyDrawFigure
+from CustomKivyWidgets.ResultPopupWidget import ResultPopup
 
 # Python imports
 from Pdf import *
@@ -22,9 +22,8 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 # Implemented methods imports
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
-import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as segmentation
 import PlotUtilities as show
-from ImageClass import *
+from ImageClass import ImageType, ImageObject, JpgImage, PngImage, DicomImage, NiftiImage
 from net.testNet import Net
 from PredictGLCM import *
 from PredictAlexnet import *
@@ -34,6 +33,7 @@ from Analysis.Analysis import *
 from Analysis.Result import *
 
 # Paths
+GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
 MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
@@ -44,8 +44,7 @@ MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCA
 MODEL_ALEX_SVM_PATH = str(Path().resolve().parent.parent / "models" / "alexnetModel50.joblib")
 # MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
 MODEL_HARALICK_PATH = str(Path().resolve().parent.parent / "models" / "haralickSVM.joblib")
-GUI_FOLDER = str(Path().resolve())
-START_IMAGE = "sample_image.jpg"
+
 
 
 class RootWidget(FloatLayout):
@@ -68,13 +67,6 @@ class RootWidget(FloatLayout):
     def analize_drawn(self):
         print(self.draw.draw_points)
 
-    def on_touch_down_point(self, obj, touch):
-        print('obj ', obj)
-        print('self size ', obj.size)
-        print('self pos ', obj.pos)
-        print('touch ', touch.x, touch.y)
-        print('window', Window.size)
-
     def draw_lesions(self):
         """
         Function creates draw lesions popup
@@ -82,24 +74,16 @@ class RootWidget(FloatLayout):
         """
         print('draw lesions')
         try:
-            popup = Factory.DrawDialogAla()
+            popup = Factory.DrawDialog()
             # popup.draw_panel.bind(on_touch_down=self.on_touch_down_point())
-            # self.draw = MyImageAla(self.image_object)
-            # self.draw = MyImageAla()
-            #
-            # popup.content.add_widget(self.draw, index=1, canvas='before')
-            # popup.draw_panel.add_widget(self.draw)
-            # self.draw.load_image_on_canvas()
             box = popup.ids.draw_panel
-            box.bind(on_touch_down=self.on_touch_down_point)
             fig = MyDrawFigure(image_data=self.image_object.pixel_array)
-            box.add_widget(fig)
-
+            box.bind(size=fig.update_size)
+            box.add_widget(fig, canvas='before')
+            popup.ids.add_region_button.bind(on_release=fig.add_new_region)
+            popup.ids.delete_region_button.bind(on_release=fig.delete_current_region)
             popup.open()
-            print(fig.pos)
-            fig.set_canvas()
-            fig.pos = fig.parent.pos
-            print(fig.pos_hint)
+
         except Exception as error:
             print(error)
 
@@ -326,19 +310,20 @@ class RootWidget(FloatLayout):
             prop_value.bind(size=prop_value.setter('text_size'))
             grid.add_widget(prop_name)
             grid.add_widget(prop_value)
-        popup = Factory.ResultPopup(analysis = self.analysis)
+        popup = Factory.ResultPopup(analysis=self.analysis)
         popup.content.add_widget(grid, index=1, canvas='before')
         popup.open()
 
-    # def __init__(self, *args, **kwargs):
-    #     super(RootWidget, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(RootWidget, self).__init__(*args, **kwargs)
+        print("Create root")
 
 
 class Main(App):
     pass
 
 
-# Factory.register('RootWidget', cls=RootWidget)
+Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
 
