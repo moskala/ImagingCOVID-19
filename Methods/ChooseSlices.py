@@ -1,16 +1,22 @@
-from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
+from LungSegmentation.LungSegmentation_MethodKMeans_AllTypes import *
+from ImageClass import *
 
 import gc
 
 
 class ChooseSlices:
     @staticmethod
-    def choose(path, fraction=0.2):
+    def choose(image_object, fraction=0.2):
         # sys.stdout = open("test.txt", "w")
         print('Processing...')
-        sgm = SegmentationB()
-        ct_scan = sgm.read_ct_scan(path)
-        al = sgm.segment_lung_from_ct_scan_all(ct_scan)
+        al = []
+        index = 0
+        while(True):
+            try:
+                al.append(make_lungmask(image_object.get_next_slice(index)))
+                index+=1
+            except:
+                break
         # quo = []
         # gc.disable()
         # for slc in al:

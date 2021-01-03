@@ -68,41 +68,26 @@ RootWidget:
                 text: 'Neural\nNetwork'
                 size_hint_max_y: 50
                 text_size: self.size
-                halign: 'center'
+                halign: 'center' 
                 valign: 'middle'
                 on_release: root.neural_network()
+            
             Button:
-                id: button_net
-                text: 'GLCM'
+                text: 'Analysis'
                 size_hint_max_y: 50
                 text_size: self.size
                 halign: 'center'
                 valign: 'middle'
-                on_release: root.glcm()
-            Button:
-                id: button_net
-                text: 'Alexnet'
-                size_hint_max_y: 50
-                text_size: self.size
-                halign: 'center'
-                valign: 'middle'
-                on_release: root.alexnet()
+                on_release: root.show_analysis_popup()
             Button:
                 id: button_result
-                text: 'Show Result'
+                text: 'Reports'
                 size_hint_max_y: 50
                 text_size: self.size
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.show_result_popup()
-            Button:
-                id: button_net
-                text: 'Haralick'
-                size_hint_max_y: 50
-                text_size: self.size
-                halign: 'center'
-                valign: 'middle'
-                on_release: root.haralick()
+            
             Label:
                 id: net_result
                 text: ''
@@ -168,7 +153,6 @@ RootWidget:
     title: 'Draw dialog'
     draw_panel:draw_panel.__self__
     BoxLayout:
-        
         orientation: 'vertical'
         BoxLayout:
             id: draw_panel
@@ -177,11 +161,170 @@ RootWidget:
             Button:
                 text: 'Done'
                 on_release: draw_dialog.dismiss()
+<AnalysisDialog@Popup>:
+    id: analysis_dialog
+    box_layout: box_layout.__self__
+    title: 'Choose a classifier'
+    preGlcmHaralick: preGlcmHaralick.__self__
+    preAlex: preAlex.__self__
+    preSvm: preSvm.__self__
+    preLinear: preLinear.__self__
+    preRbf: preRbf.__self__
+    preSvd: preSvd.__self__
+    preLsqr: preLsqr.__self__
+    trainGlcmHaralick: trainGlcmHaralick.__self__
+    trainAlex: trainAlex.__self__
+    trainRandomForest: trainRandomForest.__self__
+    trainAuto: trainAuto.__self__
+    trainSqrt: trainSqrt.__self__
+    trainLog2: trainLog2.__self__
+    trainLbfgs: trainLbfgs.__self__
+    trainLiblinear: trainLiblinear.__self__
+    trainSaga: trainSaga.__self__
+    BoxLayout:
+        id: box_layout
+        orientation:'vertical'
+        Label:
+            text: 'Recently trained model'
+        Label:
+            text: 'Choose pretrained classifier'
+        BoxLayout:
+            orientation: 'horizontal'
+            Label: 
+                text: 'Features'
+            Label:
+                text: 'Model'
+            Label: 
+                text: 'SVM - kernel'
+            Label: 
+                text: 'Linear discriminant - solver'
+        BoxLayout:
+            orientation: 'horizontal'
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    id: preGlcmHaralick
+                    text: 'GLCM+Haralick'
+                    group: 'preFe'
+                ToggleButton:
+                    id: preAlex
+                    text: 'Alexnet'
+                    group: 'preFe'
+            BoxLayout:
+                orientation: 'vertical'
+                
+                ToggleButton: 
+                    id: preSvm
+                    text: 'SVM'
+                    group: 'preModels'
+                ToggleButton:
+                    id: preLinearDiscriminant
+                    text: 'Linear discriminant'
+                    group: 'preModels'
+            BoxLayout:
+                orientation: 'vertical'
+                
+                ToggleButton:
+                    id: preLinear
+                    group: 'preProp'
+                    text: 'linear'
+                ToggleButton:
+                    id: preRbf
+                    group: 'preProp'
+                    text: 'rbf'
+
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    id: preSvd
+                    group: 'preProp'
+                    text: 'svd'
+                ToggleButton:
+                    id: preLsqr
+                    group: 'preProp'
+                    text: 'lsqr'
+
+        Button:
+            text: 'Classify'
+            on_release: analysis_dialog.analysis_classify_pretrained()
+        Label:
+            text: 'Train a new classifier'
+        BoxLayout:
+            orientation: 'horizontal'
+            Label: 
+                text: 'Features'
+            Label:
+                text: 'Model'
+            Label: 
+                text: 'Random forest - max features'
+            Label: 
+                text: 'Logistic regression - solver'
+        BoxLayout:
+            orientation: 'horizontal'
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    id: trainGlcmHaralick
+                    text: 'GLCM+Haralick'
+                    group: 'trainFe'
+                ToggleButton:
+                    id: trainAlex
+                    text: 'Alexnet'
+                    group: 'trainFe'
+            BoxLayout:
+                orientation: 'vertical'
+                
+                ToggleButton: 
+                    id: trainRandomForest
+                    text: 'Random forest'
+                    group: 'trainModels'
+                ToggleButton: 
+                    id: trainLogisticRegression
+                    text: 'Logistic regression'
+                    group: 'trainModels'
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    id: trainAuto
+                    group: 'trainProp'
+                    text: 'auto'
+                ToggleButton:
+                    id: trainSqrt
+                    group: 'trainProp'
+                    text: 'sqrt'
+                ToggleButton:
+                    id: trainLog2
+                    group: 'trainProp'
+                    text: 'log2'
+            BoxLayout:
+                orientation: 'vertical'
+                ToggleButton:
+                    id: trainLbfgs
+                    group: 'trainProp'
+                    text: 'lbfgs'
+                ToggleButton:
+                    id: trainLiblinear
+                    group: 'trainProp'
+                    text: 'liblinear'
+                ToggleButton:
+                    id: trainSaga
+                    group: 'trainProp'
+                    text: 'saga'
+        Button:
+            text: 'Train and classify'
+            on_release: analysis_dialog.analysis_classify_train()
+        Button:
+            text: 'Close'
+            on_release: analysis_dialog.dismiss()
+
+        
 
 <SaveDialog>:
     text_input: text_input
+    id: savePopup
+    auto_dismiss: True
     BoxLayout:
-        id: save
+        
         size: root.size
         pos: root.pos
         orientation: "vertical"
@@ -190,6 +333,10 @@ RootWidget:
             on_selection: text_input.text = self.selection and self.selection[0] or ''
             path: str(path.Path().resolve().parent.parent / "images_data")
 
+        Label:
+            height: 30
+            size_hint_y: None
+            text: 'Write file name'
         TextInput:
             id: text_input
             size_hint_y: None
@@ -201,8 +348,7 @@ RootWidget:
             height: 30
             Button:
                 text: "Cancel"
-                on_release: save.dismiss()
-
+                on_release: savePopup.cancel()
             Button:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
@@ -210,18 +356,45 @@ RootWidget:
 <ResultPopup@Popup>:
     id: result_popup
     auto_dismiss: False
-    title: 'Result popup'
+    title: 'Report popup'
     size_hint: (.8, .8)
+    scroll_view: scroll_view.__self__
     BoxLayout:
         orientation: 'vertical'
         padding: [5, 5, 5, 5]
+        Label:
+            text: 'Current analysis info'
+            size_hint_max_y: 30
+        ScrollView:
+            size_hint_max_y: 200
+            do_scroll_x: True
+            do_scroll_y: True
+            Label:
+                size_hint_y: None
+                id: scroll_view
+                halign: 'justify'
+                height: self.texture_size[1]
+                text_size: self.width, None
+                padding: 10, 10
+        Label:
+            text: 'Add comments to report'
+            size_hint_max_y: 50
+            
+        TextInput:
+            id: comment_input
+            size_hint_max_y: 50
         BoxLayout:
             size_hint_max_y: 50
+            BoxLayout:
+                orientation: 'vertical'
+                Button:
+                    text: 'Generate report PDF'
+                    on_release: result_popup.show_save_pdf(comment_input.text)
+                Button:
+                    text: 'Generate report CSV'
+                    on_release: result_popup.show_save_csv(comment_input.text)
             Button:
-                text: 'Generate report'
-                on_release: result_popup.show_save()
-            Button:
-                text: 'Close me'
+                text: 'Close'
                 on_release: result_popup.dismiss()
 
 <CustomDropDown>:

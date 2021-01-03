@@ -27,11 +27,11 @@ class Haralick():
             hrl.append(self.GetHaralickFts(lung))
         return hrl
 
-# e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
-# e.MakeDicoms()
-# e.GetLungs()
-# h = Haralick(e.lungs)
-# fts = h.GetHaralickFtsAll()
+# # e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
+# # e.MakeDicoms()
+# # e.GetLungs()
+# # h = Haralick(e.lungs)
+# # fts = h.GetHaralickFtsAll()
 
 
 # modelH = Model()

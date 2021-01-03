@@ -11,4 +11,4 @@ def PredictHaralick(folder,file,model_path):
     e.GetLungs()
     h = Haralick()
     fts = h.GetHaralickFts(e.lungs[0])
-    return model.model.predict(fts.reshape(1, -1))
+    return model.predict(fts.reshape(1, -1))

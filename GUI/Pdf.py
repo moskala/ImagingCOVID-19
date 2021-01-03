@@ -16,8 +16,8 @@ class PDF(FPDF):
         else:
             width+=10
         return width
-    def add_image_basic(self,img,h,w):
-        self.image(img,x=(self.w)/2-w/2,h=h,w=w)
+    def add_image_basic(self,img,h,w,page_width):
+        self.image(img,h=h,w=w)
     def add_image(self,im_jpg,height,width,pdf_h,h,w):
         if(width>pdf_h-100):
             self.add_page()

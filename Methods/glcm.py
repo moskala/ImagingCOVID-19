@@ -6,6 +6,9 @@ from ImageClass import *
 from matplotlib import pyplot as plt
 from sklearn import svm
 from pathlib import Path
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
@@ -45,17 +48,46 @@ class Matrix:
 class Model:
     '''this class contains SVM SVC model and implements basic model functionalities as well as label generation method for train data'''
     model = None
-    def __init__(self):
-        self.model = svm.SVC(kernel='linear')
-    
+    modelRandomForest = None
+    modelLinearDicriminant = None
+    modelLogisticRegression = None
+    def __init__(self,kernel='rbf',max_features='auto',solver='liblinear'):
+        self.model = svm.SVC(kernel=kernel)
+        self.modelRandomForest = RandomForestClassifier(max_features=max_features)
+        self.modelLogisticRegression = LogisticRegression(max_iter=1000,solver=solver)
+        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='lsqr',shrinkage='auto')
     def FitModel(self,data,labels):
         self.model.fit(data,labels)
-    
+
+    def FitModelRandomForest(self,data,labels):
+        self.modelRandomForest.fit(data,labels)
+
+    def FitModelLogisticRegression(self,data,labels):
+        self.modelLogisticRegression.fit(data,labels)
+    def FitModelLinearDiscriminant(self,data,labels):
+        self.modelLinearDicriminant.fit(data,labels)
+
     def PredictModel(self,data):
         return self.model.predict(data)
+    def PredictModelRandomForest(self,data):
+        return self.modelRandomForest.predict(data)
+    
+    def PredictModelLogisticRegression(self,data):
+        return self.modelLogisticRegression.predict(data)
+    def PredictModelLinearDiscriminant(self,data):
+        return self.modelLinearDicriminant.predict(data)
 
     def CrossValidate(self,data,labels,cv=5):
         return cross_val_score(self.model,data,labels,cv=cv)
+
+    def CrossValidateRandomForest(self,data,labels,cv=5):
+        return cross_val_score(self.modelRandomForest,data,labels,cv=cv)
+
+    def CrossValidateLogisticRegression(self,data,labels,cv=5):
+        return cross_val_score(self.modelRandomForest,data,labels,cv=cv)
+    
+    def CrossValidateLinearDiscriminant(self,data,labels,cv=5):
+        return cross_val_score(self.modelLinearDicriminant,data,labels,cv=cv)
 
     @staticmethod    
     def GetLabels():
@@ -87,6 +119,9 @@ class ImageEnsemble:
             for folder in self.folders:
                 for fl in os.listdir(folder):
                     self.dicoms.append(DicomImage(folder,fl))
+    def MakeImage(self,image_object):
+        self.dicoms=[]
+        self.dicoms.append(image_object)
 
     def GetLungs(self):
         self.lungs = []
