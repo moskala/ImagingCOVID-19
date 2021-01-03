@@ -1,4 +1,5 @@
 import matplotlib
+import random
 # matplotlib.use('Agg', force=True)  # comment this line to see effect
 import matplotlib.pyplot as plt
 from kivy.app import App
@@ -231,7 +232,9 @@ class ResultPopup(Popup):
                 lungs = res[1]
                 lung_image = convert_array_to_grayscale(lungs)
                 im = Image.fromarray(lung_image)
-                temp_image = folder+'/test.jpg'
+                number = str(random.randint(0,20000000))
+                print(number)
+                temp_image = folder+'/test'+number+'.jpg'
                 imageio.imwrite(temp_image, lung_image)
                 pdf.add_image_basic(temp_image,res[2]/5,res[3]/5,pdf_w)
                 os.remove(temp_image)
@@ -328,17 +331,21 @@ class AnalysisDialog(Popup):
     box_layout = ObjectProperty(None)
     current_model = None
     current_features = None
-    def __init__(self,analysis,image_object,current_model):
+    def __init__(self,analysis,image_object,current_model,slices = None):
         super().__init__()
         self.image_object = image_object
         self.analysis = analysis
         self.current_model = current_model
-    def add_result_to_analysis(self,isAlex,prediction):
+        if(slices is None):
+            self.slices = []
+            self.slices.append(image_object.get_current_slice())
+
+    def add_result_to_analysis(self,isAlex,prediction,slic):
         properties = self.image_object.get_info()
         if(isAlex):
-            result = AlexnetResult(prediction,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
         else:
-            result = HaralickGlcmResult(prediction,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
         self.analysis.add_to_list(result)
         #dict
         if(properties["Filename"] in self.analysis.dictionary):
@@ -352,19 +359,20 @@ class AnalysisDialog(Popup):
     def analysis_classify_recent(self,unknown_argumentxd):
         if(self.current_model is not None):
             if(self.current_features is 'GlcmHaralick'):
-                predict,_ = PredictGlcmHaralick(self.image_object,self.current_model,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                predict,_ = PredictGlcmHaralick(self.image_object.get_current_slice(),self.current_model,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                
             else:
-                predict,_ = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,self.current_model,isPretrained=False)
+                predict,_ = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
+                                    MODEL_ALEX_DATA_PATH,self.current_model,isPretrained=False)
             if(predict[0]=='normal'):
                 prediction = 'Normal'
             else:
                 prediction = 'COVID-19'  
 
             if(self.trainAlex.state is 'down'):
-                self.add_result_to_analysis(True,prediction)
+                self.add_result_to_analysis(True,prediction,self.image_object.get_current_slice())
             else:
-                self.add_result_to_analysis(False,prediction)
+                self.add_result_to_analysis(False,prediction,self.image_object.get_current_slice())
             popup = Popup(title='Result',content=Label(text=prediction),size=(400, 400),size_hint=(None, None))
             popup.open()
             self.dismiss()
@@ -374,55 +382,56 @@ class AnalysisDialog(Popup):
             self.current_features = 'GlcmHaralick'
             if(self.trainRandomForest.state is 'down'):
                 if(self.trainAuto.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object,Model().modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_current_slice(),Model().modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
                 elif(self.trainSqrt.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object,Model(max_features='sqrt').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_current_slice(),Model(max_features='sqrt').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object,Model(max_features='log2').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_current_slice(),Model(max_features='log2').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
             else:
                 if(self.trainLbfgs.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object,Model().modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_current_slice(),Model().modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
                 elif(self.trainLiblinear.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object,Model(solver='liblinear').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_current_slice(),Model(solver='liblinear').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object,Model(solver='saga').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_current_slice(),Model(solver='saga').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
         else:
             self.current_features = 'Alexnet'
             if(self.trainRandomForest.state is 'down'):
                 if(self.trainAuto.state is 'down'):
-                   predict,self.current_model = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
+                   predict,self.current_model = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model().modelRandomForest,isPretrained=False)
                 elif(self.trainSqrt.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(max_features='sqrt').modelRandomForest,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(max_features='log2').modelRandomForest,isPretrained=False)
                 
             else:
                 if(self.trainLbfgs.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model().modelLogisticRegression,isPretrained=False)
                 elif(self.trainLiblinear.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(solver='liblinear').modelLogisticRegression,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(solver='saga').modelLogisticRegression,isPretrained=False)
                 
         
         if(predict[0]=='normal'):
             prediction = 'Normal'
         else:
-            prediction = 'COVID-19'  
-
+            prediction = 'COVID-19'
         if(self.trainAlex.state is 'down'):
-            self.add_result_to_analysis(True,prediction)
+            self.add_result_to_analysis(True,prediction,self.image_object.get_current_slice())
         else:
-            self.add_result_to_analysis(False,prediction)
-        print(self.current_model)
+            self.add_result_to_analysis(False,prediction,self.image_object.get_current_slice())
+    # print(self.current_model)
         popup = Popup(title='Result',content=Label(text=prediction),size=(400, 400),size_hint=(None, None))
         popup.open()
+
+
         self.dismiss()
 
     def analysis_classify_pretrained(self):
@@ -461,34 +470,34 @@ class AnalysisDialog(Popup):
         classifier_path = os.path.join(MODELS_FOLDER_PATH,filename)
 
         if(self.preGlcmHaralick.state is'down'):
-            predict,_ = PredictGlcmHaralick(self.image_object,classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
-           
+            predict,_ = PredictGlcmHaralick(self.image_object.get_current_slice(),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
+        
+            self.current_features_for_automatic = 'GlcmHaralick'
         else:
-            predict,_ = PredictAlex(self.image_object,MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,
-                                     classifier_path)
+            predict,_ = PredictAlex(self.image_object.get_current_slice(),MODEL_ALEX_EXTRACT_PATH,
+                                    MODEL_ALEX_DATA_PATH,
+                                    classifier_path)
+            self.current_features_for_automatic = 'Alexnet'
         if(predict[0]=='normal'):
             prediction = 'Normal'
         else:
             prediction = 'COVID-19'  
         
         if(self.preAlex.state is 'down'):
-            self.add_result_to_analysis(True,prediction)
+            self.add_result_to_analysis(True,prediction,self.image_object.get_current_slice())
         else:
-            self.add_result_to_analysis(False,prediction)
+            self.add_result_to_analysis(False,prediction,self.image_object.get_current_slice())
         popup = Popup(title='Result',content=Label(text=prediction),size=(400, 400),size_hint=(None, None))
         popup.open()
         self.dismiss()
 
-class CustomDropDown(DropDown):
-    pass
+
 
 class RootWidget(FloatLayout):
     """This class contains the root element for gui and all the necessary methods"""
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
-    # slider_val = ObjectProperty(None)
     result_grid = ObjectProperty(None)
 
     plot = None
@@ -519,9 +528,34 @@ class RootWidget(FloatLayout):
             print(error)
 
     def automatic_layer_choice(self):
-        print(ChooseSlices(self.image_object))
-        pass
+        lungs,indexes = ChooseSlices.choose(self.image_object)
+        classifier_path = os.path.join(MODELS_FOLDER_PATH,'glcmHaralickSvmLinear.joblib')
+        slices = []
+        for index in indexes:
+            print(index)
+            slices.append(self.image_object.get_specific_slice(index))
+            predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
+            
+            # plt.imshow(self.image_object.get_specific_slice(index),cmap='gray')
+            # plt.show()
+            if(predict[0]=='normal'):
+                prediction = 'Normal'
+            else:
+                prediction = 'COVID-19'  
+            self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
+        # auto_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,slices)
+        # auto_popup.open()
 
+        resPop = ResultPopup(analysis=self.analysis)
+        if(self.analysis is None):
+            resPop.scroll_view.text+='No analysis made yet'
+        else:
+            for result in self.analysis.result_list:
+                res = result.get_object_properties_list()
+                string ='File name: '+ res[0]+"    Result: "+res[5]+'    Method: '+result.get_method_name()+'\n'
+                resPop.scroll_view.text+=string
+        resPop.open()
+        
     def slider_changed_value(self, value):
         """This function changes the displayed image when the slider is moved"""
         slice_number = int(value)
@@ -531,6 +565,18 @@ class RootWidget(FloatLayout):
             self.left_panel.add_widget(self.plot)
             self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                             self.image_object.total_slice_number)
+
+    def load_specific_slice(self,which_slice):
+        if self.plot is not None and self.image_object is not None:
+            slice_number = int(which_slice)
+            self.left_panel.remove_widget(self.plot)
+            self.plot = MyFigure(image_data=self.image_object.get_specific_slice(slice_number))
+            self.left_panel.add_widget(self.plot)
+            self.slices_info.text = "Slice: {0}/{1}".format(which_slice,
+                                                            self.image_object.total_slice_number)
+            #update image object in root widget
+            self.image_object.get_specific_slice(slice_number)
+            self.slider.value = self.image_object.current_slice_number
 
     def load_next_slice(self, value):
         """This function changes the displayed image when the buttons 'Next' and 'Prev" are pressed"""
@@ -631,18 +677,18 @@ class RootWidget(FloatLayout):
         except Exception as ex:
             print(ex)
 
-    def add_result_to_analysis(self,isAlex):
+    def add_result_to_analysis(self,isAlex,prediction,slic):
         properties = self.image_object.get_info()
         if(isAlex):
-            result = AlexnetResult(self.net_label.text,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
         else:
-            result = HaralickGlcmResult(self.net_label.text,self.image_object.get_current_slice(),properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
         self.analysis.add_to_list(result)
         #dict
         if(properties["Filename"] in self.analysis.dictionary):
-            self.analysis.dictionary[properties["Filename"]].append(self.net_label.text)
+            self.analysis.dictionary[properties["Filename"]].append(prediction)
         else:
-            temp_list = [self.net_label.text]
+            temp_list = [prediction]
             print(properties["Filename"],type(properties["Filename"]))
             self.analysis.dictionary.update({properties["Filename"]: temp_list})
         print('Added following result to collection: ',result.get_object_properties_list())

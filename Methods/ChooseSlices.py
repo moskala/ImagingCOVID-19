@@ -10,13 +10,23 @@ class ChooseSlices:
         # sys.stdout = open("test.txt", "w")
         print('Processing...')
         al = []
-        index = 0
-        while(True):
+        indexes = []
+        one3 = int(image_object.total_slice_number/3)
+        print('one3',one3)
+        two3 = int(one3*2)
+        for i in range(one3,two3,3):
             try:
-                al.append(make_lungmask(image_object.get_next_slice(index)))
-                index+=1
-            except:
-                break
+                img = image_object.get_next_slice(i)
+                al.append(make_lungmask(img))
+                print(i)
+                indexes.append(i)
+            except Exception as ex:
+                print(str(ex))
+                print(i)
+                if(ex.args.__contains__('min() arg is an empty sequence')):
+                    continue
+                else:
+                    break
         # quo = []
         # gc.disable()
         # for slc in al:
@@ -29,19 +39,18 @@ class ChooseSlices:
         # return [quo.index(num) for num in quo[0:round(fraction*len(quo))]]
 
         ##wersja ze slownikiem
-        quo={}
-        gc.disable()
-        it=0
-        for slc in al:
-            flat_list = [item for sublist in slc for item in sublist]
-            non_zeros = [element for element in flat_list if element > 0]
-            quo.update({it: len(non_zeros) / len(flat_list)})
-            it=it+1
-        gc.enable()
-        #quo = dict(sorted(quo.items(), key=lambda item: item[1],reverse=True))
-        srtd = dict(sorted(quo.items(), key=lambda item: item[1],reverse=True))
-        srtd = [elem[0] for elem in srtd.items()][0:int(fraction*len(srtd))]
-        return [elem[0] for elem in quo.items() if elem[0] in srtd]
+        # quo={}
+        # gc.disable()
+        # it=0
+        # for slc in al:
+        #     flat_list = [item for sublist in slc for item in sublist]
+        #     non_zeros = [element for element in flat_list if element > 0]
+        #     quo.update({it: len(non_zeros) / len(flat_list)})
+        #     it=it+1
+        # gc.enable()
+        # #quo = dict(sorted(quo.items(), key=lambda item: item[1],reverse=True))
+        # srtd = dict(sorted(quo.items(), key=lambda item: item[1],reverse=True))
+        return al,indexes
         # print(quo)
         # print(len(numpy.array(al[40])))
         # print(len(al))

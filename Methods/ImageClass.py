@@ -72,6 +72,13 @@ class ImageObject(object):
         """
         pass
 
+    def get_specific_size(self,value):
+        """
+        Method load specific slice (for dicom or nifti images)
+        and returns array containing pixel data for given slice.
+        """
+        pass
+
     def get_file_path(self):
         """
         Methods returns path to image file as string.
@@ -176,6 +183,16 @@ class DicomImage(ImageObject):
         self.image_object = anonym.get_anonymized_dicom(self.src_filename, self.src_folder)
         self.pixel_array = self.image_object.pixel_array
         return self.pixel_array
+    
+    def get_specific_slice(self, value):
+        '''assuming value is not out of range'''
+        self.current_slice_number = value
+            
+        self.src_filename = self.slices_path_list[value].name
+        
+        self.image_object = anonym.get_anonymized_dicom(self.src_filename, self.src_folder)
+        self.pixel_array = self.image_object.pixel_array
+        return self.pixel_array
 
     def check_ct_window(self):
         array = window.get_array_dicom_lut(self.src_filename, self.src_folder)
@@ -226,6 +243,11 @@ class NiftiImage(ImageObject):
             self.current_slice_number = 0
         else:
             self.current_slice_number = value
+            
+        return self.pixel_array[self.current_slice_number]
+
+    def get_specific_slice(self, value):
+        self.current_slice_number = value
             
         return self.pixel_array[self.current_slice_number]
 

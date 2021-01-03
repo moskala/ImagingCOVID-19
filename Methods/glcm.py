@@ -126,7 +126,7 @@ class ImageEnsemble:
     def GetLungs(self):
         self.lungs = []
         for dcm in self.dicoms:
-            self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm.get_current_slice()))))
+            self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm))))
         
 
     def GetMatrices(self):
