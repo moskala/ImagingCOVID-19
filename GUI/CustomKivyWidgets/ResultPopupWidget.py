@@ -2,9 +2,9 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from pathlib import Path
 import sys
-from Pdf import *
-sys.path.append(str(Path().resolve().parent / "Methods"))
+sys.path.append(str(Path().resolve().parent.parent / "Methods"))
 
+from Pdf import *
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as segmentation

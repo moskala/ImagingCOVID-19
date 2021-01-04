@@ -8,10 +8,10 @@ from sklearn.cluster import KMeans
 from pathlib import Path
 import sys
 import scipy.ndimage as ndimage
-from LungSegmentationUtilities import *
 
 sys.path.append(str(Path().resolve().parent))
 import Grayscale as gray
+from LungSegmentation.LungSegmentationUtilities import *
 
 
 def make_lungmask(img, display=False):
