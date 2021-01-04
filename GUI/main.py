@@ -10,11 +10,10 @@ from kivy.uix.label import Label
 # Custom kivy widgets imports
 from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog
 from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
-from CustomKivyWidgets.DrawLesionsWidget import DrawPopup, DrawFigure
+from CustomKivyWidgets.DrawLesionsWidgets import DrawPopup, DrawFigure
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
 
 # Python imports
-from Pdf import *
 from pathlib import Path
 import sys
 sys.path.append(str(Path().resolve().parent / "Methods"))
@@ -23,7 +22,6 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
 import LungSegmentation.LungSegmentationUtilities as segmentUtils
-import PlotUtilities as show
 from ImageClass import ImageType, ImageObject, JpgImage, PngImage, DicomImage, NiftiImage
 from net.testNet import Net
 from PredictGLCM import *
@@ -53,7 +51,6 @@ class RootWidget(FloatLayout):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     image = ObjectProperty(None)
-    # slider_val = ObjectProperty(None)
     result_grid = ObjectProperty(None)
 
     plot = None
@@ -97,6 +94,7 @@ class RootWidget(FloatLayout):
             res = segmentUtils.fill_selected_regions_on_mask(self.image_object.get_size(), regions)
             self._draw_figure = None
             res = segmentUtils.flip_mask_vertically(res)
+            # TODO zamiast wyświetlania zrobić analizę
             plt.imshow(res, cmap='gray')
             plt.show()
         except Exception as error:
@@ -341,7 +339,6 @@ class Main(App):
 Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
-# Factory.register('DrawDialog', cls=DrawDialog)
 
 if __name__ == '__main__':
     Main().run()
