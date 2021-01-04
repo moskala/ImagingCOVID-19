@@ -13,10 +13,10 @@ RootWidget:
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
-        StackLayout:
+        BoxLayout:
             width: root_widget.width * 0.2
             id: menu_panel
-            orientation: 'tb-lr'
+            orientation: 'vertical'
             size_hint_x: None
             Button:
                 id: button_load_image
@@ -164,21 +164,6 @@ RootWidget:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
 
-# TODO wykorzystac lub usunac
-<DrawDialogoOld@Popup>:
-    id: draw_dialog
-    title: 'Draw dialog'
-#    draw_panel: draw_panel.__self__
-    popup_content: popup_content.__self__
-    BoxLayout:
-        id: popup_content
-        orientation: 'vertical'
-        BoxLayout:
-            size_hint_max_y: 50
-            Button:
-                text: 'Done'
-                on_release: draw_dialog.dismiss()
-
 <SaveDialog>:
     text_input: text_input
     BoxLayout:
@@ -241,25 +226,6 @@ RootWidget:
         height: 44
         on_release: root.select('item2')
 
-<draw@Popup>:
-    StackLayout:
-        id : aa
-        orientation: 'lr-tb'
-
-        canvas:
-            Color:
-                rgba: 1,1,1,1
-            Rectangle:
-                pos: 0, self.height*0.9
-                size: self.width, self.height*0.1
-
-        Image:
-            id: im
-            size_hint_y: 0.1
-            source: 'Images\login\cptbanner.jpg'
-            allow_stretch: True
-            keep_ratio: True
-
 <DrawDialog@Popup>:
     id: draw_dialog
     title: 'Draw dialog'
@@ -271,18 +237,13 @@ RootWidget:
         orientation: 'horizontal'
         RelativeLayout:
             id: draw_panel
-#            size_hint: None, None
             width: draw_dialog.width*0.8
-#            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            padding: 0, 0, 0, 0
-            margin: 0, 0, 0, 0
+            padding: 0
+            margin: 0
             spacing: 0
-
-        StackLayout:
-#            size_hint_max_y: 50
+        BoxLayout:
             size_hint_max_x: 100
-#            size: draw_dialog.width*0.2, draw_dialog.height
-            orientation: 'tb-lr'
+            orientation: "vertical"
             Button:
                 id: add_region_button
                 text: 'Add region'
@@ -293,5 +254,6 @@ RootWidget:
                 size_hint_max_y: 50
             Button:
                 text: 'Done'
+                id: done_region_button
                 on_release: draw_dialog.dismiss()
                 size_hint_max_y: 50

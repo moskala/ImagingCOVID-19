@@ -10,7 +10,7 @@ from kivy.uix.label import Label
 # Custom kivy widgets imports
 from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog, DrawDialogAla
 from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
-from CustomKivyWidgets.DrawLesionsWidget import MyDrawFigure
+from CustomKivyWidgets.DrawLesionsWidget import DrawFigure
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
 
 # Python imports
@@ -61,29 +61,39 @@ class RootWidget(FloatLayout):
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
-    draw = None
+    _draw = None
     analysis = None
-    
-    def analize_drawn(self):
-        print(self.draw.draw_points)
 
     def draw_lesions(self):
         """
-        Function creates draw lesions popup
+        Function creates draw lesions popup and binds needed functions.
         :return: None
         """
-        print('draw lesions')
         try:
             popup = Factory.DrawDialog()
-            # popup.draw_panel.bind(on_touch_down=self.on_touch_down_point())
             box = popup.ids.draw_panel
-            fig = MyDrawFigure(image_data=self.image_object.pixel_array)
-            box.bind(size=fig.update_size)
+            fig = DrawFigure(image_data=self.image_object.pixel_array)
             box.add_widget(fig, canvas='before')
             popup.ids.add_region_button.bind(on_release=fig.add_new_region)
             popup.ids.delete_region_button.bind(on_release=fig.delete_current_region)
-            popup.open()
+            popup.bind(on_dismiss=self.get_marked_lesions)
+            self._popup = popup
+            self._draw = fig
+            self._popup.open()
+        except Exception as error:
+            print(error)
 
+    def get_marked_lesions(self, *args):
+        """
+        Function is called when draw popup is being dismissed.
+        Function reads coordinates of marked lesions from drawing figure.
+        :param args: arguments passed by on_dismiss callback
+        :return:
+        """
+        try:
+            res = self._draw.finish_drawing()
+            print(res)
+            self._draw = None
         except Exception as error:
             print(error)
 
