@@ -9,14 +9,15 @@ RootWidget:
     slider: slider.__self__
     net_label: net_result.__self__
     slices_info: slices_info.__self__
+    add_remove_layer: add_remove_layer.__self__
     # dd_btn: btn_dropout
     BoxLayout:
         orientation: 'horizontal'
         id: whole_panel
-        StackLayout:
+        BoxLayout:
             width: root_widget.width * 0.2
             id: menu_panel
-            orientation: 'tb-lr'
+            orientation: 'vertical'
             size_hint_x: None
             Button:
                 id: button_load_image
@@ -57,7 +58,7 @@ RootWidget:
                 on_release: root.lung_segment_kmeans()
             Button:
                 id: button_layers
-                text: 'Automatic\nlayer choice'
+                text: 'Layers\nselection'
                 size_hint_max_y: 50
                 text_size: self.size
                 halign: 'center'
@@ -68,10 +69,9 @@ RootWidget:
                 text: 'Neural\nNetwork'
                 size_hint_max_y: 50
                 text_size: self.size
-                halign: 'center' 
+                halign: 'center'
                 valign: 'middle'
                 on_release: root.neural_network()
-            
             Button:
                 text: 'Analysis'
                 size_hint_max_y: 50
@@ -87,7 +87,7 @@ RootWidget:
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.show_result_popup()
-            
+
             Label:
                 id: net_result
                 text: ''
@@ -95,9 +95,6 @@ RootWidget:
             Button:
                 text: 'Draw lesions'
                 on_release: root.draw_lesions()
-            Button:
-                text: 'Analize drawn'
-                on_release: root.analize_drawn()
 
         BoxLayout:
             orientation: 'vertical'
@@ -120,6 +117,14 @@ RootWidget:
                     id: button_next
                     size_hint_max_x: 40
                     on_release: root.load_next_slice(1)
+                Button:
+                    id: add_remove_layer
+                    text: 'Add slice\nto analysis'
+                    size_hint_max_x: 100
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
+                    on_release: root.layer_selection()
             Label:
                 id: slices_info
                 text: 'Slice: 1/1'
@@ -148,19 +153,7 @@ RootWidget:
             Button:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
-<DrawDialog@Popup>:
-    id: draw_dialog
-    title: 'Draw dialog'
-    draw_panel:draw_panel.__self__
-    BoxLayout:
-        orientation: 'vertical'
-        BoxLayout:
-            id: draw_panel
-        BoxLayout:
-            size_hint_max_y: 50
-            Button:
-                text: 'Done'
-                on_release: draw_dialog.dismiss()
+
 <AnalysisDialog@Popup>:
     id: analysis_dialog
     box_layout: box_layout.__self__
@@ -190,13 +183,13 @@ RootWidget:
             text: 'Choose pretrained classifier'
         BoxLayout:
             orientation: 'horizontal'
-            Label: 
+            Label:
                 text: 'Features'
             Label:
                 text: 'Model'
-            Label: 
+            Label:
                 text: 'SVM - kernel'
-            Label: 
+            Label:
                 text: 'Linear discriminant - solver'
         BoxLayout:
             orientation: 'horizontal'
@@ -212,8 +205,8 @@ RootWidget:
                     group: 'preFe'
             BoxLayout:
                 orientation: 'vertical'
-                
-                ToggleButton: 
+
+                ToggleButton:
                     id: preSvm
                     text: 'SVM'
                     group: 'preModels'
@@ -223,7 +216,7 @@ RootWidget:
                     group: 'preModels'
             BoxLayout:
                 orientation: 'vertical'
-                
+
                 ToggleButton:
                     id: preLinear
                     group: 'preProp'
@@ -251,13 +244,13 @@ RootWidget:
             text: 'Train a new classifier'
         BoxLayout:
             orientation: 'horizontal'
-            Label: 
+            Label:
                 text: 'Features'
             Label:
                 text: 'Model'
-            Label: 
+            Label:
                 text: 'Random forest - max features'
-            Label: 
+            Label:
                 text: 'Logistic regression - solver'
         BoxLayout:
             orientation: 'horizontal'
@@ -273,12 +266,12 @@ RootWidget:
                     group: 'trainFe'
             BoxLayout:
                 orientation: 'vertical'
-                
-                ToggleButton: 
+
+                ToggleButton:
                     id: trainRandomForest
                     text: 'Random forest'
                     group: 'trainModels'
-                ToggleButton: 
+                ToggleButton:
                     id: trainLogisticRegression
                     text: 'Logistic regression'
                     group: 'trainModels'
@@ -317,14 +310,14 @@ RootWidget:
             text: 'Close'
             on_release: analysis_dialog.dismiss()
 
-        
+
 
 <SaveDialog>:
     text_input: text_input
     id: savePopup
     auto_dismiss: True
     BoxLayout:
-        
+        id: save
         size: root.size
         pos: root.pos
         orientation: "vertical"
@@ -379,7 +372,7 @@ RootWidget:
         Label:
             text: 'Add comments to report'
             size_hint_max_y: 50
-            
+
         TextInput:
             id: comment_input
             size_hint_max_y: 50
@@ -412,3 +405,35 @@ RootWidget:
         size_hint_y: None
         height: 44
         on_release: root.select('item2')
+
+<DrawPopup@Popup>:
+    id: draw_dialog
+    title: 'Draw dialog'
+    draw_panel: draw_panel.__self__
+    popup_content: popup_content.__self__
+    add_region_button: add_region_button.__self__
+    BoxLayout:
+        id: popup_content
+        orientation: 'horizontal'
+        RelativeLayout:
+            id: draw_panel
+            width: draw_dialog.width*0.8
+            padding: 0
+            margin: 0
+            spacing: 0
+        BoxLayout:
+            size_hint_max_x: 100
+            orientation: "vertical"
+            Button:
+                id: add_region_button
+                text: 'Add region'
+                size_hint_max_y: 50
+            Button:
+                id: delete_region_button
+                text: 'Delete region'
+                size_hint_max_y: 50
+            Button:
+                text: 'Done'
+                id: done_region_button
+                on_release: draw_dialog.dismiss()
+                size_hint_max_y: 50

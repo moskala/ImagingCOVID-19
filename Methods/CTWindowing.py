@@ -15,17 +15,17 @@ class CTWindow(Enum):
     """
     Enum class representing different types of window in computer tomography.
     """
-    SoftTissueWindow = 0
-    LungWindow = 1
-    BoneWindow = 2
-    GrayscaleWindow = 3
+    GrayscaleWindow = 0
+    SoftTissueWindow = 1
+    LungWindow = 2
+    BoneWindow = 3
 
     def __str__(self):
         dictionary = {
-            0: "Soft Tissue Window",
-            1: "Lung Window",
-            2: "Bone Window",
-            3: "Grayscale"
+            0: "Grayscale",
+            1: "Soft Tissue Window",
+            2: "Lung Window",
+            3: "Bone Window"
         }
         return dictionary[self.value]
 
@@ -85,6 +85,9 @@ def check_array_window(array):
     min_val = np.min(array)
     max_val = np.max(array)
     w = None
+
+    if min_val >= 0 and max_val <= 1:
+        return CTWindow.GrayscaleWindow, min_val, max_val
     
     # Function goes from the smallest interval
     for window in CTWindow:

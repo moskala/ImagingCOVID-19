@@ -1,140 +1,72 @@
-import matplotlib
-import random
-# matplotlib.use('Agg', force=True)  # comment this line to see effect
-import matplotlib.pyplot as plt
+# Kivy imports
 from kivy.app import App
-from  kivy.uix.togglebutton import ToggleButton
+from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.widget import Widget
-from kivy.graphics import Color, Ellipse,Rectangle
+from kivy.uix.floatlayout import FloatLayout
+from kivy.properties import ObjectProperty
+from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
+from kivy.logger import Logger
+from kivy.uix.scatter import Scatter
+from kivy.uix.slider import Slider
+from kivy.factory import Factory
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
-from kivy.uix.scrollview import ScrollView
-from kivy.core.window import Window
-from kivy.core.image import Image as CoreImage
-from kivy.logger import Logger
-from kivy.uix.scatter import Scatter
-from kivy.uix.image import Image as UixImage
-from kivy.uix.slider import Slider
-import pydicom
+
+# Custom kivy widgets imports
+from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog
+from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
+from CustomKivyWidgets.DrawLesionsWidgets import DrawPopup, DrawFigure
+from CustomKivyWidgets.ResultPopupWidget import ResultPopup
+
+# Python imports
+import matplotlib.pyplot as plt
+import csv
+from joblib import load
+import imageio
+from datetime import date
+import random
 from pathlib import Path
 import sys
-from PIL import Image
-import csv
-import os,time
-from kivy.factory import Factory
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.dropdown import DropDown
-# matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
-from jinja2 import Environment, BaseLoader
-import pdfkit
-from Pdf import *
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
+# Implemented methods imports
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
-import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as segmentation
-import Show_matplotlib_all as show
-from ImageClass import *
+import LungSegmentation.LungSegmentationUtilities as segmentUtils
+from ImageClass import ImageType, ImageObject, JpgImage, PngImage, DicomImage, NiftiImage
 from net.testNet import Net
 from PredictGLCM import *
 from PredictAlexnet import *
 from PredictHaralick import *
 from PredictGlcmHaralick import *
-from Grayscale import * 
-from joblib import load
-import imageio
-from datetime import date
+from Grayscale import *
 from ChooseSlices import *
+from Grayscale import *
+from Analysis.Analysis import *
+from Analysis.Result import *
 
-
-sys.path.append(str(Path().resolve().parent / "Methods" / "Analysis"))
-from Analysis import * 
-from Result import *
-
+# Paths
+GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
 MODELS_FOLDER_PATH = str(Path().resolve().parent.parent/ "models")
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
+MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
 MODEL_ALEX_EXTRACT_PATH = str(Path().resolve().parent.parent / "models" / "featureExtraction.joblib")
 # MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
 MODEL_GLCM_HARALICK_DATA_PATH = str(Path().resolve().parent.parent / "models" / "glcmHaralickData.joblib")
 MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCAFeatures50.joblib")
 # MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
 # MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
-GUI_FOLDER = str(Path().resolve())
-START_IMAGE = "sample_image.jpg"
+MODEL_HARALICK_PATH = str(Path().resolve().parent.parent / "models" / "haralickSVM.joblib")
 
-
-class MyPaintWidget(Widget):
-    def on_touch_down(self, touch):
-        with self.canvas:
-            Color(1, 1, 0)
-            d = 30.
-            Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
-
-class MyFigure(FigureCanvasKivyAgg):
-    """This class is used to display an image in GUI"""
-    def __init__(self, val=0, image_data=None, **kwargs):
-        """constructor"""
-        if image_data is None:
-            image_data = show.get_plot_data_jpg_png('sample_image.jpg')
-        plt.axis('off')
-        plt.imshow(image_data, cmap='gray')
-        super(MyFigure, self).__init__(plt.gcf(), **kwargs)
-        self.curPlt = plt.gcf()
-        self.image_data = image_data
-        self.val = val
-
-
-class MyPaintFigure(MyFigure):
-    draw_points=None
-    def __init__(self,image_data,**kwargs):
-        super().__init__(image_data=image_data)
-        self.draw_points=[]
-    def on_touch_down(self, touch):
-        with self.canvas:
-            Color(1, 1, 0)
-            touch.apply_transform_2d(self.to_widget)
-            d = 5.
-            Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
-            print((touch.x-self.pos[0],touch.y-self.pos[1]))
-            print(self.draw_points)
-    def get_points(self):
-        return self.draw_points
-
-class MyImage(UixImage):
-    draw_points=None
-    img_width = None
-    img_height=None
-    def __init__(self,image_data,**kwargs):
-        image = Image.fromarray(convert_array_to_grayscale(image_data))
-        image.save('test.jpg')
-        super().__init__(source='test.jpg')
-        self.draw_points=[]
-        self.img_width = image.width
-        self.img_height = image.height
-        #os.remove('test.jpg')
-    def on_touch_down(self, touch):
-        new_img_width =self.size[1]*self.img_width/ self.img_height
-        margin = (self.size[0]-new_img_width)/2+self.pos[0]
-        print('margin ',margin)
-        with self.canvas:
-            Color(1, 1, 0)
-            print('self ',self)
-            print('self size ',self.size)
-            print('self pos ',self.pos)
-            print('touch ',touch.x-margin,touch.y-self.pos[1])
-            d = 5.
-            Ellipse(pos=(touch.x - d / 2, touch.y - d / 2), size=(d, d))
-            if(touch.y-self.pos[1]<self.size[1]):
-                self.draw_points.append((int(touch.x-margin),int(touch.y-self.pos[1])))
-    def get_points(self):
-        return self.draw_points
 
 
 class ResultPopup(Popup):
@@ -225,7 +157,7 @@ class ResultPopup(Popup):
                         pdf.cell(epw/7, font_size, str(col), border=1)
                     pdf.ln(font_size)
             pdf.ln(3*font_size)
-            pdf.cell(epw, 0.0, 'Analized images', align='C')  
+            pdf.cell(epw, 0.0, 'Analized images', align='C')
             pdf.ln(font_size)
             for result in self.analysis.result_list:
                 res = result.get_object_properties_list()
@@ -241,12 +173,12 @@ class ResultPopup(Popup):
                 pdf.ln(font_size)
 
             pdf.ln(3*font_size)
-            pdf.cell(epw, 0.0, 'Summary', align='C') 
+            pdf.cell(epw, 0.0, 'Summary', align='C')
             pdf.ln(font_size)
             for row in snumbers:
                 for col in row:
                     pdf.cell(epw/2, font_size, str(col), border=1)
-                pdf.ln(font_size)  
+                pdf.ln(font_size)
             #saving
             pdf.output(outputFile,'F')
             self._popup.dismiss()
@@ -290,7 +222,7 @@ class ResultPopup(Popup):
                 np.savetxt(analysis_file,snumbers,delimiter=',',fmt='%s')
                 analysis_file.write("\n")
                 self._popup.dismiss()
-            
+
     def show_save_csv(self,comments):
         """This function runs save dialog"""
         self.comments=comments
@@ -310,21 +242,6 @@ class ResultPopup(Popup):
     def my_dismiss(self):
         self._popup.dismiss()
 
-class LoadDialog(FloatLayout):
-    """This class is used to run the load dialog"""
-    load = ObjectProperty(None)
-    cancel = ObjectProperty(None)
-
-
-class SaveDialog(FloatLayout):
-    """This class is used to run the save dialog"""
-    save = ObjectProperty(None)
-    img = ObjectProperty(None)
-    cancel = ObjectProperty(None)
-
-class DrawDialog(Popup):
-    content = ObjectProperty(None)
-        
 class AnalysisDialog(Popup):
     image_object = ObjectProperty(None)
     analysis = ObjectProperty(None)
@@ -365,14 +282,14 @@ class AnalysisDialog(Popup):
                 self.image_object.get_specific_slice(index)
                 if(self.current_features is 'GlcmHaralick'):
                     predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),self.current_model,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-                    
+
                 else:
                     predict,_ = PredictAlex(self.image_object.get_specific_slice(index),MODEL_ALEX_EXTRACT_PATH,
                                         MODEL_ALEX_DATA_PATH,self.current_model,isPretrained=False)
                 if(predict[0]=='normal'):
                     prediction = 'Normal'
                 else:
-                    prediction = 'COVID-19'  
+                    prediction = 'COVID-19'
 
                 if(self.trainAlex.state is 'down'):
                     self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index))
@@ -387,8 +304,8 @@ class AnalysisDialog(Popup):
             self.dismiss()
     def analysis_classify_train(self):
         # first we train for the first index
-        first_index = self.indexes[0]  
-        self.image_object.get_specific_slice(first_index)  
+        first_index = self.indexes[0]
+        self.image_object.get_specific_slice(first_index)
         if(self.trainGlcmHaralick.state is'down'):
             self.current_features = 'GlcmHaralick'
             if(self.trainRandomForest.state is 'down'):
@@ -417,7 +334,7 @@ class AnalysisDialog(Popup):
                 else:
                     predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(max_features='log2').modelRandomForest,isPretrained=False)
-                
+
             else:
                 if(self.trainLbfgs.state is 'down'):
                     predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
@@ -428,8 +345,8 @@ class AnalysisDialog(Popup):
                 else:
                     predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(solver='saga').modelLogisticRegression,isPretrained=False)
-                
-        
+
+
         if(predict[0]=='normal'):
             prediction = 'Normal'
         else:
@@ -444,7 +361,7 @@ class AnalysisDialog(Popup):
         if(len(self.indexes)>1):
             self.indexes.pop(0)
             self.analysis_classify_recent(0)
-        
+
     # print(self.current_model)
         print('len indexes: ',len(self.indexes))
         if(len(self.indexes)<=1):
@@ -488,15 +405,15 @@ class AnalysisDialog(Popup):
                 else:
                     filename+='Lsqr.joblib'
 
-        
-        
+
+
         classifier_path = os.path.join(MODELS_FOLDER_PATH,filename)
 
         for index in self.indexes:
             if(self.preGlcmHaralick.state is'down'):
                 self.image_object.get_specific_slice(index)
                 predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
-            
+
                 self.current_features_for_automatic = 'GlcmHaralick'
             else:
                 predict,_ = PredictAlex(self.image_object.get_specific_slice(index),MODEL_ALEX_EXTRACT_PATH,
@@ -506,8 +423,8 @@ class AnalysisDialog(Popup):
             if(predict[0]=='normal'):
                 prediction = 'Normal'
             else:
-                prediction = 'COVID-19'  
-            
+                prediction = 'COVID-19'
+
             if(self.preAlex.state is 'down'):
                 self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index))
             else:
@@ -535,24 +452,47 @@ class RootWidget(FloatLayout):
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
-    draw = None
+    _draw_figure = None
     analysis = None
+
     current_model = None
     analysis_popup = None
 
-    def analize_drawn(self):
-        print(self.draw.draw_points)
     def draw_lesions(self):
         """
-        Function creates draw lesions popup
+        Function creates draw lesions popup and binds needed functions.
         :return: None
         """
-        print('draw lesions')
         try:
-            popup = Factory.DrawDialog()
-            self.draw = MyImage(image_data=self.plot.image_data)
-            popup.draw_panel.add_widget(self.draw)
+            self._draw_figure = None
+            popup = Factory.DrawPopup()
+            popup.title = self.image_object.src_filename
+            box = popup.ids.draw_panel
+            fig = DrawFigure(image_data=self.image_object.get_current_slice())
+            box.add_widget(fig, canvas='before')
+            popup.ids.add_region_button.bind(on_release=fig.add_new_region)
+            popup.ids.delete_region_button.bind(on_release=fig.delete_current_region)
+            popup.bind(on_dismiss=self.get_marked_lesions)
+            self._draw_figure = fig
             popup.open()
+        except Exception as error:
+            print(error)
+
+    def get_marked_lesions(self, *args):
+        """
+        Function is called when draw popup is being dismissed.
+        Function reads coordinates of marked lesions from drawing figure.
+        :param args: arguments passed by on_dismiss callback
+        :return:
+        """
+        try:
+            regions = self._draw_figure.finish_drawing()
+            res = segmentUtils.fill_selected_regions_on_mask(self.image_object.get_size(), regions)
+            self._draw_figure = None
+            res = segmentUtils.flip_mask_vertically(res)
+            # TODO zamiast wyświetlania zrobić analizę
+            plt.imshow(res, cmap='gray')
+            plt.show()
         except Exception as error:
             print(error)
 
@@ -573,13 +513,13 @@ class RootWidget(FloatLayout):
         #     print(index)
         #     slices.append(self.image_object.get_specific_slice(index))
         #     predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
-            
+
         #     # plt.imshow(self.image_object.get_specific_slice(index),cmap='gray')
         #     # plt.show()
         #     if(predict[0]=='normal'):
         #         prediction = 'Normal'
         #     else:
-        #         prediction = 'COVID-19'  
+        #         prediction = 'COVID-19'
         #     self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
         # auto_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,slices)
         # auto_popup.open()
@@ -593,7 +533,22 @@ class RootWidget(FloatLayout):
         #         string ='File name: '+ res[0]+"    Result: "+res[5]+'    Method: '+result.get_method_name()+'\n'
         #         resPop.scroll_view.text+=string
         # resPop.open()
-        
+
+    def layer_selection(self):
+        number = self.image_object.current_slice_number
+        if number in self.selected_layers:
+            self.selected_layers.remove(number)
+        else:
+            self.selected_layers.append(number)
+        self.set_layers_button()
+        print(self.selected_layers)
+
+    def set_layers_button(self):
+        if self.image_object.current_slice_number in self.selected_layers:
+            self.add_remove_layer.text = "Remove slice\nfrom analysis"
+        else:
+            self.add_remove_layer.text = "Add slice\nto analysis"
+
     def slider_changed_value(self, value):
         """This function changes the displayed image when the slider is moved"""
         slice_number = int(value)
@@ -603,6 +558,7 @@ class RootWidget(FloatLayout):
             self.left_panel.add_widget(self.plot)
             self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                             self.image_object.total_slice_number)
+            self.set_layers_button()
 
     def load_specific_slice(self,which_slice):
         if self.plot is not None and self.image_object is not None:
@@ -627,7 +583,7 @@ class RootWidget(FloatLayout):
             self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                             self.image_object.total_slice_number)
             self.slider.value = self.image_object.current_slice_number
-
+            self.set_layers_button()
 
     def dismiss_popup(self):
         """This function closes popup windows"""
@@ -639,45 +595,6 @@ class RootWidget(FloatLayout):
             self.net_label.text = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
         else:
             self.net_label.text = "Network accepts only jpg or png files!"
-
-    # def glcm(self):
-    #     """Classification using GLCM method."""
-    #     try:
-    #         prediction = PredictGLCM(self.image_object.src_folder,self.image_object.src_filename, MODEL_GLCM_PATH)
-    #         print(prediction)
-    #         if prediction[0] == 'normal':
-    #             self.net_label.text = "Normal"
-    #         else:
-    #             self.net_label.text = "COVID-19"
-    #     except Exception as error:
-    #         print(error)
-    #     self.add_result_to_analysis(False)
-    
-    # def alexnet(self):
-    #     """Classification using Alexnet method."""
-    #     try:
-    #         prediction = PredictAlex(self.image_object.src_folder,
-    #                                  self.image_object.src_filename,
-    #                                  MODEL_ALEX_EXTRACT_PATH,
-    #                                  MODEL_ALEX_DATA_PATH,
-    #                                  MODEL_ALEX_SVM_PATH)
-    #         print(prediction)
-    #         if prediction[0] == 'normal':
-    #             self.net_label.text = "Normal"
-    #         else:
-    #             self.net_label.text = "COVID-19"
-    #     except Exception as error:
-    #         print(error)
-    #     self.add_result_to_analysis(True)
-
-    # def haralick(self):
-    #     prediction = PredictHaralick(self.image_object.src_folder,self.image_object.src_filename, MODEL_HARALICK_PATH)
-    #     print(prediction)
-    #     if(prediction[0]=='normal'):
-    #         self.net_label.text = "Normal"
-    #     else:
-    #         self.net_label.text = "COVID-19"
-    #     self.add_result_to_analysis(False)
 
     def lung_segment_binary(self):
         """This function runs binary lung segmentation"""
@@ -755,8 +672,6 @@ class RootWidget(FloatLayout):
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
-
-
     def get_file_format(self, filename):
         """This function decides on the displayed image format"""
         if filename.endswith('.dcm'):
@@ -801,10 +716,6 @@ class RootWidget(FloatLayout):
         # new analysis initialization
         self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
 
-    def get_root_path_for_load_dialog(self):
-        """This function gets the root folder for load dialog"""
-        return str(Path(r"C:\Users\Maya\studia\4rok\inz\covidSeg"))
-
     def save(self, path, filename):
         """This function runs the saving process after pressing 'Save anonymized file' button"""
         success = self.image_object.save_anonymized_file(filename, path)
@@ -829,7 +740,7 @@ class RootWidget(FloatLayout):
             self.analysis_popup.box_layout.add_widget(bl,index=9)
         self.analysis_popup.open()
 
-    
+
 
     def show_result_popup(self):
         """
@@ -854,7 +765,7 @@ class RootWidget(FloatLayout):
         #     prop_value.bind(size=prop_value.setter('text_size'))
         #     grid.add_widget(prop_name)
         #     grid.add_widget(prop_value)
-        
+
         popup = Factory.ResultPopup(analysis = self.analysis)
         if(self.analysis is None):
             popup.scroll_view.text+='No analysis made yet'
@@ -866,16 +777,17 @@ class RootWidget(FloatLayout):
         #popup.scroll_view.add_widget(grid, index=0)
         popup.open()
 
-    # def __init__(self, *args, **kwargs):
-    #     super(RootWidget, self).__init__(*args, **kwargs)
-
+    def __init__(self, *args, **kwargs):
+        super(RootWidget, self).__init__(*args, **kwargs)
+        print("Create root")
+        self.selected_layers = []
 
 
 class Main(App):
     pass
 
 
-# Factory.register('RootWidget', cls=RootWidget)
+Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
 
