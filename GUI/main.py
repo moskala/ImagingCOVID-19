@@ -108,10 +108,9 @@ class RootWidget(FloatLayout):
         number = self.image_object.current_slice_number
         if number in self.selected_layers:
             self.selected_layers.remove(number)
-            self.add_remove_layer.text = "Add slice\nto analysis"
         else:
             self.selected_layers.append(number)
-            self.add_remove_layer.text = "Remove slice\nfrom analysis"
+        self.set_layers_button()
         print(self.selected_layers)
 
     def set_layers_button(self):
