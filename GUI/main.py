@@ -25,6 +25,7 @@ from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog
 from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
 from CustomKivyWidgets.DrawLesionsWidgets import DrawPopup, DrawFigure
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
+from CustomKivyWidgets.AnalysisPopup import AnalysisPopup
 
 # Python imports
 import matplotlib.pyplot as plt
@@ -32,7 +33,6 @@ import csv
 from joblib import load
 import imageio
 from datetime import date
-import random
 from pathlib import Path
 import sys
 sys.path.append(str(Path().resolve().parent / "Methods"))
@@ -47,7 +47,6 @@ from PredictGLCM import *
 from PredictAlexnet import *
 from PredictHaralick import *
 from PredictGlcmHaralick import *
-from Grayscale import *
 from ChooseSlices import *
 from Grayscale import *
 from Analysis.Analysis import *
@@ -56,386 +55,6 @@ from Analysis.Result import *
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
-MODELS_FOLDER_PATH = str(Path().resolve().parent.parent/ "models")
-MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
-MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
-MODEL_ALEX_EXTRACT_PATH = str(Path().resolve().parent.parent / "models" / "featureExtraction.joblib")
-# MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
-MODEL_GLCM_HARALICK_DATA_PATH = str(Path().resolve().parent.parent / "models" / "glcmHaralickData.joblib")
-MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCAFeatures50.joblib")
-# MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
-# MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
-MODEL_HARALICK_PATH = str(Path().resolve().parent.parent / "models" / "haralickSVM.joblib")
-
-
-
-class ResultPopup(Popup):
-    analysis = ObjectProperty(None)
-    content = ObjectProperty(None)
-    comments = ObjectProperty(None)
-    def __init__(self,analysis):
-        super().__init__()
-        self.analysis = analysis
-    def calculate_results(self):
-        how_many_results = [0,0,0] #0-normal,1-covid,2-undefined
-        for key in self.analysis.dictionary:
-            how_many_results_temp = [0,0]
-            for result in self.analysis.dictionary[key]:
-                if(result=='COVID-19'):
-                    how_many_results_temp[1]+=1
-                elif(result=='Normal'):
-                    how_many_results_temp[0]+=1
-            if(how_many_results_temp[0]>0 and how_many_results_temp[1]==0):
-                how_many_results[0]+=1
-            elif(how_many_results_temp[1]>0 and how_many_results_temp[0]==0):
-                how_many_results[1]+=1
-            else:
-                how_many_results[2]+=1
-        return how_many_results
-    def get_result_array(self,result,withHeaders = False):
-        res = result.get_object_properties_list()
-        res.pop(1)
-        res.append(result.get_method_name())
-        res.insert(0,self.analysis.result_list.index(result)+1)
-        if(withHeaders):
-            headers = result.get_object_properties_headers()
-            nres = np.asarray(res)
-            nheaders = np.asarray(headers)
-            # array with one result
-            nres = np.column_stack((nheaders,nres))
-            return nres
-        else:
-            return res
-
-    def generate_report_pdf(self,folder,filename):
-        print('comments ',self.comments)
-        outputFile = folder+'/'+filename
-        if(self.analysis is None):
-                print("No analisys has been made yet")
-                self._popup.dismiss()
-                return
-        else:
-            dateStr = 'Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
-            how_many_slices_analized = len(self.analysis.dictionary.keys())
-            how_many_slices_total = self.analysis.slices_number
-            how_many_results = self.calculate_results()
-            sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
-            snumbers = np.asarray(self.analysis.get_analysis_summary_numbers(how_many_slices_total,how_many_slices_analized,how_many_results))
-            snumbers = np.column_stack((sheaders,snumbers))
-             #pdf
-            pdf = PDF()
-            pdf.add_page()
-            # width and height for A4
-            pdf_w=210
-            pdf_h=297
-            font_size = 11
-            epw = pdf.w - 2*pdf.l_margin
-            # title
-            pdf.ln(font_size)
-            pdf.set_font_characteristics(font_size=font_size,isBold=True)
-            pdf.cell(epw, 0.0, dateStr, align='C')
-            pdf.ln(3*font_size)
-            # set font
-            pdf.set_font_characteristics(font_size=font_size)
-            pdf.cell(epw, 0.0, 'Comments', align='C')
-            pdf.ln(font_size)
-            pdf.cell(epw, 0.0, self.comments, align='L')
-            pdf.ln(font_size)
-            pdf.cell(epw, 0.0, 'Analysis details', align='C')
-            pdf.ln(font_size)
-            for result in self.analysis.result_list:
-                if(self.analysis.result_list.index(result)==0):
-                    # array with one result
-                    nres = np.transpose(self.get_result_array(result,withHeaders=True))
-                    for row in nres:
-                        for col in row:
-                            pdf.cell(epw/7, font_size, str(col), border=1)
-                        pdf.ln(font_size)
-                else:
-                    nres = np.transpose(self.get_result_array(result))
-                    for col in nres:
-                        pdf.cell(epw/7, font_size, str(col), border=1)
-                    pdf.ln(font_size)
-            pdf.ln(3*font_size)
-            pdf.cell(epw, 0.0, 'Analized images', align='C')
-            pdf.ln(font_size)
-            for result in self.analysis.result_list:
-                res = result.get_object_properties_list()
-                lungs = res[1]
-                lung_image = convert_array_to_grayscale(lungs)
-                im = Image.fromarray(lung_image)
-                number = str(random.randint(0,20000000))
-                print(number)
-                temp_image = folder+'/test'+number+'.jpg'
-                imageio.imwrite(temp_image, lung_image)
-                pdf.add_image_basic(temp_image,res[2]/5,res[3]/5,pdf_w)
-                os.remove(temp_image)
-                pdf.ln(font_size)
-
-            pdf.ln(3*font_size)
-            pdf.cell(epw, 0.0, 'Summary', align='C')
-            pdf.ln(font_size)
-            for row in snumbers:
-                for col in row:
-                    pdf.cell(epw/2, font_size, str(col), border=1)
-                pdf.ln(font_size)
-            #saving
-            pdf.output(outputFile,'F')
-            self._popup.dismiss()
-
-    def generate_report_csv(self,folder,filename):
-        print('comments ',self.comments)
-        outputFile = folder+'/'+filename
-        if(self.analysis is None):
-                print("No analisys has been made yet")
-                self._popup.dismiss()
-                return
-        else:
-            dateStr = 'Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
-            how_many_slices_analized = len(self.analysis.dictionary.keys())
-            how_many_slices_total = self.analysis.slices_number
-            how_many_results = self.calculate_results()
-            sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
-            snumbers = np.asarray(self.analysis.get_analysis_summary_numbers(how_many_slices_total,how_many_slices_analized,how_many_results))
-            snumbers = np.column_stack((sheaders,snumbers))
-
-            with open(outputFile, mode='w') as analysis_file:
-                # add title
-                analysis_file.write(dateStr)
-                analysis_file.write('\n')
-                analysis_file.write('Comments\n')
-                analysis_file.write(self.comments)
-                analysis_file.write('\n')
-                analysis_file.write('\n')
-                analysis_file.write('Analysis details\n')
-                analysis_file.write('\n')
-                # add all results
-                for result in self.analysis.result_list:
-                    # array with one result
-                    nres = self.get_result_array(result,withHeaders=True)
-                    np.savetxt(analysis_file,nres,delimiter=',',fmt='%s')
-                    analysis_file.write("\n")
-                # summary
-                analysis_file.write('\n')
-                analysis_file.write('Summary\n')
-                analysis_file.write('\n')
-                np.savetxt(analysis_file,snumbers,delimiter=',',fmt='%s')
-                analysis_file.write("\n")
-                self._popup.dismiss()
-
-    def show_save_csv(self,comments):
-        """This function runs save dialog"""
-        self.comments=comments
-        content = SaveDialog(save=self.generate_report_csv,  cancel=self.my_dismiss)
-        self._popup = Popup(title="Save file", content=content,
-                            size_hint=(0.9, 0.9))
-        self._popup.open()
-
-    def show_save_pdf(self,comments):
-        """This function runs save dialog"""
-        self.comments=comments
-        content = SaveDialog(save=self.generate_report_pdf,  cancel=self.my_dismiss)
-        self._popup = Popup(title="Save file", content=content,
-                            size_hint=(0.9, 0.9))
-        self._popup.open()
-
-    def my_dismiss(self):
-        self._popup.dismiss()
-
-class AnalysisDialog(Popup):
-    image_object = ObjectProperty(None)
-    analysis = ObjectProperty(None)
-    box_layout = ObjectProperty(None)
-    current_model = ObjectProperty(None)
-    current_features = None
-    def __init__(self,analysis,image_object,current_model,indexes = None):
-        super().__init__()
-        self.image_object = image_object
-        self.analysis = analysis
-        self.current_model = current_model
-        if(indexes is None):
-            self.indexes = []
-            self.indexes.append(image_object.current_slice_number)
-            print(image_object.current_slice_number)
-        else:
-            self.indexes = indexes
-
-    def add_result_to_analysis(self,isAlex,prediction,slic):
-        properties = self.image_object.get_info()
-        if(isAlex):
-            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
-        else:
-            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
-        self.analysis.add_to_list(result)
-        #dict
-        if(properties["Filename"] in self.analysis.dictionary):
-            self.analysis.dictionary[properties["Filename"]].append(prediction)
-        else:
-            temp_list = [prediction]
-            print(properties["Filename"],type(properties["Filename"]))
-            self.analysis.dictionary.update({properties["Filename"]: temp_list})
-        print('Added following result to collection: ',result.get_object_properties_list())
-
-    def analysis_classify_recent(self,unknown_argumentxd):
-        if(self.current_model is not None):
-            for index in self.indexes:
-                self.image_object.get_specific_slice(index)
-                if(self.current_features is 'GlcmHaralick'):
-                    predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),self.current_model,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-
-                else:
-                    predict,_ = PredictAlex(self.image_object.get_specific_slice(index),MODEL_ALEX_EXTRACT_PATH,
-                                        MODEL_ALEX_DATA_PATH,self.current_model,isPretrained=False)
-                if(predict[0]=='normal'):
-                    prediction = 'Normal'
-                else:
-                    prediction = 'COVID-19'
-
-                if(self.trainAlex.state is 'down'):
-                    self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index))
-                else:
-                    self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
-            if(len(self.indexes)<=1):
-                text = prediction
-            else:
-                text = 'Automatic analysis finished!\n Go to \'Reports\' to generate a report file'
-            popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
-            popup.open()
-            self.dismiss()
-    def analysis_classify_train(self):
-        # first we train for the first index
-        first_index = self.indexes[0]
-        self.image_object.get_specific_slice(first_index)
-        if(self.trainGlcmHaralick.state is'down'):
-            self.current_features = 'GlcmHaralick'
-            if(self.trainRandomForest.state is 'down'):
-                if(self.trainAuto.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model().modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-                elif(self.trainSqrt.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(max_features='sqrt').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-                else:
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(max_features='log2').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-            else:
-                if(self.trainLbfgs.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model().modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-                elif(self.trainLiblinear.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(solver='liblinear').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-                else:
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(solver='saga').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
-        else:
-            self.current_features = 'Alexnet'
-            if(self.trainRandomForest.state is 'down'):
-                if(self.trainAuto.state is 'down'):
-                   predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,Model().modelRandomForest,isPretrained=False)
-                elif(self.trainSqrt.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,Model(max_features='sqrt').modelRandomForest,isPretrained=False)
-                else:
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,Model(max_features='log2').modelRandomForest,isPretrained=False)
-
-            else:
-                if(self.trainLbfgs.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,Model().modelLogisticRegression,isPretrained=False)
-                elif(self.trainLiblinear.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,Model(solver='liblinear').modelLogisticRegression,isPretrained=False)
-                else:
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
-                                     MODEL_ALEX_DATA_PATH,Model(solver='saga').modelLogisticRegression,isPretrained=False)
-
-
-        if(predict[0]=='normal'):
-            prediction = 'Normal'
-        else:
-            prediction = 'COVID-19'
-        if(self.trainAlex.state is 'down'):
-            self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(first_index))
-        else:
-            self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(first_index))
-
-
-        # for rest of indexes we do analysis classify recent
-        if(len(self.indexes)>1):
-            self.indexes.pop(0)
-            self.analysis_classify_recent(0)
-
-    # print(self.current_model)
-        print('len indexes: ',len(self.indexes))
-        if(len(self.indexes)<=1):
-            text = prediction
-        else:
-            text = 'Automatic analysis finished!\n Go to \'Reports\' to generate a report file'
-        popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
-        popup.open()
-
-
-        self.dismiss()
-
-    def analysis_classify_pretrained(self):
-        filename = ""
-        if(self.preGlcmHaralick.state is'down'):
-            filename+='glcmHaralick'
-            if(self.preSvm.state is 'down'):
-                filename+='Svm'
-                if(self.preLinear.state is 'down'):
-                    filename+='Linear.joblib'
-                else:
-                    filename+='Rbf.joblib'
-            else:
-                filename+='LinearDiscriminant'
-                if(self.preSvd.state is 'down'):
-                    filename+='Svd.joblib'
-                else:
-                    filename+='Lsqr.joblib'
-        else:
-            filename+='alexnet'
-            if(self.preSvm.state is 'down'):
-                filename+='Svm'
-                if(self.preLinear.state is 'down'):
-                    filename+='Linear.joblib'
-                else:
-                    filename+='Rbf.joblib'
-            else:
-                filename+='LinearDiscriminant'
-                if(self.preSvd.state is 'down'):
-                    filename+='Svd.joblib'
-                else:
-                    filename+='Lsqr.joblib'
-
-
-
-        classifier_path = os.path.join(MODELS_FOLDER_PATH,filename)
-
-        for index in self.indexes:
-            if(self.preGlcmHaralick.state is'down'):
-                self.image_object.get_specific_slice(index)
-                predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
-
-                self.current_features_for_automatic = 'GlcmHaralick'
-            else:
-                predict,_ = PredictAlex(self.image_object.get_specific_slice(index),MODEL_ALEX_EXTRACT_PATH,
-                                        MODEL_ALEX_DATA_PATH,
-                                        classifier_path)
-                self.current_features_for_automatic = 'Alexnet'
-            if(predict[0]=='normal'):
-                prediction = 'Normal'
-            else:
-                prediction = 'COVID-19'
-
-            if(self.preAlex.state is 'down'):
-                self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index))
-            else:
-                self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
-        if(len(self.indexes)<=1):
-            text = prediction
-        else:
-            text = 'Automatic analysis finished!\n Go to \'Reports\' to generate a report file'
-        popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
-        popup.open()
-        self.dismiss()
 
 
 
@@ -499,7 +118,7 @@ class RootWidget(FloatLayout):
     def automatic_layer_choice(self):
         lungs,indexes = ChooseSlices.choose(self.image_object)
 
-        self.analysis_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,indexes)
+        self.analysis_popup = AnalysisPopup(self.analysis,self.image_object,self.current_model,indexes)
         if(self.current_model is None):
             self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
         else:
@@ -521,7 +140,7 @@ class RootWidget(FloatLayout):
         #     else:
         #         prediction = 'COVID-19'
         #     self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
-        # auto_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,slices)
+        # auto_popup = AnalysisPopup(self.analysis,self.image_object,self.current_model,slices)
         # auto_popup.open()
         self.current_model =self.analysis_popup.current_model
         # resPop = ResultPopup(analysis=self.analysis)
@@ -545,9 +164,9 @@ class RootWidget(FloatLayout):
 
     def set_layers_button(self):
         if self.image_object.current_slice_number in self.selected_layers:
-            self.add_remove_layer.text = "Remove slice\nfrom analysis"
+            self.add_remove_layer.text = "Remove layer\nfrom analysis"
         else:
-            self.add_remove_layer.text = "Add slice\nto analysis"
+            self.add_remove_layer.text = "Add layer\nto analysis"
 
     def slider_changed_value(self, value):
         """This function changes the displayed image when the slider is moved"""
@@ -729,7 +348,7 @@ class RootWidget(FloatLayout):
 
         if(self.analysis_popup is not None):
             self.current_model = self.analysis_popup.current_model
-        self.analysis_popup = Factory.AnalysisDialog(self.analysis,self.image_object,self.current_model)
+        self.analysis_popup = Factory.AnalysisPopup(self.analysis,self.image_object,self.current_model)
         print(self.current_model)
         if(self.current_model is None):
             self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)

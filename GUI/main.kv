@@ -87,14 +87,18 @@ RootWidget:
                 halign: 'center'
                 valign: 'middle'
                 on_release: root.show_result_popup()
-
+            Button:
+                text: 'Draw lesions'
+                size_hint_max_y: 50
+                on_release: root.draw_lesions()
             Label:
                 id: net_result
                 text: ''
                 size_hint_max_y: 50
-            Button:
-                text: 'Draw lesions'
-                on_release: root.draw_lesions()
+
+            Label:
+                id: space_taker
+                text: ''
 
         BoxLayout:
             orientation: 'vertical'
@@ -119,7 +123,7 @@ RootWidget:
                     on_release: root.load_next_slice(1)
                 Button:
                     id: add_remove_layer
-                    text: 'Add slice\nto analysis'
+                    text: 'Add layer\nto analysis'
                     size_hint_max_x: 100
                     text_size: self.size
                     halign: 'center'
@@ -127,7 +131,7 @@ RootWidget:
                     on_release: root.layer_selection()
             Label:
                 id: slices_info
-                text: 'Slice: 1/1'
+                text: 'Layer: 1/1'
                 size_hint_max_y: 50
                 size: self.size
             MyFigure:
@@ -154,7 +158,7 @@ RootWidget:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
 
-<AnalysisDialog@Popup>:
+<AnalysisPopup@Popup>:
     id: analysis_dialog
     box_layout: box_layout.__self__
     title: 'Choose a classifier'
