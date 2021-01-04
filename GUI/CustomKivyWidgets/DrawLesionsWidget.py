@@ -1,7 +1,8 @@
 # Kivy imports
 from kivy.graphics import Color, Ellipse, Rectangle, Line
 from kivy.uix.image import Image as UixImage
-from kivy.core.image import Image as CoreImage
+from kivy.uix.popup import Popup
+
 
 # Python imports
 from pathlib import Path
@@ -13,21 +14,30 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 from Grayscale import *
 
 
+class DrawPopup(Popup):
+
+    def __init__(self):
+        super().__init__()
+
+
 class DrawFigure(UixImage):
 
-    marked_regions = []
-    current_marked_points = []
+    marked_regions = None
+    current_marked_points = None
+    temp_filename = 'temp.jpg'
 
-    def __init__(self, image_data=None, **kwargs):
-
+    def __init__(self, image_data, **kwargs):
         image = PilImage.fromarray(convert_array_to_grayscale(image_data))
         self.img_width = image_data.shape[1]
         self.img_height = image_data.shape[0]
-        self.temp_filename = 'temp.jpg'
         image.save(self.temp_filename)
         super().__init__(source=self.temp_filename, **kwargs)
         self.id = "draw_figure"
         self.allow_stretch = True
+        self.marked_regions = []
+        self.current_marked_points = []
+        self.canvas.after.clear()
+        self.reload()
         self.rect = None
         self.draw_warning_rectangle()
         self.bind(pos=self.update_size,
@@ -87,12 +97,16 @@ class DrawFigure(UixImage):
         return super(DrawFigure, self).on_touch_down(touch)
 
     def add_new_region(self, *args):
-        self.marked_regions.append(list(self.current_marked_points))
-        self.current_marked_points = []
-        self.redraw_regions()
+        if len(self.current_marked_points) > 2:
+            self.marked_regions.append(list(self.current_marked_points))
+            self.current_marked_points = []
+            self.redraw_regions()
 
     def delete_current_region(self, *args):
-        self.current_marked_points = []
+        if self.current_marked_points:
+            self.current_marked_points = []
+        else:
+            self.marked_regions = self.marked_regions[0:-1]
         self.redraw_regions()
 
     def calculate_coefficients(self, size, pos):
@@ -131,11 +145,10 @@ class DrawFigure(UixImage):
                 Line(points=points_flatten, width=1, close=True)
 
     def get_regions(self):
-
         return self.marked_regions
 
     def finish_drawing(self, *args):
-        if self.current_marked_points:
+        if len(self.current_marked_points) > 2:
             self.add_new_region()
             self.add_new_region()
         Path(self.temp_filename).unlink()
@@ -147,7 +160,7 @@ class DrawFigure(UixImage):
         w, h = self.calculate_image_size(self.size)
 
         with self.canvas.before:
-            Color(1, 0, 0, 0.5)  # green; colors range from 0-1 instead of 0-255
+            Color(1, 0, 0, 0.5)
             self.rect = Rectangle(size=(w, h),
                                   pos=(x, y))
 

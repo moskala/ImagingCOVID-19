@@ -107,6 +107,10 @@ def fill_selected_regions_on_mask(image_size, regions_points):
     return mask
 
 
+def flip_mask_vertically(mask):
+    return np.flip(mask, 0)
+
+
 def compare_plots(image1, image2):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
     ax1.imshow(image1)

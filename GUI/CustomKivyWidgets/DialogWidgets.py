@@ -1,6 +1,5 @@
 from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
-from kivy.uix.popup import Popup
 
 
 class LoadDialog(FloatLayout):
@@ -15,10 +14,3 @@ class SaveDialog(FloatLayout):
     img = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
-
-class DrawDialog(Popup):
-    content = ObjectProperty(None)
-
-
-class DrawDialogAla(Popup):
-    content = ObjectProperty(None)

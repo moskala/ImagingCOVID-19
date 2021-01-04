@@ -48,7 +48,7 @@ class ImageObject(object):
     # Image object depending on image type
     image_object = None
     # Possible file extenstions for given file format
-    # file_extensions = []
+    file_extensions = None
     
     def __init__(self, src_folder, filename):
         
@@ -59,11 +59,11 @@ class ImageObject(object):
     
     def save_anonymized_file(self, filename, destination_folder):
         """ Method saves current image to destination_folder as filename. """
-        pass
-    
+        raise NotImplementedError("Method should be overrided in derived classes.")
+
     def get_current_slice(self):
         """ Method returns array containing pixel data for current image. """
-        pass
+        return self.pixel_array
 
     def get_next_slice(self, value):
         """
@@ -97,7 +97,7 @@ class ImageObject(object):
         return filename
 
     def check_ct_window(self):
-        ct_window, array = window.check_array_window_or_cut(self.pixel_array)
+        ct_window, min_val, max_val = window.check_array_window(self.get_current_slice())
         return ct_window
 
     def get_info(self):
@@ -117,13 +117,25 @@ class ImageObject(object):
 
     def get_segmented_lungs(self):
         """
-        Methods makes lung segmentations.
+        Method makes lung segmentations.
         :return: numpy array with segmented area of lungs
         """
         raise NotImplementedError("Method should be overrided in derived classes.")
 
     def get_size(self):
+        """
+        Method gets 2-dim size of image
+        :return: image height, image width
+        """
         return self.pixel_array.shape[0], self.pixel_array.shape[1]
+
+    def get_current_grayscale_slice(self):
+        """
+        Method returns grayscale array of current slice.
+        :return: numpy array
+        """
+        raise NotImplementedError("Method should be overrided in derived classes.")
+
 
 
 class DicomImage(ImageObject):
@@ -133,13 +145,12 @@ class DicomImage(ImageObject):
 
     # List containing paths to all dicom images in source folder
     slices_path_list = []
-
-    file_extensions = ["dcm", "DCM"]
     
     def __init__(self, folder, filename):
         
         super().__init__(folder, filename)
         self.file_type = ImageType.DCM
+        self.file_extensions = ["dcm", "DCM"]
         self.image_object = anonym.get_anonymized_dicom(filename, folder)
         if self.image_object is None:
             raise TypeError("Error occurred during loading data.")
@@ -148,7 +159,7 @@ class DicomImage(ImageObject):
         self.slices_path_list = [elem for elem in Path(self.src_folder).iterdir()
                                  if elem.is_file() and elem.suffix[1:] in self.file_extensions]
         self.total_slice_number = len(self.slices_path_list)
-    
+
     def save_anonymized_file(self, filename, destination_folder):
         
         try:
@@ -160,10 +171,6 @@ class DicomImage(ImageObject):
         except Exception as ex:
             print(ex)
             return False
-    
-    def get_current_slice(self):
-        
-        return self.pixel_array
     
     def get_next_slice(self, value):
         
@@ -188,6 +195,10 @@ class DicomImage(ImageObject):
     def get_segmented_lungs(self):
         gray_img = gray.get_grayscale_from_FileDataset(self.image_object)
         return sgKmeans.make_lungmask(gray_img, False)
+
+    def get_current_grayscale_slice(self):
+        gray_img = gray.get_grayscale_from_FileDataset(self.image_object)
+        return gray_img
         
 
 class NiftiImage(ImageObject):
@@ -195,18 +206,18 @@ class NiftiImage(ImageObject):
     Class for representing nifti1 image object.
     """
 
-    file_extensions = ["nii"]
-
     def __init__(self, folder, filename):
         
         super().__init__(folder, filename)
         self.file_type = ImageType.NIFTI
+        self.file_extensions = ["nii"]
+
         self.image_object = anonym.get_anonymized_nifti(filename, folder)
         if self.image_object is None:
             raise TypeError("Error occurred during loading data.")
         self.pixel_array = self.image_object.get_fdata().T
         self.total_slice_number = self.image_object.shape[2]
-    
+
     def save_anonymized_file(self, filename, destination_folder):
         
         try:
@@ -235,82 +246,67 @@ class NiftiImage(ImageObject):
     def get_segmented_lungs(self):
         raise TypeError("Nifti images not supported yet")
 
+    def get_current_grayscale_slice(self):
+        gray_img = gray.get_grayscale_from_nifti_slice(self.src_folder, self.src_filename)
+        return gray_img
 
-class JpgImage(ImageObject):
+
+class OneLayerImage(ImageObject):
+    """
+    Class for representing one layer image object.
+    """
+
+    def __init__(self, folder, filename):
+        super().__init__(folder, filename)
+        self.image_object = anonym.get_anonymized_png_jpg(filename, folder)
+        if self.image_object is None:
+            raise TypeError("Error occurred during loading data.")
+        self.pixel_array = np.array(self.image_object)
+        self.total_slice_number = 1
+
+    def save_anonymized_file(self, filename, destination_folder):
+
+        try:
+            filename = super().get_filename_with_extension(filename)
+            output_file_path = Path(destination_folder) / filename
+            self.image_object.save(output_file_path)
+            return True
+
+        except Exception as ex:
+            print(ex)
+            return False
+
+    def get_next_slice(self, value):
+        return self.pixel_array
+
+    def get_segmented_lungs(self):
+        gray_img = gray.get_grayscale_from_jpg_png(self.pixel_array)
+        return sgKmeans.make_lungmask(gray_img, False)
+
+    def get_current_grayscale_slice(self):
+        gray_img = gray.get_grayscale_from_jpg_png(self.src_folder, self.src_filename)
+        return gray_img
+
+
+class JpgImage(OneLayerImage):
     """
     Class for representing jpg image object.
     """
 
-    file_extensions = ["jpg", "jpeg", "JPG", "JPEG"]
-    
     def __init__(self, folder, filename):
         
         super().__init__(folder, filename)
         self.file_type = ImageType.JPG
-        self.image_object = anonym.get_anonymized_png_jpg(filename, folder)
-        if self.image_object is None:
-            raise TypeError("Error occurred during loading data.")
-        self.pixel_array = np.array(self.image_object)
-        self.total_slice_number = 1
+        self.file_extensions = ["jpg", "jpeg", "JPG", "JPEG"]
     
-    def save_anonymized_file(self, filename, destination_folder):
-        
-        try:
-            filename = super().get_filename_with_extension(filename)
-            output_file_path = Path(destination_folder) / filename
-            self.image_object.save(output_file_path)
-            return True
-        
-        except Exception as ex:
-            print(ex)
-            return False
-    
-    def get_current_slice(self):
-        return self.pixel_array
-    
-    def get_next_slice(self, value):
-        return self.pixel_array
 
-    def get_segmented_lungs(self):
-        gray_img = gray.get_grayscale_from_jpg_png(self.pixel_array)
-        return sgKmeans.make_lungmask(gray_img, False)
-
-
-class PngImage(ImageObject):
+class PngImage(OneLayerImage):
     """
     Class for representing png image object.
     """
 
-    file_extensions = ["png", "PNG"]
-    
     def __init__(self, folder, filename):
-        
+
         super().__init__(folder, filename)
         self.file_type = ImageType.PNG
-        self.image_object = anonym.get_anonymized_png_jpg(filename, folder)
-        if self.image_object is None:
-            raise TypeError("Error occurred during loading data.")
-        self.pixel_array = np.array(self.image_object)
-        self.total_slice_number = 1
-    
-    def save_anonymized_file(self, filename, destination_folder):
-        
-        try:
-            filename = super().get_filename_with_extension(filename)
-            output_file_path = Path(destination_folder) / filename
-            self.image_object.save(output_file_path)
-            return True
-        
-        except Exception as ex:
-            print(ex)
-            return False
-    
-    def get_current_slice(self):
-        return self.pixel_array
-    
-    def get_next_slice(self, value):
-        return self.pixel_array
-
-    def get_segmented_lungs(self):
-        gray_img = gray.get_grayscale_from_jpg_png(self.pixel_array)
-        return sgKmeans.make_lungmask(gray_img, False)
+        self.file_extensions = ["png", "PNG"]

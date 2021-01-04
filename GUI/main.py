@@ -8,9 +8,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 
 # Custom kivy widgets imports
-from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog, DrawDialogAla
+from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog
 from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
-from CustomKivyWidgets.DrawLesionsWidget import DrawFigure
+from CustomKivyWidgets.DrawLesionsWidget import DrawPopup, DrawFigure
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
 
 # Python imports
@@ -22,6 +22,7 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 # Implemented methods imports
 from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
 from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
+import LungSegmentation.LungSegmentationUtilities as segmentUtils
 import PlotUtilities as show
 from ImageClass import ImageType, ImageObject, JpgImage, PngImage, DicomImage, NiftiImage
 from net.testNet import Net
@@ -61,7 +62,7 @@ class RootWidget(FloatLayout):
     image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
-    _draw = None
+    _draw_figure = None
     analysis = None
 
     def draw_lesions(self):
@@ -70,16 +71,17 @@ class RootWidget(FloatLayout):
         :return: None
         """
         try:
-            popup = Factory.DrawDialog()
+            self._draw_figure = None
+            popup = Factory.DrawPopup()
+            popup.title = self.image_object.src_filename
             box = popup.ids.draw_panel
-            fig = DrawFigure(image_data=self.image_object.pixel_array)
+            fig = DrawFigure(image_data=self.image_object.get_current_slice())
             box.add_widget(fig, canvas='before')
             popup.ids.add_region_button.bind(on_release=fig.add_new_region)
             popup.ids.delete_region_button.bind(on_release=fig.delete_current_region)
             popup.bind(on_dismiss=self.get_marked_lesions)
-            self._popup = popup
-            self._draw = fig
-            self._popup.open()
+            self._draw_figure = fig
+            popup.open()
         except Exception as error:
             print(error)
 
@@ -91,9 +93,12 @@ class RootWidget(FloatLayout):
         :return:
         """
         try:
-            res = self._draw.finish_drawing()
-            print(res)
-            self._draw = None
+            regions = self._draw_figure.finish_drawing()
+            res = segmentUtils.fill_selected_regions_on_mask(self.image_object.get_size(), regions)
+            self._draw_figure = None
+            res = segmentUtils.flip_mask_vertically(res)
+            plt.imshow(res, cmap='gray')
+            plt.show()
         except Exception as error:
             print(error)
 
@@ -336,6 +341,7 @@ class Main(App):
 Factory.register('RootWidget', cls=RootWidget)
 Factory.register('LoadDialog', cls=LoadDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
+# Factory.register('DrawDialog', cls=DrawDialog)
 
 if __name__ == '__main__':
     Main().run()
