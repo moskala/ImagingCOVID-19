@@ -9,6 +9,7 @@ RootWidget:
     slider: slider.__self__
     net_label: net_result.__self__
     slices_info: slices_info.__self__
+    add_remove_layer: add_remove_layer.__self__
     # dd_btn: btn_dropout
     BoxLayout:
         orientation: 'horizontal'
@@ -57,7 +58,7 @@ RootWidget:
                 on_release: root.lung_segment_kmeans()
             Button:
                 id: button_layers
-                text: 'Automatic\nlayer choice'
+                text: 'Layers\nselection'
                 size_hint_max_y: 50
                 text_size: self.size
                 halign: 'center'
@@ -132,6 +133,14 @@ RootWidget:
                     id: button_next
                     size_hint_max_x: 40
                     on_release: root.load_next_slice(1)
+                Button:
+                    id: add_remove_layer
+                    text: 'Add slice\nto analysis'
+                    size_hint_max_x: 100
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
+                    on_release: root.layer_selection()
             Label:
                 id: slices_info
                 text: 'Slice: 1/1'

@@ -104,6 +104,22 @@ class RootWidget(FloatLayout):
         """not implemented yet"""
         pass
 
+    def layer_selection(self):
+        number = self.image_object.current_slice_number
+        if number in self.selected_layers:
+            self.selected_layers.remove(number)
+            self.add_remove_layer.text = "Add slice\nto analysis"
+        else:
+            self.selected_layers.append(number)
+            self.add_remove_layer.text = "Remove slice\nfrom analysis"
+        print(self.selected_layers)
+
+    def set_layers_button(self):
+        if self.image_object.current_slice_number in self.selected_layers:
+            self.add_remove_layer.text = "Remove slice\nfrom analysis"
+        else:
+            self.add_remove_layer.text = "Add slice\nto analysis"
+
     def slider_changed_value(self, value):
         """This function changes the displayed image when the slider is moved"""
         slice_number = int(value)
@@ -113,6 +129,7 @@ class RootWidget(FloatLayout):
             self.left_panel.add_widget(self.plot)
             self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                             self.image_object.total_slice_number)
+            self.set_layers_button()
 
     def load_next_slice(self, value):
         """This function changes the displayed image when the buttons 'Next' and 'Prev" are pressed"""
@@ -125,6 +142,7 @@ class RootWidget(FloatLayout):
             self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                             self.image_object.total_slice_number)
             self.slider.value = self.image_object.current_slice_number
+            self.set_layers_button()
 
     def dismiss_popup(self):
         """This function closes popup windows"""
@@ -330,6 +348,7 @@ class RootWidget(FloatLayout):
     def __init__(self, *args, **kwargs):
         super(RootWidget, self).__init__(*args, **kwargs)
         print("Create root")
+        self.selected_layers = []
 
 
 class Main(App):
