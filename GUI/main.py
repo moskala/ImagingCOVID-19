@@ -329,7 +329,7 @@ class AnalysisDialog(Popup):
     image_object = ObjectProperty(None)
     analysis = ObjectProperty(None)
     box_layout = ObjectProperty(None)
-    current_model = None
+    current_model = ObjectProperty(None)
     current_features = None
     def __init__(self,analysis,image_object,current_model,indexes = None):
         super().__init__()
@@ -559,8 +559,15 @@ class RootWidget(FloatLayout):
     def automatic_layer_choice(self):
         lungs,indexes = ChooseSlices.choose(self.image_object)
 
-        anal_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,indexes)
-        anal_popup.open()
+        self.analysis_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,indexes)
+        if(self.current_model is None):
+            self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
+        else:
+            bl = BoxLayout(orientation='horizontal')
+            bl.add_widget(Label(text=str(type(self.current_model).__name__)))
+            bl.add_widget(Button(text='Classify',on_release=self.analysis_popup.analysis_classify_recent))
+            self.analysis_popup.box_layout.add_widget(bl,index=9)
+        self.analysis_popup.open()
         # slices = []
         # for index in indexes:
         #     print(index)
@@ -576,7 +583,7 @@ class RootWidget(FloatLayout):
         #     self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
         # auto_popup = AnalysisDialog(self.analysis,self.image_object,self.current_model,slices)
         # auto_popup.open()
-        self.current_model = anal_popup.current_model
+        self.current_model =self.analysis_popup.current_model
         # resPop = ResultPopup(analysis=self.analysis)
         # if(self.analysis is None):
         #     resPop.scroll_view.text+='No analysis made yet'
