@@ -230,9 +230,6 @@ class DicomImage(ImageObject):
     def get_segmented_lungs_watershed(self):
         """This function runs watershed segmentation"""
         try:
-            if self.file_type != ImageType.DCM:
-                print("This method is only for dicom files for now.")
-                return
 
             image_folder = self.src_folder
             slices = sgWatershed.SegmentationA.load_scan(image_folder)
@@ -247,9 +244,6 @@ class DicomImage(ImageObject):
     def get_segmented_lungs_binary(self):
         """This function runs binary segmentation"""
         try:
-            if self.file_type != ImageType.DCM:
-                print("This method is only for dicom files for now.")
-                return
             image_folder = self.src_folder
 
             ct_scan = sgBinary.SegmentationB.read_ct_scan(image_folder)
@@ -264,29 +258,31 @@ class DicomImage(ImageObject):
         return gray_img
 
     def get_segmentation_figure(self):
-        # TODO sprawdzić okno
+        ct_window = self.check_ct_window()
         kmeans = self.get_segmented_lungs()
-        binary = self.get_segmented_lungs_binary()
-        water = self.get_segmented_lungs_watershed()
-        print(type(kmeans))
-        print(type(binary))
-        print(type(water))
+        if ct_window is not None and ct_window != window.CTWindow.GrayscaleWindow:
+            binary = self.get_segmented_lungs_binary()
+            water = self.get_segmented_lungs_watershed()
+            fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2)
+            ax2.imshow(binary, cmap='gray')
+            ax3.imshow(water, cmap='gray')
 
-        fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2)
+            ax2.set_title('Binary segmentation')
+            ax3.set_title('Watershed segmentation')
+
+            ax2.axis('off')
+            ax3.axis('off')
+        else:
+            fig, (ax0, ax1) = plt.subplots(1, 2)
+
         ax0.imshow(self.get_current_slice(), cmap='gray')
-
         ax1.imshow(kmeans, cmap='gray')
-        ax2.imshow(binary, cmap='gray')
-        ax3.imshow(water, cmap='gray')
+
         ax0.axis('off')
         ax1.axis('off')
-        ax2.axis('off')
-        ax3.axis('off')
 
         ax0.set_title('Original image')
         ax1.set_title('KMeans segmentation')
-        ax2.set_title('Binary segmentation')
-        ax3.set_title('Watershed segmentation')
 
         filename = "temp_mask.jpg"
         fig.savefig(filename)
