@@ -5,6 +5,7 @@ import PixelArrays
 import pydicom
 import nibabel
 import numpy as np
+import matplotlib.pyplot as plt
 
 from PIL import Image  
 from enum import Enum
@@ -143,6 +144,19 @@ class ImageObject(object):
         """
         raise NotImplementedError("Method should be overrided in derived classes.")
 
+    def get_segmentation_figure(self):
+        fig, (ax0, ax1) = plt.subplots(1, 2)
+        ax0.imshow(self.get_current_slice(), cmap='gray')
+        ax1.imshow(self.get_segmented_lungs(), cmap='gray')
+        ax0.axis('off')
+        ax1.axis('off')
+        ax0.set_title('Original image')
+        ax1.set_title('KMeans segmentation')
+        filename = "temp_mask.jpg"
+        fig.savefig(filename)
+
+        return filename
+
 
 
 class DicomImage(ImageObject):
@@ -216,15 +230,15 @@ class DicomImage(ImageObject):
     def get_segmented_lungs_watershed(self):
         """This function runs watershed segmentation"""
         try:
-            if self.image_object.file_type != ImageType.DCM:
+            if self.file_type != ImageType.DCM:
                 print("This method is only for dicom files for now.")
                 return
 
-            image_folder = self.image_object.src_folder
-            slices = SegmentationA.load_scan(image_folder)
-            arr = SegmentationA.get_pixels_hu(slices)
+            image_folder = self.src_folder
+            slices = sgWatershed.SegmentationA.load_scan(image_folder)
+            arr = sgWatershed.SegmentationA.get_pixels_hu(slices)
             test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
+                test_marker_external, test_marker_watershed = sgWatershed.SegmentationA.seperate_lungs(arr[self.current_slice_number])
 
             return test_segmented
         except Exception as ex:
@@ -233,13 +247,13 @@ class DicomImage(ImageObject):
     def get_segmented_lungs_binary(self):
         """This function runs binary segmentation"""
         try:
-            if self.image_object.file_type != ImageType.DCM:
+            if self.file_type != ImageType.DCM:
                 print("This method is only for dicom files for now.")
                 return
-            image_folder = self.image_object.src_folder
+            image_folder = self.src_folder
 
-            ct_scan = SegmentationB.read_ct_scan(image_folder)
-            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
+            ct_scan = sgBinary.SegmentationB.read_ct_scan(image_folder)
+            segmented_ct_scan = sgBinary.SegmentationB.segment_lung_from_ct_scan(ct_scan, self.current_slice_number)
 
             return segmented_ct_scan
         except Exception as ex:
@@ -248,6 +262,37 @@ class DicomImage(ImageObject):
     def get_current_grayscale_slice(self):
         gray_img = gray.get_grayscale_from_FileDataset(self.image_object)
         return gray_img
+
+    def get_segmentation_figure(self):
+        # TODO sprawdzić okno
+        kmeans = self.get_segmented_lungs()
+        binary = self.get_segmented_lungs_binary()
+        water = self.get_segmented_lungs_watershed()
+        print(type(kmeans))
+        print(type(binary))
+        print(type(water))
+
+        fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2)
+        ax0.imshow(self.get_current_slice(), cmap='gray')
+
+        ax1.imshow(kmeans, cmap='gray')
+        ax2.imshow(binary, cmap='gray')
+        ax3.imshow(water, cmap='gray')
+        ax0.axis('off')
+        ax1.axis('off')
+        ax2.axis('off')
+        ax3.axis('off')
+
+        ax0.set_title('Original image')
+        ax1.set_title('KMeans segmentation')
+        ax2.set_title('Binary segmentation')
+        ax3.set_title('Watershed segmentation')
+
+        filename = "temp_mask.jpg"
+        fig.savefig(filename)
+
+        return filename
+
         
 
 class NiftiImage(ImageObject):
@@ -335,7 +380,7 @@ class OneLayerImage(ImageObject):
         return self.pixel_array
 
     def get_segmented_lungs(self):
-        gray_img = gray.get_grayscale_from_jpg_png(self.pixel_array)
+        gray_img = gray.get_grayscale_from_jpg_png(self.src_filename, self.src_folder)
         return sgKmeans.make_lungmask(gray_img, False)
 
     def get_current_grayscale_slice(self):
