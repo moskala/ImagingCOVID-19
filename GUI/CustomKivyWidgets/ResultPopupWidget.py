@@ -59,7 +59,6 @@ class ResultPopup(Popup):
     def get_result_array(self,result,withHeaders = False):
         res = result.get_object_properties_list()
         res.pop(1)
-        res.append(result.get_method_name())
         res.insert(0,self.analysis.result_list.index(result)+1)
         if(withHeaders):
             headers = result.get_object_properties_headers()
@@ -107,34 +106,49 @@ class ResultPopup(Popup):
             pdf.ln(font_size)
             pdf.cell(epw, 0.0, 'Analysis details', align='C')
             pdf.ln(font_size)
-            for result in self.analysis.result_list:
-                if(self.analysis.result_list.index(result)==0):
-                    # array with one result
-                    nres = np.transpose(self.get_result_array(result,withHeaders=True))
-                    for row in nres:
-                        for col in row:
-                            pdf.cell(epw/7, font_size, str(col), border=1)
-                        pdf.ln(font_size)
-                else:
-                    nres = np.transpose(self.get_result_array(result))
-                    for col in nres:
-                        pdf.cell(epw/7, font_size, str(col), border=1)
-                    pdf.ln(font_size)
-            pdf.ln(3*font_size)
-            pdf.cell(epw, 0.0, 'Analized images', align='C')
-            pdf.ln(font_size)
-            for result in self.analysis.result_list:
-                res = result.get_object_properties_list()
-                lungs = res[1]
-                lung_image = convert_array_to_grayscale(lungs)
-                im = Image.fromarray(lung_image)
-                number = str(random.randint(0,20000000))
-                print(number)
-                temp_image = folder+'/test'+number+'.jpg'
-                imageio.imwrite(temp_image, lung_image)
-                pdf.add_image_basic(temp_image,res[2]/5,res[3]/5,pdf_w)
-                os.remove(temp_image)
+            diction = self.analysis.get_dictionary_by_method_from_list()
+            for key in diction.keys():
+                parts = key.split(',')
+                pdf.cell(epw,0.0,'Method: '+parts[0]+", CT Window: "+parts[1],align='C')
                 pdf.ln(font_size)
+                for result in diction[key]:
+                    if(diction[key].index(result)==0):
+                        # array with one result
+                        nres = np.transpose(self.get_result_array(result,withHeaders=True))
+                        for row in nres:
+                            for col in row:
+                                if(list(row).index(col)==0):
+                                    pdf.cell(epw/14, font_size, str(col), border=1)
+                                else:
+                                    pdf.cell(13*epw/42, font_size, str(col), border=1)
+                            pdf.ln(font_size)
+                    else:
+                        nres = np.transpose(self.get_result_array(result))
+                        for col in nres:
+                            if(list(nres).index(col)==0):
+                                pdf.cell(epw/14, font_size, str(col), border=1)
+                            else:
+                                pdf.cell(13*epw/42, font_size, str(col), border=1)
+                        pdf.ln(font_size)
+                pdf.ln(2*font_size)
+            
+                pdf.cell(epw, 0.0, 'Analized images', align='C')
+                pdf.ln(font_size)
+                for result in diction[key]:
+                    res = result.get_object_properties_list()
+                    lungs = res[1]
+                    lung_image = convert_array_to_grayscale(lungs)
+                    im = Image.fromarray(lung_image)
+                    number = str(random.randint(0,20000000))
+                    print(number)
+                    temp_image = folder+'/test'+number+'.jpg'
+                    imageio.imwrite(temp_image, lung_image)
+                    parts = res[2].split('x')
+                    pdf.add_image_basic(temp_image,int(parts[0])/5,int(parts[1])/5,pdf_w)
+                    pdf.ln(font_size)
+                    pdf.cell(epw,0.0,'File name: '+res[0],align='L')
+                    os.remove(temp_image)
+                    pdf.ln(font_size)
 
             pdf.ln(3*font_size)
             pdf.cell(epw, 0.0, 'Summary', align='C')

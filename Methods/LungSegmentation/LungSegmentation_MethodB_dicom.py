@@ -58,7 +58,8 @@ class SegmentationB:
         :return: im: numpy ndarray of a 2D slice with segmented lungs
         """        
         # Convert into a binary image. 
-        binary = im < SegmentationB.get12_range(im)
+        # binary = im < SegmentationB.get12_range(im)
+        binary = im < 604
         # plt.imshow(binary, cmap=plt.cm.gray)
         
         # Remove the blobs connected to the border of the image

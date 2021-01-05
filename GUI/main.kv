@@ -34,28 +34,12 @@ RootWidget:
                 on_release: root.show_save()
             Button:
                 id: button_segmentation_A
-                text: 'Segmentation\nWatershed'
+                text: 'Lung tissue\n segmentation'
                 text_size: self.size
                 halign: 'center'
                 valign: 'middle'
                 size_hint_max_y: 50
-                on_release: root.lung_segment_watershed()
-            Button:
-                id: button_segmentation_binary
-                text: 'Segmentation\nBinary'
-                size_hint_max_y: 50
-                text_size: self.size
-                halign: 'center'
-                valign: 'middle'
-                on_release: root.lung_segment_binary()
-            Button:
-                id: button_segmentation_KMeansBinary
-                text: 'Segmentation\nKMeans'
-                text_size: self.size
-                halign: 'center'
-                valign: 'middle'
-                size_hint_max_y: 50
-                on_release: root.lung_segment_kmeans()
+                on_release: root.lung_tissue_segmentation()
             Button:
                 id: button_layers
                 text: 'Layers\nselection'
@@ -409,6 +393,18 @@ RootWidget:
         size_hint_y: None
         height: 44
         on_release: root.select('item2')
+
+<LungSegmentationPopup@Popup>:
+    title: 'Lung tissue segmentation comparison'
+    id: lung_segmentation
+    box_layout: box_layout.__self__
+    BoxLayout:
+        orientation:'vertical'
+        id: box_layout
+        Button:
+            text:'Close'
+            size_hint_max_y: 50
+            on_release:lung_segmentation.dismiss()
 
 <DrawPopup@Popup>:
     id: draw_dialog
