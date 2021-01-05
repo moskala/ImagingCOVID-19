@@ -358,6 +358,7 @@ class RootWidget(FloatLayout):
             bl.add_widget(Button(text='Classify',on_release=self.analysis_popup.analysis_classify_recent))
             self.analysis_popup.box_layout.add_widget(bl,index=9)
         self.analysis_popup.open()
+        self.current_model =self.analysis_popup.current_model
 
 
 
@@ -391,7 +392,7 @@ class RootWidget(FloatLayout):
         else:
             for result in self.analysis.result_list:
                 res = result.get_object_properties_list()
-                string ='File name: '+ res[0]+"    Result: "+res[5]+'    Method: '+result.get_method_name()+'\n'
+                string ='File name: '+ res[0]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
                 popup.scroll_view.text+=string
         #popup.scroll_view.add_widget(grid, index=0)
         popup.open()

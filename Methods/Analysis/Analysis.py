@@ -15,6 +15,17 @@ class Analysis():
     def add_to_list(self,result):
         self.result_list.append(result)
 
+    def get_dictionary_by_method_from_list(self):
+        dictionary_method = {}
+        for result in self.result_list:
+            method = result.get_method_name()+","+str(result.get_object_ct_window())
+            if(dictionary_method.keys().__contains__(method)):
+                dictionary_method[method].append(result)
+            else:
+                temp_list = [result]
+                dictionary_method.update({method:temp_list})
+        return dictionary_method   
+
     def get_analysis_summary_headers(self):
         res = []
         res.append('Total number of layers')
