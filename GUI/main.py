@@ -215,7 +215,8 @@ class RootWidget(FloatLayout):
     def lung_tissue_segmentation(self):
         popup = LungSegmentationPopup(self.image_object)
         popup.open()
-        self.load_specific_slice(self.image_object.current_slice_number)
+        plt.close('all')
+        # self.load_specific_slice(self.image_object.current_slice_number)
 
 
     def add_result_to_analysis(self,isAlex,prediction,slic):
@@ -349,6 +350,7 @@ class RootWidget(FloatLayout):
         super(RootWidget, self).__init__(*args, **kwargs)
         print("Create root")
         self.selected_layers = []
+        self.image_object = JpgImage(GUI_FOLDER, START_IMAGE)
 
 
 class Main(App):
