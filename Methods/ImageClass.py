@@ -213,6 +213,38 @@ class DicomImage(ImageObject):
         gray_img = gray.get_grayscale_from_FileDataset(self.image_object)
         return sgKmeans.make_lungmask(gray_img, False)
 
+    def get_segmented_lungs_watershed(self):
+        """This function runs watershed segmentation"""
+        try:
+            if self.image_object.file_type != ImageType.DCM:
+                print("This method is only for dicom files for now.")
+                return
+
+            image_folder = self.image_object.src_folder
+            slices = SegmentationA.load_scan(image_folder)
+            arr = SegmentationA.get_pixels_hu(slices)
+            test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
+                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
+
+            return test_segmented
+        except Exception as ex:
+            print(ex)
+    
+    def get_segmented_lungs_binary(self):
+        """This function runs binary segmentation"""
+        try:
+            if self.image_object.file_type != ImageType.DCM:
+                print("This method is only for dicom files for now.")
+                return
+            image_folder = self.image_object.src_folder
+
+            ct_scan = SegmentationB.read_ct_scan(image_folder)
+            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
+
+            return segmented_ct_scan
+        except Exception as ex:
+            print(ex)
+
     def get_current_grayscale_slice(self):
         gray_img = gray.get_grayscale_from_FileDataset(self.image_object)
         return gray_img
@@ -266,7 +298,8 @@ class NiftiImage(ImageObject):
         return self.pixel_array[self.current_slice_number]
 
     def get_segmented_lungs(self):
-        raise TypeError("Nifti images not supported yet")
+        gray_img = gray.convert_array_to_grayscale(self.get_current_slice())
+        return sgKmeans.make_lungmask(gray_img, False)
 
     def get_current_grayscale_slice(self):
         gray_img = gray.get_grayscale_from_nifti_slice(self.src_folder, self.src_filename)

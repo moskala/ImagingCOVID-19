@@ -26,6 +26,7 @@ from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
 from CustomKivyWidgets.DrawLesionsWidgets import DrawPopup, DrawFigure
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
 from CustomKivyWidgets.AnalysisPopup import AnalysisPopup
+from CustomKivyWidgets.LungSegmentationPopup import LungSegmentationPopup
 
 # Python imports
 import matplotlib.pyplot as plt
@@ -127,31 +128,7 @@ class RootWidget(FloatLayout):
             bl.add_widget(Button(text='Classify',on_release=self.analysis_popup.analysis_classify_recent))
             self.analysis_popup.box_layout.add_widget(bl,index=9)
         self.analysis_popup.open()
-        # slices = []
-        # for index in indexes:
-        #     print(index)
-        #     slices.append(self.image_object.get_specific_slice(index))
-        #     predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
-
-        #     # plt.imshow(self.image_object.get_specific_slice(index),cmap='gray')
-        #     # plt.show()
-        #     if(predict[0]=='normal'):
-        #         prediction = 'Normal'
-        #     else:
-        #         prediction = 'COVID-19'
-        #     self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
-        # auto_popup = AnalysisPopup(self.analysis,self.image_object,self.current_model,slices)
-        # auto_popup.open()
         self.current_model =self.analysis_popup.current_model
-        # resPop = ResultPopup(analysis=self.analysis)
-        # if(self.analysis is None):
-        #     resPop.scroll_view.text+='No analysis made yet'
-        # else:
-        #     for result in self.analysis.result_list:
-        #         res = result.get_object_properties_list()
-        #         string ='File name: '+ res[0]+"    Result: "+res[5]+'    Method: '+result.get_method_name()+'\n'
-        #         resPop.scroll_view.text+=string
-        # resPop.open()
 
     def layer_selection(self):
         number = self.image_object.current_slice_number
@@ -218,15 +195,8 @@ class RootWidget(FloatLayout):
     def lung_segment_binary(self):
         """This function runs binary lung segmentation"""
         try:
-            if self.image_object.file_type != ImageType.DCM:
-                print("This method is only for dicom files for now.")
-                return
-            image_folder = self.image_object.src_folder
-
-            ct_scan = SegmentationB.read_ct_scan(image_folder)
-            segmented_ct_scan = SegmentationB.segment_lung_from_ct_scan(ct_scan, self.image_object.current_slice_number)
-
-            plt.imshow(segmented_ct_scan, cmap='gray')
+            segment = self.image_object.get_segmented_lungs_binary()
+            plt.imshow(segment, cmap='gray')
             plt.axis('off')
             plt.show()
         except Exception as ex:
@@ -235,21 +205,18 @@ class RootWidget(FloatLayout):
     def lung_segment_watershed(self):
         """This function runs watershed segmentation"""
         try:
-            if self.image_object.file_type != ImageType.DCM:
-                print("This method is only for dicom files for now.")
-                return
-
-            image_folder = self.image_object.src_folder
-            slices = SegmentationA.load_scan(image_folder)
-            arr = SegmentationA.get_pixels_hu(slices)
-            test_segmented, test_lungfilter, test_outline, test_watershed, test_sobel_gradient, test_marker_internal, \
-                test_marker_external, test_marker_watershed = SegmentationA.seperate_lungs(arr[self.image_object.current_slice_number])
-
-            plt.imshow(test_segmented, cmap='gray')
+            segment = self.image_object.get_segmented_lungs_watershed()
+            plt.imshow(segment, cmap='gray')
             plt.axis('off')
             plt.show()
         except Exception as ex:
             print(ex)
+
+    def lung_tissue_segmentation(self):
+        popup = LungSegmentationPopup(self.image_object)
+        popup.open()
+        self.load_specific_slice(self.image_object.current_slice_number)
+
 
     def add_result_to_analysis(self,isAlex,prediction,slic):
         properties = self.image_object.get_info()
@@ -368,24 +335,6 @@ class RootWidget(FloatLayout):
         :return: None
         """
         properties = self.image_object.get_info()
-        # grid = GridLayout(cols=2,
-        #                   row_force_default=True,
-        #                   row_default_height=20,size_hint_y=None)
-        # for key, value in properties.items():
-        #     prop_name = Label(text=(key+":"), size_hint_x=None, size_hint_y=None,halign='justify')
-        #     prop_value = Label(text=str(value),halign='justify',size_hint_y=None)
-        #     prop_name.bind(size=prop_name.setter('text_size'))
-        #     prop_value.bind(size=prop_value.setter('text_size'))
-        #     grid.add_widget(prop_name)
-        #     grid.add_widget(prop_value)
-        # for key, value in properties.items():
-        #     prop_name = Label(text=(key+":"), size_hint_x=None, size_hint_y=None,halign='justify')
-        #     prop_value = Label(text=str(value),halign='justify',size_hint_y=None)
-        #     prop_name.bind(size=prop_name.setter('text_size'))
-        #     prop_value.bind(size=prop_value.setter('text_size'))
-        #     grid.add_widget(prop_name)
-        #     grid.add_widget(prop_value)
-
         popup = Factory.ResultPopup(analysis = self.analysis)
         if(self.analysis is None):
             popup.scroll_view.text+='No analysis made yet'
@@ -394,7 +343,6 @@ class RootWidget(FloatLayout):
                 res = result.get_object_properties_list()
                 string ='File name: '+ res[0]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
                 popup.scroll_view.text+=string
-        #popup.scroll_view.add_widget(grid, index=0)
         popup.open()
 
     def __init__(self, *args, **kwargs):
