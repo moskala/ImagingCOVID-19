@@ -1,58 +1,63 @@
-from LungSegmentation.LungSegmentation_MethodKMeans_AllTypes import *
-from ImageClass import *
-
-import gc
+# Python imports
+from enum import Enum
 
 
-class ChooseSlices:
-    @staticmethod
-    def choose(image_object, fraction=0.2):
-        # sys.stdout = open("test.txt", "w")
-        print('Processing...')
-        al = []
-        indexes = []
-        one3 = int(image_object.total_slice_number/3)
-        print('one3',one3)
-        two3 = int(one3*2)
-        for i in range(one3,two3,3):
-            try:
-                img = image_object.get_next_slice(i)
-                al.append(make_lungmask(img))
-                print(i)
-                indexes.append(i)
-            except Exception as ex:
-                print(str(ex))
-                print(i)
-                if(ex.args.__contains__('min() arg is an empty sequence')):
-                    continue
-                else:
-                    break
-        # quo = []
-        # gc.disable()
-        # for slc in al:
-        #     flat_list = [item for sublist in slc for item in sublist]
-        #     non_zeros = [element for element in flat_list if element > 0]
-        #     quo.append(len(non_zeros) / len(flat_list))
-        # gc.enable()
-        # quo.sort(reverse=True)
-        # #ind = [quo.index(num) for num in quo if round(num, 1) == threshold]
-        # return [quo.index(num) for num in quo[0:round(fraction*len(quo))]]
+class LayerChoiceType(Enum):
+    SINGLE = 0,
+    RANGE = 1,
+    COLLECTION = 2
 
-        ##wersja ze slownikiem
-        # quo={}
-        # gc.disable()
-        # it=0
-        # for slc in al:
-        #     flat_list = [item for sublist in slc for item in sublist]
-        #     non_zeros = [element for element in flat_list if element > 0]
-        #     quo.update({it: len(non_zeros) / len(flat_list)})
-        #     it=it+1
-        # gc.enable()
-        # #quo = dict(sorted(quo.items(), key=lambda item: item[1],reverse=True))
-        # srtd = dict(sorted(quo.items(), key=lambda item: item[1],reverse=True))
-        return al,indexes
-        # print(quo)
-        # print(len(numpy.array(al[40])))
-        # print(len(al))
 
-#numpy.set_printoptions(threshold=sys.maxsize)
+class LayerChoice:
+
+    def __init__(self):
+        self.choice_type = LayerChoiceType.SINGLE
+        self.single_layer = 0
+        self.collection_layers = []
+        self.start_layer = 0
+        self.end_layer = 0
+
+    def get_choice_type(self):
+        return self.choice_type
+
+    def set_choice_type(self, chosen_type):
+        self.choice_type = chosen_type
+
+    def set_choice_singular(self, layer_number):
+        self.choice_type = LayerChoiceType.SINGLE
+        self.single_layer = layer_number
+
+    def update_choice_singular(self, layer_number):
+        self.single_layer = layer_number
+
+    def set_choice_range(self, start_layer, end_layer):
+        self.choice_type = LayerChoiceType.RANGE
+        self.start_layer = start_layer
+        self.end_layer = end_layer
+
+    def set_choice_collection(self, layers):
+        self.choice_type = LayerChoiceType.COLLECTION
+        self.collection_layers = layers
+
+    def choose_indexes(self):
+        if self.choice_type == LayerChoiceType.COLLECTION:
+            return self.collection_layers
+        elif self.choice_type == LayerChoiceType.RANGE:
+            return list(range(self.start_layer, self.end_layer+1, 1))
+        else:
+            return [self.single_layer]
+
+    def append_collection_layer(self, layer):
+        self.collection_layers.append(layer)
+
+    def remove_collection_layer(self, layer):
+        self.collection_layers.remove(layer)
+
+    def check_collection_layer(self, layer):
+        return layer in self.collection_layers
+
+    def check_range(self):
+        if self.choice_type == LayerChoiceType.RANGE:
+            return self.start_layer <= self.end_layer
+        else:
+            return True

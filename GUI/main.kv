@@ -441,3 +441,22 @@ RootWidget:
                 id: done_region_button
                 on_release: draw_dialog.dismiss()
                 size_hint_max_y: 50
+
+
+<LayersPopup@Popup>:
+    id: layers_popup
+    auto_dismiss: False
+    title: 'Layers selection'
+    size_hint: (.8, .8)
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [5, 5, 5, 5]
+        BoxLayout:
+            size_hint_max_y: 50
+            orientation: 'horizontal'
+            Button:
+                text: 'Save choice'
+                on_release: app.root.save_layer_selection()
+            Button:
+                text: 'Cancel'
+                on_release: layers_popup.dismiss()

@@ -1,17 +1,17 @@
 # Kivy imports
 from kivy.app import App
-from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.widget import Widget
-from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import ObjectProperty
-from kivy.uix.popup import Popup
-from kivy.uix.scrollview import ScrollView
-from kivy.core.window import Window
-from kivy.logger import Logger
-from kivy.uix.scatter import Scatter
-from kivy.uix.slider import Slider
-from kivy.factory import Factory
-from kivy.uix.gridlayout import GridLayout
+# from kivy.uix.togglebutton import ToggleButton
+# from kivy.uix.widget import Widget
+# from kivy.uix.floatlayout import FloatLayout
+# from kivy.properties import ObjectProperty
+# from kivy.uix.popup import Popup
+# from kivy.uix.scrollview import ScrollView
+# from kivy.core.window import Window
+# from kivy.logger import Logger
+# from kivy.uix.scatter import Scatter
+# from kivy.uix.slider import Slider
+# from kivy.factory import Factory
+# from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
@@ -26,6 +26,7 @@ from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
 from CustomKivyWidgets.DrawLesionsWidgets import DrawPopup, DrawFigure
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
 from CustomKivyWidgets.AnalysisPopup import AnalysisPopup
+from CustomKivyWidgets.LayersPopup import LayersPopup
 
 # Python imports
 import matplotlib.pyplot as plt
@@ -47,7 +48,7 @@ from PredictGLCM import *
 from PredictAlexnet import *
 from PredictHaralick import *
 from PredictGlcmHaralick import *
-from ChooseSlices import *
+from ChooseSlices import LayerChoice, LayerChoiceType
 from Grayscale import *
 from Analysis.Analysis import *
 from Analysis.Result import *
@@ -76,6 +77,9 @@ class RootWidget(FloatLayout):
 
     current_model = None
     analysis_popup = None
+    layers_popup = None
+
+    layer_choice = LayerChoice()
 
     def draw_lesions(self):
         """
@@ -116,57 +120,32 @@ class RootWidget(FloatLayout):
             print(error)
 
     def automatic_layer_choice(self):
-        lungs,indexes = ChooseSlices.choose(self.image_object)
+        self.layers_popup = Factory.LayersPopup(self.layer_choice)
+        self.layers_popup.open()
 
-        self.analysis_popup = AnalysisPopup(self.analysis,self.image_object,self.current_model,indexes)
-        if(self.current_model is None):
-            self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
-        else:
-            bl = BoxLayout(orientation='horizontal')
-            bl.add_widget(Label(text=str(type(self.current_model).__name__)))
-            bl.add_widget(Button(text='Classify',on_release=self.analysis_popup.analysis_classify_recent))
-            self.analysis_popup.box_layout.add_widget(bl,index=9)
-        self.analysis_popup.open()
-        # slices = []
-        # for index in indexes:
-        #     print(index)
-        #     slices.append(self.image_object.get_specific_slice(index))
-        #     predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH)
-
-        #     # plt.imshow(self.image_object.get_specific_slice(index),cmap='gray')
-        #     # plt.show()
-        #     if(predict[0]=='normal'):
-        #         prediction = 'Normal'
-        #     else:
-        #         prediction = 'COVID-19'
-        #     self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
-        # auto_popup = AnalysisPopup(self.analysis,self.image_object,self.current_model,slices)
-        # auto_popup.open()
-        self.current_model =self.analysis_popup.current_model
-        # resPop = ResultPopup(analysis=self.analysis)
-        # if(self.analysis is None):
-        #     resPop.scroll_view.text+='No analysis made yet'
-        # else:
-        #     for result in self.analysis.result_list:
-        #         res = result.get_object_properties_list()
-        #         string ='File name: '+ res[0]+"    Result: "+res[5]+'    Method: '+result.get_method_name()+'\n'
-        #         resPop.scroll_view.text+=string
-        # resPop.open()
+    def save_layer_selection(self, *args):
+        settings = self.layers_popup.get_settings()
+        if settings is not None:
+            self.layer_choice = settings
+            self.layers_popup.dismiss()
 
     def layer_selection(self):
         number = self.image_object.current_slice_number
-        if number in self.selected_layers:
-            self.selected_layers.remove(number)
+        if self.layer_choice.check_collection_layer(number):
+            self.layer_choice.remove_collection_layer(number)
         else:
-            self.selected_layers.append(number)
+            self.layer_choice.append_collection_layer(number)
         self.set_layers_button()
-        print(self.selected_layers)
 
     def set_layers_button(self):
-        if self.image_object.current_slice_number in self.selected_layers:
+        if self.layer_choice.check_collection_layer(self.image_object.current_slice_number):
             self.add_remove_layer.text = "Remove layer\nfrom analysis"
         else:
             self.add_remove_layer.text = "Add layer\nto analysis"
+
+    def reset_layers_choice(self):
+        self.layer_choice = LayerChoice()
+        self.set_layers_button()
 
     def slider_changed_value(self, value):
         """This function changes the displayed image when the slider is moved"""
@@ -178,6 +157,7 @@ class RootWidget(FloatLayout):
             self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
                                                             self.image_object.total_slice_number)
             self.set_layers_button()
+            self.layer_choice.update_choice_singular(self.image_object.current_slice_number)
 
     def load_specific_slice(self,which_slice):
         if self.plot is not None and self.image_object is not None:
@@ -190,6 +170,7 @@ class RootWidget(FloatLayout):
             #update image object in root widget
             self.image_object.get_specific_slice(slice_number)
             self.slider.value = self.image_object.current_slice_number
+            self.layer_choice.update_choice_singular(self.image_object.current_slice_number)
 
     def load_next_slice(self, value):
         """This function changes the displayed image when the buttons 'Next' and 'Prev" are pressed"""
@@ -203,6 +184,7 @@ class RootWidget(FloatLayout):
                                                             self.image_object.total_slice_number)
             self.slider.value = self.image_object.current_slice_number
             self.set_layers_button()
+            self.layer_choice.update_choice_singular(self.image_object.current_slice_number)
 
     def dismiss_popup(self):
         """This function closes popup windows"""
@@ -334,6 +316,9 @@ class RootWidget(FloatLayout):
         self.dismiss_popup()
         # new analysis initialization
         self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
+        # new layer choice initialization
+        self.reset_layers_choice()
+
 
     def save(self, path, filename):
         """This function runs the saving process after pressing 'Save anonymized file' button"""
@@ -399,7 +384,6 @@ class RootWidget(FloatLayout):
     def __init__(self, *args, **kwargs):
         super(RootWidget, self).__init__(*args, **kwargs)
         print("Create root")
-        self.selected_layers = []
 
 
 class Main(App):
