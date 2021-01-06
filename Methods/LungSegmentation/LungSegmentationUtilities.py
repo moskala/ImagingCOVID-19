@@ -119,12 +119,12 @@ def compare_plots(image1, image2):
 
 def draw_lines_on_image(gray_image, regions_points):
     img = Image.fromarray(gray_image)
-    rgb_img = Image.new("RGBA", img.size)
+    rgb_img = Image.new("RGB", img.size)
     rgb_img.paste(img)
     for points in regions_points:
         map_points = [(x, gray_image.shape[0]-y) for x, y in points]
         map_points.append(map_points[0])
-        ImageDraw.Draw(rgb_img).line(map_points, fill='red', width=3)
+        ImageDraw.Draw(rgb_img).line(map_points, fill='red', width=2)
     image = np.array(rgb_img)
     return image
 
@@ -146,7 +146,7 @@ def draw_lines_on_image(gray_image, regions_points):
 # ax2.imshow(new_mask)
 # plt.show()
 # img = Image.open("..\..\GUI\sample_image.jpg")
-# rgbimg = Image.new("RGBA", img.size)
+# rgbimg = Image.new("RGB", img.size)
 # rgbimg.paste(img)
 # arr = np.array(rgbimg)
 # width = arr.shape[1]
@@ -156,3 +156,5 @@ def draw_lines_on_image(gray_image, regions_points):
 # contours = draw_lines_on_image(np.array(img), [xy])
 # plt.imshow(contours)
 # plt.show()
+
+# im = Image.fromarray(arr, "RGB")

@@ -10,6 +10,7 @@ import sys
 from joblib import load
 import imageio
 from datetime import date
+from PIL import Image as PilImage
 
 # Custom kivy widgets imports
 # sys.path.append(str(Path().resolve()))
@@ -137,12 +138,15 @@ class ResultPopup(Popup):
                 for result in diction[key]:
                     res = result.get_object_properties_list()
                     lungs = res[1]
-                    lung_image = convert_array_to_grayscale(lungs)
-                    im = Image.fromarray(lung_image)
-                    number = str(random.randint(0,20000000))
-                    print(number)
-                    temp_image = folder+'/test'+number+'.jpg'
-                    imageio.imwrite(temp_image, lung_image)
+                    number = str(random.randint(0, 20000000))
+                    temp_image = folder + '/test' + number + '.jpg'
+                    if len(lungs.shape) > 2:
+                        im = PilImage.fromarray(lungs, "RGB")
+                    else:
+                        lung_image = convert_array_to_grayscale(lungs)
+                        im = Image.fromarray(lung_image)
+                    im.save(temp_image)
+                    # imageio.imwrite(temp_image, lung_image)
                     parts = res[2].split('x')
                     pdf.add_image_basic(temp_image,int(parts[0])/5,int(parts[1])/5,pdf_w)
                     pdf.ln(font_size)
