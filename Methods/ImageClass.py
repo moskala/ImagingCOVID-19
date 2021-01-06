@@ -235,10 +235,6 @@ class DicomImage(ImageObject):
         self.pixel_array = self.get_hounsfield()
         return self.pixel_array
 
-    def check_ct_window(self):
-        ct_window, array = window.check_array_window_or_cut(self.get_current_slice())
-        return ct_window
-
     def get_segmented_lungs(self):
         gray_img = gray.get_grayscale_from_FileDataset(self.image_data)
         return sgKmeans.make_lungmask(gray_img, False)
@@ -361,19 +357,32 @@ class NiftiImage(ImageObject):
         except Exception as ex:
             print(ex)
 
-    def check_ct_window(self):
-        ct_window = window.check_array_window(self.get_current_slice())
-        return ct_window
+    def get_segmented_lungs_binary(self):
+        """This function runs binary segmentation"""
+        try:
+            ct_scan = self.get_current_slice()
+            segmented, mask = sgBinary.get_segmented_lungs_and_mask(ct_scan, threshold=-400)
+            segmented = np.where(mask == 1, ct_scan, -2000 * np.ones((len(ct_scan), len(ct_scan[0]))))
+            return segmented
+        except Exception as ex:
+            print(ex)
 
     def get_segmentation_figure(self):
         ct_window = self.check_ct_window()
         kmeans = self.get_segmented_lungs()
         if ct_window is not None and ct_window != window.CTWindow.GrayscaleWindow:
+            binary = self.get_segmented_lungs_binary()
             water = self.get_segmented_lungs_watershed()
+            val_min = min(np.min(binary), np.min(water))
+            val_max = max(np.max(binary), np.max(water))
 
             fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2)
-            ax2.imshow(water, cmap='gray')
-            ax2.set_title('Watershed segmentation')
+            ax2.imshow(binary, cmap='gray', vmin=val_min, vmax=val_max)
+            ax3.imshow(water, cmap='gray', vmin=val_min, vmax=val_max)
+
+            ax2.set_title('Binary segmentation')
+            ax3.set_title('Watershed segmentation')
+
             ax2.axis('off')
             ax3.axis('off')
         else:
@@ -396,18 +405,6 @@ class NiftiImage(ImageObject):
     def get_current_grayscale_slice(self):
         gray_img = gray.get_grayscale_from_nifti_slice(self.src_folder, self.src_filename)
         return gray_img
-
-    def get_segmented_lungs_watershed(self):
-        """This function runs watershed segmentation"""
-        try:
-            segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
-            return segmented
-        except Exception as ex:
-            print(ex)
-
-    def check_ct_window(self):
-        ct_window, array = window.check_array_window_or_cut(self.get_current_slice())
-        return ct_window
 
 
 class OneLayerImage(ImageObject):

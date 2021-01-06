@@ -121,15 +121,16 @@ class SegmentationB:
         return np.asarray([SegmentationB.get_segmented_lungs(slice) for slice in ct_scan])
 
 
-def get_segmented_lungs_and_mask(image_array):
+def get_segmented_lungs_and_mask(image_array, threshold=604):
     """
     This funtion segments the lungs from the given 2D slice in the form of numpy ndarray.
 
+    :param threshold: threshold value for binary image
     :param image_array: numpy ndarray of a 2D slice
     :return: im: numpy ndarray of a 2D slice with segmented lungs
     """
     # Convert into a binary image.
-    binary = image_array < 604
+    binary = image_array < threshold
 
     # Remove the blobs connected to the border of the image
     cleared = clear_border(binary)
