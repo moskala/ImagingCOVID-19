@@ -149,5 +149,56 @@ class SegmentationA:
         
         #Apply the lungfilter (note the filtered areas being assigned -2000 HU)
         segmented = np.where(lungfilter == 1, image, -2000*np.ones((len(image), len(image[0]))))
-        
-        return segmented, lungfilter, outline, watershed, sobel_gradient, marker_internal, marker_external, marker_watershed
+
+        return segmented, lungfilter
+        # return segmented, lungfilter, outline, watershed, sobel_gradient, marker_internal, marker_external, marker_watershed
+
+
+def seperate_lungs_and_mask(image):
+    """
+    Function conducts lung segmentation process using watershed algorithm
+
+    :param image: a pixel array
+    :return: segmented, lungfilter, outline, watershed, sobel_gradient, marker_internal, marker_external, marker_watershed:
+    np ndarrays of segmented lungs (segmented) and other markers used in the process
+    """
+    # Creation of the markers as shown above:
+    marker_internal, marker_external, marker_watershed = SegmentationA.generate_markers(image)
+
+    # Creation of the Sobel-Gradient
+    sobel_filtered_dx = ndimage.sobel(image, 1)
+    sobel_filtered_dy = ndimage.sobel(image, 0)
+    sobel_gradient = np.hypot(sobel_filtered_dx, sobel_filtered_dy)
+    sobel_gradient *= 255.0 / np.max(sobel_gradient)
+
+    # Watershed algorithm
+    watershed = morphology.watershed(sobel_gradient, marker_watershed)
+
+    # Reducing the image created by the Watershed algorithm to its outline
+    outline = ndimage.morphological_gradient(watershed, size=(3, 3))
+    outline = outline.astype(bool)
+
+    # Performing Black-Tophat Morphology for reinclusion
+    # Creation of the disk-kernel and increasing its size a bit
+    blackhat_struct = [[0, 0, 1, 1, 1, 0, 0],
+                       [0, 1, 1, 1, 1, 1, 0],
+                       [1, 1, 1, 1, 1, 1, 1],
+                       [1, 1, 1, 1, 1, 1, 1],
+                       [1, 1, 1, 1, 1, 1, 1],
+                       [0, 1, 1, 1, 1, 1, 0],
+                       [0, 0, 1, 1, 1, 0, 0]]
+    blackhat_struct = ndimage.iterate_structure(blackhat_struct, 8)
+
+    # Perform the Black-Hat
+    outline += ndimage.black_tophat(outline, structure=blackhat_struct)
+
+    # Use the internal marker and the Outline that was just created to generate the lungfilter
+    lungfilter = np.bitwise_or(marker_internal, outline)
+    # Close holes in the lungfilter
+    # fill_holes is not used here, since in some slices the heart would be reincluded by accident
+    lungfilter = ndimage.morphology.binary_closing(lungfilter, structure=np.ones((5, 5)), iterations=3)
+
+    # Apply the lungfilter (note the filtered areas being assigned -2000 HU)
+    segmented = np.where(lungfilter == 1, image, -2000 * np.ones((len(image), len(image[0]))))
+
+    return segmented, lungfilter

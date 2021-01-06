@@ -92,6 +92,9 @@ class SegmentationB:
         # Superimpose the mask on the input image
         get_high_vals = binary == 0
         im[get_high_vals] = 0
+
+        plt.imshow(binary)
+        plt.show()
         
         return im
 
@@ -116,3 +119,48 @@ class SegmentationB:
         :return: numpy ndarray of a 2D slices with segmented lungs
         """  
         return np.asarray([SegmentationB.get_segmented_lungs(slice) for slice in ct_scan])
+
+
+def get_segmented_lungs_and_mask(image_array):
+    """
+    This funtion segments the lungs from the given 2D slice in the form of numpy ndarray.
+
+    :param image_array: numpy ndarray of a 2D slice
+    :return: im: numpy ndarray of a 2D slice with segmented lungs
+    """
+    # Convert into a binary image.
+    binary = image_array < 604
+
+    # Remove the blobs connected to the border of the image
+    cleared = clear_border(binary)
+
+    # Label the image
+    label_image = label(cleared)
+
+    # Keep the labels with 2 largest areas
+    areas = [r.area for r in regionprops(label_image)]
+    areas.sort()
+    if len(areas) > 2:
+        for region in regionprops(label_image):
+            if region.area < areas[-2]:
+                for coordinates in region.coords:
+                    label_image[coordinates[0], coordinates[1]] = 0
+    binary = label_image > 0
+
+    # Closure operation with disk of radius 12
+    selem = disk(2)
+    binary = binary_erosion(binary, selem)
+
+    selem = disk(10)
+    binary = binary_closing(binary, selem)
+
+    # Fill in the small holes inside the lungs
+    edges = roberts(binary)
+    binary = ndi.binary_fill_holes(edges)
+
+    # Superimpose the mask on the input image
+    # get_high_vals = binary == 0
+    # im = image_array.copy()
+    # im[get_high_vals] = 0
+    segmented = np.where(binary == 1, image_array, -2000 * np.ones((len(image_array), len(image_array[0]))))
+    return segmented, binary

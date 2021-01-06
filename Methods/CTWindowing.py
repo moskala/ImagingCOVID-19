@@ -95,7 +95,8 @@ def check_array_window(array):
         if (min_val >= lower_bound) & (max_val <= upper_bound):
             w = window
             break
-
+    if w is None:
+        w = CTWindow.BoneWindow
     return w, min_val, max_val
 
 
