@@ -113,11 +113,11 @@ class RootWidget(FloatLayout):
         try:
             regions = self._draw_figure.finish_drawing()
             percentage, score = self.image_object.calculate_severity(regions)
-            # TODO popup z wynikiem
             result = (percentage, score)
             result_text = str("Volume: {:.2f}%, Severity: {}".format(percentage, score))
+            image_with_points = sgUtils.draw_lines_on_image(self.image_object.get_image_to_draw(), regions)
             self.analysis.add_to_list(SeverityResult(result,
-                                                     self.image_object.get_current_slice(),
+                                                     image_with_points,
                                                      self.image_object.get_info()))
             self._popup = Popup(title="Severity score",
                                 content=Label(text=result_text),

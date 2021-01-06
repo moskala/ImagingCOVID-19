@@ -116,13 +116,25 @@ def compare_plots(image1, image2):
     ax2.imshow(image2)
     plt.show()
 
+
+def draw_lines_on_image(gray_image, regions_points):
+    img = Image.fromarray(gray_image)
+    rgb_img = Image.new("RGBA", img.size)
+    rgb_img.paste(img)
+    for points in regions_points:
+        map_points = [(x, gray_image.shape[0]-y) for x, y in points]
+        map_points.append(map_points[0])
+        ImageDraw.Draw(rgb_img).line(map_points, fill='red', width=3)
+    image = np.array(rgb_img)
+    return image
+
 # import matplotlib.pyplot as plt
 #
 # # Figura
 # t = np.arange(0, 1.1, .1)
 # xs = np.sin(2*np.pi*t)
 # ys = np.cos(2*np.pi*t)
-# xy = list(zip(xs*200+400, ys*200+250))
+# xy = list(zip(xs*100+200, ys*100+200))
 # rog = list(zip(xs*200+400, ys*200+250))
 #
 # img1 = np.zeros((512, 400))
@@ -132,4 +144,15 @@ def compare_plots(image1, image2):
 # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
 # ax1.imshow(mask1)
 # ax2.imshow(new_mask)
+# plt.show()
+# img = Image.open("..\..\GUI\sample_image.jpg")
+# rgbimg = Image.new("RGBA", img.size)
+# rgbimg.paste(img)
+# arr = np.array(rgbimg)
+# width = arr.shape[1]
+# height = arr.shape[0]
+# array = arr.reshape((height, width, 3))
+# img = Image.fromarray(array, mode='RGB')
+# contours = draw_lines_on_image(np.array(img), [xy])
+# plt.imshow(contours)
 # plt.show()
