@@ -427,16 +427,21 @@ RootWidget:
             Button:
                 id: add_region_button
                 text: 'Add region'
-                size_hint_max_y: 50
+                size_hint_max_y: 60
             Button:
                 id: delete_region_button
                 text: 'Delete region'
-                size_hint_max_y: 50
+                size_hint_max_y: 60
             Button:
-                text: 'Done'
+                text: 'Check severity'
                 id: done_region_button
+                on_release: app.root.get_marked_lesions()
+                size_hint_max_y: 60
+            Button:
+                text: 'Cancel'
+                id: cancel_region_button
                 on_release: draw_dialog.dismiss()
-                size_hint_max_y: 50
+                size_hint_max_y: 60
 
 
 <LayersPopup@Popup>:

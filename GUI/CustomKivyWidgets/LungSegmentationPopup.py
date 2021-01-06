@@ -14,6 +14,8 @@ from ImageClass import ImageType
 
 class LungSegmentationPopup(Popup):
 
+    source_file = None
+
     def __init__(self, image_object):
         super().__init__()
         self.image_object = image_object
@@ -24,10 +26,11 @@ class LungSegmentationPopup(Popup):
         image = Image(source=filename)
         bl.add_widget(image)
         self.box_layout.add_widget(bl, index=1)
-        # bl_labels = BoxLayout(orientation='horizontal', size_hint_max_y=50)
-        # bl_labels.add_widget(Label(text='Original image'))
-        # bl_labels.add_widget(Label(text='KMeans segmentation'))
-        # self.box_layout.add_widget(bl_labels, index=1)
         image.reload()
+        self.source_file = filename
+        self.bind(on_dismiss=self.delete_file)
+
+    def delete_file(self, *args):
+        Path(self.source_file).unlink()
 
 

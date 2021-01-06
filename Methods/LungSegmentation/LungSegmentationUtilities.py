@@ -103,7 +103,6 @@ def fill_selected_regions_on_mask(image_size, regions_points):
         temp = np.zeros(image_size)
         temp = fill_polygon_points(temp, pts)
         mask = (mask == 1) | (temp == 1)
-
     return mask
 
 

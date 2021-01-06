@@ -6,6 +6,7 @@ class Result():
     image_width = None
     image_height = None
     file_name = None
+
     def __init__(self,result,lung_image,image_height,image_width,scale,file_name):
         self.result = result
         self.lung_image = lung_image
@@ -57,3 +58,30 @@ class HaralickGlcmResult(Result):
     
     def get_method_name(self):
         return 'Haralick+GLCM'
+
+
+class SeverityResult(Result):
+
+    severity = None
+    percentage = None
+
+    def __init__(self, result, slice, image_properties):
+        super().__init__(result,
+                         lung_image=slice,
+                         image_height=image_properties["Height"],
+                         image_width=image_properties["Width"],
+                         scale=image_properties["CT Window Type"],
+                         file_name=image_properties["Filename"])
+        self.percentage = result[0]
+        self.severity = result[1]
+
+    def get_method_name(self):
+        return 'Severity score'
+
+    def get_object_properties_list(self):
+        res = [self.file_name,
+               self.lung_image,
+               str(self.image_height) + "x" + str(self.image_width),
+               str("{:.2f}%, severity: {}".format(self.percentage, self.severity)),
+               ]
+        return res

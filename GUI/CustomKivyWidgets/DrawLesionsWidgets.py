@@ -150,9 +150,10 @@ class DrawFigure(UixImage):
     def finish_drawing(self, *args):
         if len(self.current_marked_points) > 2:
             self.add_new_region()
-            self.add_new_region()
-        Path(self.temp_filename).unlink()
         return self.marked_regions
+
+    def delete_source_file(self, *args):
+        Path(self.temp_filename).unlink()
 
     def draw_warning_rectangle(self):
 

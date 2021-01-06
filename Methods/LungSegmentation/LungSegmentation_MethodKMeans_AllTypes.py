@@ -82,7 +82,7 @@ def make_lungmask(img, display=False):
     filled_mask = fill_contours(crop_mask, min_length=100)
     # Find convex polygon and change mask
     # final_segment, final_mask = apply_convex_polygon(crop_img, filled_mask)
-    # print("Original shape: {0} Cropped_shape: {1}".format(img.shape, final_segment.shape))
+
     final_mask = filled_mask
     final_segment = final_mask*crop_img
     if display:

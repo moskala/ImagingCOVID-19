@@ -15,6 +15,8 @@ import Grayscale as gray
 import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as sgKmeans
 import LungSegmentation.LungSegmentation_MethodB_dicom as sgBinary
 import LungSegmentation.LungSegmentation_MethodA_dicom as sgWatershed
+import LungSegmentation.LungSegmentationUtilities as sgUtils
+from SeverityScoringSystem import calculate_ratio_tts
 
 
 
@@ -103,14 +105,25 @@ class ImageObject(object):
 
         return filename
 
+    def calculate_severity(self, regions):
+        mask_infection = sgUtils.fill_selected_regions_on_mask(self.get_image_size(), regions)
+        mask_infection = sgUtils.flip_mask_vertically(mask_infection)
+        mask_lungs = self.get_segmented_lungs()
+        ratio, tts = calculate_ratio_tts(mask_lungs, mask_infection)
+        return ratio, tts
+
     def check_ct_window(self):
         ct_window, min_val, max_val = window.check_array_window(self.get_current_slice())
         return ct_window
 
-    def get_info(self):
+    def get_image_size(self):
         array = self.get_current_slice()
         height = array.shape[0]
-        width = array.shape[0]
+        width = array.shape[1]
+        return height, width
+
+    def get_info(self):
+        height, width = self.get_image_size()
         ct_window = self.check_ct_window()
         properties = {
             "Filename": self.src_filename,
@@ -122,20 +135,19 @@ class ImageObject(object):
 
         return properties
 
+    def get_image_to_draw(self):
+        ct_window = self.check_ct_window()
+        if ct_window is not None and ct_window == window.CTWindow.GrayscaleWindow:
+            return self.get_current_slice()
+        else:
+            return window.get_ct_window_grayscale(self.get_current_slice())
+
     def get_segmented_lungs(self):
         """
         Method makes lung segmentations.
         :return: numpy array with segmented area of lungs
         """
         raise NotImplementedError("Method should be overrided in derived classes.")
-
-    def get_size(self):
-        """
-        Method gets 2-dim size of image
-        :return: image height, image width
-        """
-        arr = self.get_current_slice()
-        return arr[0], arr[1]
 
     def get_current_grayscale_slice(self):
         """

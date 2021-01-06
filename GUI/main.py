@@ -92,13 +92,14 @@ class RootWidget(FloatLayout):
             popup = Factory.DrawPopup()
             popup.title = self.image_object.src_filename
             box = popup.ids.draw_panel
-            fig = DrawFigure(image_data=self.image_object.get_current_slice())
+            fig = DrawFigure(image_data=self.image_object.get_image_to_draw())
             box.add_widget(fig, canvas='before')
             popup.ids.add_region_button.bind(on_release=fig.add_new_region)
             popup.ids.delete_region_button.bind(on_release=fig.delete_current_region)
-            popup.bind(on_dismiss=self.get_marked_lesions)
+            popup.bind(on_dismiss=fig.delete_source_file)
             self._draw_figure = fig
-            popup.open()
+            self._draw_popup = popup
+            self._draw_popup.open()
         except Exception as error:
             print(error)
 
@@ -111,12 +112,18 @@ class RootWidget(FloatLayout):
         """
         try:
             regions = self._draw_figure.finish_drawing()
-            res = segmentUtils.fill_selected_regions_on_mask(self.image_object.get_size(), regions)
-            self._draw_figure = None
-            res = segmentUtils.flip_mask_vertically(res)
-            # TODO zamiast wyświetlania zrobić analizę
-            plt.imshow(res, cmap='gray')
-            plt.show()
+            percentage, score = self.image_object.calculate_severity(regions)
+            # TODO popup z wynikiem
+            result = (percentage, score)
+            result_text = str("Volume: {:.2f}%, Severity: {}".format(percentage, score))
+            self.analysis.add_to_list(SeverityResult(result,
+                                                     self.image_object.get_current_slice(),
+                                                     self.image_object.get_info()))
+            self._popup = Popup(title="Severity score",
+                                content=Label(text=result_text),
+                                size_hint=(0.6, 0.6),
+                                auto_dismiss=True)
+            self._popup.open()
         except Exception as error:
             print(error)
 
@@ -339,6 +346,8 @@ class RootWidget(FloatLayout):
         super(RootWidget, self).__init__(*args, **kwargs)
         print("Create root")
         self.image_object = JpgImage(GUI_FOLDER, START_IMAGE)
+        # new analysis initialization
+        self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
 
 
 class Main(App):
