@@ -25,9 +25,6 @@ class XRayJpgImage(JpgImage):
 
         return filename
 
-    def get_ct_window(self):
-        return ctwindow.CTWindow.GrayscaleWindow
-
 
 class XRayPngImage(PngImage):
     """
@@ -49,6 +46,3 @@ class XRayPngImage(PngImage):
         filename = sgUtils.get_segmentation_figure(figures, titles)
 
         return filename
-
-    def get_ct_window(self):
-        return ctwindow.CTWindow.GrayscaleWindow

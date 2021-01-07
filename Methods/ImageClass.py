@@ -148,6 +148,9 @@ class ImageObject(object):
         """
         raise NotImplementedError("Method should be overrided in derived classes.")
 
+    def get_ct_window(self):
+        raise NotImplementedError("Method should be overrided in derived classes.")
+
 
 class DicomImage(ImageObject):
     """
@@ -309,6 +312,9 @@ class OneLayerImage(ImageObject):
     def get_current_grayscale_slice(self):
         gray_img = gray.get_grayscale_from_jpg_png(self.src_filename, self.src_folder)
         return gray_img
+
+    def get_ct_window(self):
+        return ctwindow.CTWindow.GrayscaleWindow
 
 
 class JpgImage(OneLayerImage):
