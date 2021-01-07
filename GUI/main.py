@@ -1,17 +1,8 @@
+from keras.models import *
+from keras.layers import *
+
 # Kivy imports
 from kivy.app import App
-# from kivy.uix.togglebutton import ToggleButton
-# from kivy.uix.widget import Widget
-# from kivy.uix.floatlayout import FloatLayout
-# from kivy.properties import ObjectProperty
-# from kivy.uix.popup import Popup
-# from kivy.uix.scrollview import ScrollView
-# from kivy.core.window import Window
-# from kivy.logger import Logger
-# from kivy.uix.scatter import Scatter
-# from kivy.uix.slider import Slider
-# from kivy.factory import Factory
-# from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
@@ -30,20 +21,14 @@ from CustomKivyWidgets.LungSegmentationPopup import LungSegmentationPopup
 from CustomKivyWidgets.LayersPopup import LayersPopup
 
 # Python imports
-import matplotlib.pyplot as plt
-import csv
-from joblib import load
-import imageio
-from datetime import date
 from pathlib import Path
 import sys
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
 # Implemented methods imports
-from LungSegmentation.LungSegmentation_MethodA_dicom import SegmentationA
-from LungSegmentation.LungSegmentation_MethodB_dicom import SegmentationB
-import LungSegmentation.LungSegmentationUtilities as segmentUtils
 from ImageClass import ImageType, ImageObject, JpgImage, PngImage, DicomImage, NiftiImage
+from CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
+from XRayImageClass import XRayJpgImage, XRayPngImage
 from net.testNet import Net
 from PredictGLCM import *
 from PredictAlexnet import *
@@ -53,10 +38,23 @@ from ChooseSlices import LayerChoice, LayerChoiceType
 from Grayscale import *
 from Analysis.Analysis import *
 from Analysis.Result import *
+from CTWindowing import CTWindow
 
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
+
+
+class ExaminationType(Enum):
+    CT = 0
+    XRAY = 1
+
+    def __str__(self):
+        dictionary = {
+            0: "Computer\ntomography",
+            1: "X-Ray"
+        }
+        return dictionary[self.value]
 
 
 
@@ -70,7 +68,7 @@ class RootWidget(FloatLayout):
     plot = None
     result = None
 
-    image_object = JpgImage(GUI_FOLDER, START_IMAGE)
+    image_object = CTJpgImage(GUI_FOLDER, START_IMAGE)
 
     _popup = None
     _draw_figure = None
@@ -81,6 +79,8 @@ class RootWidget(FloatLayout):
     layers_popup = None
 
     layer_choice = LayerChoice()
+
+    examination_type = None
 
     def draw_lesions(self):
         """
@@ -228,19 +228,10 @@ class RootWidget(FloatLayout):
             self.analysis.dictionary.update({properties["Filename"]: temp_list})
         print('Added following result to collection: ',result.get_object_properties_list())
 
-    def lung_segment_kmeans(self):
-        try:
-            segment = self.image_object.get_segmented_lungs()
-            plt.imshow(segment, cmap='gray')
-            plt.axis('off')
-            plt.show()
-        except Exception as ex:
-            print(ex)
-
     def show_load(self):
         """This function runs load dialog"""
-        
-        content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+        # load=self.load,
+        content = LoadDialog(cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
@@ -254,31 +245,18 @@ class RootWidget(FloatLayout):
 
     def get_file_format(self, filename):
         """This function decides on the displayed image format"""
-        if filename.endswith('.dcm'):
+
+        ext = (filename.split('.'))[-1]
+        if ext in DicomImage.file_extensions:
             return ImageType.DCM
-        elif filename.endswith('.nii'):
+        elif ext in NiftiImage.file_extensions:
             return ImageType.NIFTI
-        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
+        elif ext in JpgImage.file_extensions:
             return ImageType.JPG
-        elif filename.endswith('.png'):
+        elif ext in PngImage.file_extensions:
             return ImageType.PNG
 
-    def load(self, path, filename):
-        """This function runs the load process for an image selected in the load dialog"""
-        image_folder = path
-        image_file_name = str(Path(filename[0]).name)
-
-        file_type = self.get_file_format(image_file_name)
-
-        if file_type == ImageType.DCM:
-            self.image_object = DicomImage(image_folder, image_file_name)
-        elif file_type == ImageType.NIFTI:
-            self.image_object = NiftiImage(image_folder, image_file_name)
-        elif file_type == ImageType.JPG:
-            self.image_object = JpgImage(image_folder, image_file_name)
-        elif file_type == ImageType.PNG:
-            self.image_object = PngImage(image_folder, image_file_name)
-
+    def update_panel(self):
         if self.result is not None:
             self.left_panel.remove_widget(self.result)
 
@@ -297,6 +275,62 @@ class RootWidget(FloatLayout):
         self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
         # new layer choice initialization
         self.reset_layers_choice()
+        self.examination_type_label.text = str(self.examination_type)
+
+        if self.examination_type == ExaminationType.CT:
+            disable = self.image_object.file_type != ImageType.JPG and self.image_object.file_type != ImageType.PNG
+            self.ids.button_net.disabled = disable
+        else:
+            self.ids.button_net.disabled = True
+
+    def load_xray(self, path, filename):
+
+        image_folder = path
+        image_file_name = str(Path(filename[0]).name)
+
+        file_type = self.get_file_format(image_file_name)
+
+        if file_type == ImageType.JPG:
+            self.image_object = XRayJpgImage(image_folder, image_file_name)
+        elif file_type == ImageType.PNG:
+            self.image_object = XRayPngImage(image_folder, image_file_name)
+        else:
+            print("Not supported file type")
+
+        self.examination_type = ExaminationType.XRAY
+        self.update_panel()
+        self.dismiss_popup()
+        # finally:
+        #     if self._popup is not None:
+        #         self.dismiss_popup()
+
+    def load_ct(self, path, filename):
+        """This function runs the load process for an image selected in the load dialog"""
+
+
+        image_folder = path
+        image_file_name = str(Path(filename[0]).name)
+
+        file_type = self.get_file_format(image_file_name)
+
+        if file_type == ImageType.DCM:
+            self.image_object = CTDicomImage(image_folder, image_file_name)
+        elif file_type == ImageType.NIFTI:
+            self.image_object = CTNiftiImage(image_folder, image_file_name)
+        elif file_type == ImageType.JPG:
+            self.image_object = CTJpgImage(image_folder, image_file_name)
+        elif file_type == ImageType.PNG:
+            self.image_object = CTPngImage(image_folder, image_file_name)
+        else:
+            print("Not supported file type")
+
+        self.examination_type = ExaminationType.CT
+        self.update_panel()
+        self.dismiss_popup()
+
+        # finally:
+        #     if self._popup is not None:
+        #         self.dismiss_popup()
 
 
     def save(self, path, filename):
@@ -345,7 +379,8 @@ class RootWidget(FloatLayout):
     def __init__(self, *args, **kwargs):
         super(RootWidget, self).__init__(*args, **kwargs)
         print("Create root")
-        self.image_object = JpgImage(GUI_FOLDER, START_IMAGE)
+        self.image_object = CTJpgImage(GUI_FOLDER, START_IMAGE)
+        self.examination_type = ExaminationType.CT
         # new analysis initialization
         self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
 

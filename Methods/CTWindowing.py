@@ -19,13 +19,15 @@ class CTWindow(Enum):
     SoftTissueWindow = 1
     LungWindow = 2
     BoneWindow = 3
+    Unspecified = 4
 
     def __str__(self):
         dictionary = {
             0: "Grayscale",
             1: "Soft Tissue Window",
             2: "Lung Window",
-            3: "Bone Window"
+            3: "Bone Window",
+            4: "Unspecified"
         }
         return dictionary[self.value]
 
@@ -45,7 +47,12 @@ CT_windows_parameters = {
   CTWindow.SoftTissueWindow: (50, 350),
   CTWindow.LungWindow: (-600, 1500),
   CTWindow.BoneWindow: (300, 2000),
+  CTWindow.Unspecified: (-2000, 2000)
 }
+
+
+def get_window_interval(window_type):
+    return CT_windows_parameters[window_type]
 
 
 def get_window_parameters(ct_window_type):
@@ -80,7 +87,7 @@ def check_array_window(array):
     Function checks in which CT window array values are.
     :param array: 2-dim numpy array
     :return: type of CTWindow which correspond with array values with min and max value
-    or None if no match is found
+    or Unspecified if no match is found
     """
     min_val = np.min(array)
     max_val = np.max(array)
@@ -96,7 +103,7 @@ def check_array_window(array):
             w = window
             break
     if w is None:
-        w = CTWindow.BoneWindow
+        w = CTWindow.Unspecified
     return w, min_val, max_val
 
 

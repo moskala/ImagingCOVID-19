@@ -10,6 +10,8 @@ RootWidget:
     net_label: net_result.__self__
     slices_info: slices_info.__self__
     add_remove_layer: add_remove_layer.__self__
+    button_net: button_net.__self__
+    examination_type_label: examination_type_label.__self__
     # dd_btn: btn_dropout
     BoxLayout:
         orientation: 'horizontal'
@@ -19,6 +21,13 @@ RootWidget:
             id: menu_panel
             orientation: 'vertical'
             size_hint_x: None
+            Label:
+                id: examination_type_label
+                text: "Computer\ntomography"
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+                size_hint_max_y: 50
             Button:
                 id: button_load_image
                 text: 'Load'
@@ -137,10 +146,12 @@ RootWidget:
             Button:
                 text: "Cancel"
                 on_release: root.cancel()
-
             Button:
-                text: "Load"
-                on_release: root.load(filechooser.path, filechooser.selection)
+                text: "Load CT image"
+                on_release: app.root.load_ct(filechooser.path, filechooser.selection)
+            Button:
+                text: "Load X-Ray image"
+                on_release: app.root.load_xray(filechooser.path, filechooser.selection)
 
 <AnalysisPopup@Popup>:
     id: analysis_dialog
@@ -378,22 +389,6 @@ RootWidget:
                 text: 'Close'
                 on_release: result_popup.dismiss()
 
-<CustomDropDown>:
-    Button:
-        text: 'My first Item'
-        size_hint_y: None
-        height: 44
-        on_release: root.select('item1')
-    Label:
-        text: 'Unselectable item'
-        size_hint_y: None
-        height: 44
-    Button:
-        text: 'My second Item'
-        size_hint_y: None
-        height: 44
-        on_release: root.select('item2')
-
 <LungSegmentationPopup@Popup>:
     title: 'Lung tissue segmentation comparison'
     id: lung_segmentation
@@ -444,7 +439,7 @@ RootWidget:
                 on_release: app.root.get_marked_lesions()
                 size_hint_max_y: 50
             Button:
-                text: 'Cancel'
+                text: 'Done'
                 id: cancel_region_button
                 on_release: draw_dialog.dismiss()
                 size_hint_max_y: 50

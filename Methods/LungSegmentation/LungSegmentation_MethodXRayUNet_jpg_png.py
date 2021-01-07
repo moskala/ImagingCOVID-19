@@ -6,11 +6,13 @@ import cv2
 from pathlib import Path
 import scipy.ndimage as ndimage
 import sys
+
+
 sys.path.append(str(Path().resolve().parent))
 from Grayscale import get_grayscale_from_jpg_png
-from LungSegmentationUtilities import fill_contours
+from LungSegmentation.LungSegmentationUtilities import fill_contours
 
-MODEL_WEIGHTS = str(Path().resolve().parent.parent.parent / "models" / "cxr_reg_weights.best.hdf5")
+MODEL_WEIGHTS = str(Path().resolve().parent.parent / "models" / "cxr_reg_weights.best.hdf5")
 INPUT_DIMENSION = 512
 # TODO komentarze!
 
@@ -126,7 +128,7 @@ def make_lungmask(filename, folder):
     mask = predict_single_lung_mask_from_array(img_to_process)
     mask = adjust_mask(mask)
     segment = mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION))
-    return segment
+    return segment, mask
 
 #Testowanie
 # import os

@@ -128,6 +128,46 @@ def draw_lines_on_image(gray_image, regions_points):
     image = np.array(rgb_img)
     return image
 
+
+def get_segmentation_figure(figures, titles):
+
+    if len(figures) < 2:
+        raise ValueError("Too few figures.")
+
+    if len(figures) == 4:
+        fig2 = figures[2]
+        fig3 = figures[3]
+        val_min = min(np.min(fig2), np.min(fig3))
+        val_max = max(np.max(fig2), np.max(fig3))
+
+        fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2)
+        ax2.imshow(fig2, cmap='gray', vmin=val_min, vmax=val_max)
+        ax3.imshow(fig3, cmap='gray', vmin=val_min, vmax=val_max)
+
+        ax2.set_title(titles[2])
+        ax3.set_title(titles[3])
+
+        ax2.axis('off')
+        ax3.axis('off')
+    else:
+        fig, (ax0, ax1) = plt.subplots(1, 2)
+
+    ax0.imshow(figures[0], cmap='gray')
+    ax1.imshow(figures[1], cmap='gray')
+
+    ax0.axis('off')
+    ax1.axis('off')
+
+    ax0.set_title(titles[0])
+    ax1.set_title(titles[1])
+
+    filename = "temp_mask_figure.jpg"
+    fig.savefig(filename)
+
+    return filename
+
+
+
 # import matplotlib.pyplot as plt
 #
 # # Figura

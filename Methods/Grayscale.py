@@ -40,6 +40,8 @@ def convert_array_to_black_white_range(array, black=0, white=255):
     :param white: value correspondent to white level 1
     :return: rescaled array in gray
     """
+    if len(array.shape) > 2:
+        return convert_rgb_to_grayscale(array)
     # convert to float to avoid overflow or underflow losses
     arr = array.copy().astype(float)
     diff = np.abs(white - black)
