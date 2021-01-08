@@ -221,8 +221,7 @@ class RootWidget(FloatLayout):
         plt.close('all')
         # self.load_specific_slice(self.image_object.current_slice_number)
 
-
-    def add_result_to_analysis_neural_network(self,prediction,layer_number):
+    def add_result_to_analysis_neural_network(self, prediction, layer_number):
         properties = self.image_object.get_info()
         result=NeuralNetworkResult(prediction,self.image_object.pixel_array,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number)
         self.analysis.add_to_list(result)
@@ -357,10 +356,10 @@ class RootWidget(FloatLayout):
         self.dismiss_popup()
 
     def show_analysis_popup(self):
-
+        indexes = self.layer_choice.choose_indexes()
         if(self.analysis_popup is not None):
             self.current_model = self.analysis_popup.current_model
-        self.analysis_popup = Factory.AnalysisPopup(self.analysis,self.image_object,self.current_model)
+        self.analysis_popup = Factory.AnalysisPopup(self.analysis, self.image_object, self.current_model, indexes)
         print(self.current_model)
         if(self.current_model is None):
             self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
