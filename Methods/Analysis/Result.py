@@ -103,7 +103,8 @@ class SeverityResult(Result):
         return 'Severity score'
 
     def get_object_properties_list(self):
-        res = [self.file_name,
+        res = [self.layer_number,
+               self.file_name,
                self.lung_image,
                str(self.image_height) + "x" + str(self.image_width),
                str("{:.2f}%, severity: {}".format(self.percentage, self.severity)),

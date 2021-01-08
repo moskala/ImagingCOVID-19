@@ -21,14 +21,12 @@ from Analysis.Result import *
 
 # Paths
 MODELS_FOLDER_PATH = str(Path().resolve().parent.parent / "models")
-MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
 MODEL_ALEX_EXTRACT_PATH = str(Path().resolve().parent.parent / "models" / "featureExtraction.joblib")
 # MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
 MODEL_GLCM_HARALICK_DATA_PATH = str(Path().resolve().parent.parent / "models" / "glcmHaralickData.joblib")
 MODEL_ALEX_DATA_PATH = str(Path().resolve().parent.parent / "models" / "csPrePCAFeatures50.joblib")
 # MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
 # MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
-MODEL_HARALICK_PATH = str(Path().resolve().parent.parent / "models" / "haralickSVM.joblib")
 
 
 class AnalysisPopup(Popup):
