@@ -36,14 +36,14 @@ from PredictHaralick import *
 from PredictGlcmHaralick import *
 from ChooseSlices import LayerChoice, LayerChoiceType
 from Grayscale import *
-from Analysis.Analysis import *
+from Analysis.Analysis import Analysis
 from Analysis.Result import *
 from CTWindowing import CTWindow
 
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
-
+MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
 
 class ExaminationType(Enum):
     CT = 0
@@ -72,7 +72,7 @@ class RootWidget(FloatLayout):
 
     _popup = None
     _draw_figure = None
-    analysis = None
+    analysis = Analysis(slices_number=image_object.total_slice_number)
 
     current_model = None
     analysis_popup = None
@@ -201,9 +201,19 @@ class RootWidget(FloatLayout):
     def neural_network(self):
         """This function runs the neural network process for the displayed image"""
         if self.image_object.file_type == ImageType.JPG or self.image_object.file_type == ImageType.PNG:
-            self.net_label.text = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
+            predict = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
+            if(predict=='normal'):
+                prediction='Normal'
+            else:
+                prediction='COVID-19'
+            if(self.analysis is None):
+                self.analysis=Analysis(slices_number=self.image_object.total_slice_number)
+            self.add_result_to_analysis_neural_network(prediction,self.image_object.current_slice_number)
         else:
-            self.net_label.text = "Network accepts only jpg or png files!"
+            prediction = "Network accepts only jpg or png files!"
+
+        popup = Popup(title='Result',content=Label(text=prediction),size=(400,400),size_hint=(None, None))
+        popup.open()
 
     def lung_tissue_segmentation(self):
         popup = LungSegmentationPopup(self.image_object)
@@ -212,25 +222,21 @@ class RootWidget(FloatLayout):
         # self.load_specific_slice(self.image_object.current_slice_number)
 
 
-    def add_result_to_analysis(self,isAlex,prediction,slic):
+    def add_result_to_analysis_neural_network(self,prediction,layer_number):
         properties = self.image_object.get_info()
-        if(isAlex):
-            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
-        else:
-            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+        result=NeuralNetworkResult(prediction,self.image_object.pixel_array,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number)
         self.analysis.add_to_list(result)
         #dict
-        if(properties["Filename"] in self.analysis.dictionary):
-            self.analysis.dictionary[properties["Filename"]].append(prediction)
+        dict_key = properties["Filename"]+"_"+str(layer_number)
+        if(dict_key in self.analysis.dictionary[self.analysis.current_analysis_index]):
+            self.analysis.dictionary[self.analysis.current_analysis_index][dict_key].append(prediction)
         else:
             temp_list = [prediction]
-            print(properties["Filename"],type(properties["Filename"]))
-            self.analysis.dictionary.update({properties["Filename"]: temp_list})
+            self.analysis.dictionary[self.analysis.current_analysis_index].update({dict_key: temp_list})
         print('Added following result to collection: ',result.get_object_properties_list())
 
     def show_load(self):
         """This function runs load dialog"""
-        # load=self.load,
         content = LoadDialog(cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content,
                             size_hint=(0.9, 0.9))
@@ -255,6 +261,12 @@ class RootWidget(FloatLayout):
             return ImageType.JPG
         elif ext in PngImage.file_extensions:
             return ImageType.PNG
+
+    def update_analysis(self):
+        self.analysis.result_list.append([])
+        self.analysis.dictionary.append({})
+        self.analysis.current_analysis_index+=1
+        self.analysis.slices_number.append(self.image_object.total_slice_number)
 
     def update_panel(self):
         if self.result is not None:
@@ -303,6 +315,7 @@ class RootWidget(FloatLayout):
         # finally:
         #     if self._popup is not None:
         #         self.dismiss_popup()
+        self.update_analysis()
 
     def load_ct(self, path, filename):
         """This function runs the load process for an image selected in the load dialog"""
@@ -327,6 +340,7 @@ class RootWidget(FloatLayout):
         self.examination_type = ExaminationType.CT
         self.update_panel()
         self.dismiss_popup()
+        self.update_analysis()
 
         # finally:
         #     if self._popup is not None:
@@ -370,10 +384,16 @@ class RootWidget(FloatLayout):
         if(self.analysis is None):
             popup.scroll_view.text+='No analysis made yet'
         else:
-            for result in self.analysis.result_list:
-                res = result.get_object_properties_list()
-                string ='File name: '+ res[0]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
-                popup.scroll_view.text+=string
+            counter = 1
+            for anal in self.analysis.result_list:
+                if(len(self.analysis.result_list[self.analysis.result_list.index(anal)])==0):
+                    continue
+                popup.scroll_view.text+='Analysis #'+str(counter)+'\n'
+                for result in anal:
+                    res = result.get_object_properties_list()
+                    string ='File name: '+ res[1]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
+                    popup.scroll_view.text+=string
+                counter+=1
         popup.open()
 
     def __init__(self, *args, **kwargs):

@@ -6,18 +6,20 @@ class Result():
     image_width = None
     image_height = None
     file_name = None
+    layer_number = None
 
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name):
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number):
         self.result = result
         self.lung_image = lung_image
         self.scale = scale
         self.image_height = image_height
         self.image_width = image_width
         self.file_name = file_name
+        self.layer_number = layer_number
 
     def get_object_properties_headers(self):
         res = []
-        res.append('No')
+        res.append('Layer no')
         res.append('File name')
         res.append('Image size')
         res.append('Result')
@@ -25,6 +27,7 @@ class Result():
 
     def get_object_properties_list(self):
         res = []
+        res.append(self.layer_number)
         res.append(self.file_name)
         res.append(self.lung_image)
         res.append(str(self.image_height)+"x"+str(self.image_width))
@@ -34,6 +37,8 @@ class Result():
     def get_object_ct_window(self):
         return self.scale
 
+    def get_classifier(self):
+        return ""
 
     def to_csv(self):
         pass
@@ -46,18 +51,35 @@ class Result():
 
 
 class AlexnetResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name)
-    
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,classifier):
+        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number)
+        self.classifier = classifier
+
+    def get_classifier(self):
+        return type(self.classifier).__name__
+
     def get_method_name(self):
         return 'Alex'
 
+
 class HaralickGlcmResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name)
-    
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,classifier):
+        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number)
+        self.classifier = classifier
+
+    def get_classifier(self):
+        return type(self.classifier).__name__
+
     def get_method_name(self):
         return 'Haralick+GLCM'
+
+
+class NeuralNetworkResult(Result):
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number):
+        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number)
+
+    def get_method_name(self):
+        return 'Neural network for jpg/png'
 
 
 class SeverityResult(Result):
@@ -65,13 +87,15 @@ class SeverityResult(Result):
     severity = None
     percentage = None
 
-    def __init__(self, result, slice, image_properties):
+    def __init__(self, result, slice, image_properties, layer_number):
         super().__init__(result,
                          lung_image=slice,
                          image_height=image_properties["Height"],
                          image_width=image_properties["Width"],
                          scale=image_properties["CT Window Type"],
-                         file_name=image_properties["Filename"])
+                         file_name=image_properties["Filename"],
+                         layer_number=layer_number)
+
         self.percentage = result[0]
         self.severity = result[1]
 

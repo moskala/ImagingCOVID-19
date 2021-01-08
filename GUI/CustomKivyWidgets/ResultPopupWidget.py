@@ -41,26 +41,10 @@ class ResultPopup(Popup):
     def __init__(self,analysis):
         super().__init__()
         self.analysis = analysis
-    def calculate_results(self):
-        how_many_results = [0,0,0] #0-normal,1-covid,2-undefined
-        for key in self.analysis.dictionary:
-            how_many_results_temp = [0,0]
-            for result in self.analysis.dictionary[key]:
-                if(result=='COVID-19'):
-                    how_many_results_temp[1]+=1
-                elif(result=='Normal'):
-                    how_many_results_temp[0]+=1
-            if(how_many_results_temp[0]>0 and how_many_results_temp[1]==0):
-                how_many_results[0]+=1
-            elif(how_many_results_temp[1]>0 and how_many_results_temp[0]==0):
-                how_many_results[1]+=1
-            else:
-                how_many_results[2]+=1
-        return how_many_results
+
     def get_result_array(self,result,withHeaders = False):
         res = result.get_object_properties_list()
-        res.pop(1)
-        res.insert(0,self.analysis.result_list.index(result)+1)
+        res.pop(2)
         if(withHeaders):
             headers = result.get_object_properties_headers()
             nres = np.asarray(res)
@@ -73,20 +57,16 @@ class ResultPopup(Popup):
 
     def generate_report_pdf(self,folder,filename):
         print('comments ',self.comments)
+        if(not '.pdf' in filename):
+            filename+='.pdf'
         outputFile = folder+'/'+filename
         if(self.analysis is None):
                 print("No analisys has been made yet")
                 self._popup.dismiss()
                 return
         else:
-            dateStr = 'Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
-            how_many_slices_analized = len(self.analysis.dictionary.keys())
-            how_many_slices_total = self.analysis.slices_number
-            how_many_results = self.calculate_results()
-            sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
-            snumbers = np.asarray(self.analysis.get_analysis_summary_numbers(how_many_slices_total,how_many_slices_analized,how_many_results))
-            snumbers = np.column_stack((sheaders,snumbers))
-             #pdf
+            dateStr = 'ImagingCOVID-19  -  Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
+            #pdf
             pdf = PDF()
             pdf.add_page()
             # width and height for A4
@@ -105,59 +85,87 @@ class ResultPopup(Popup):
             pdf.ln(font_size)
             pdf.cell(epw, 0.0, self.comments, align='L')
             pdf.ln(font_size)
-            pdf.cell(epw, 0.0, 'Analysis details', align='C')
-            pdf.ln(font_size)
-            diction = self.analysis.get_dictionary_by_method_from_list()
-            for key in diction.keys():
-                parts = key.split(',')
-                pdf.cell(epw,0.0,'Method: '+parts[0]+", CT Window: "+parts[1],align='C')
+            rsnumbers = self.analysis.get_report_summary_numbers()
+            rsheaders = self.analysis.get_report_summary_headers()
+            rsnumbers = np.column_stack((rsheaders,rsnumbers))
+            counter = 1
+            for i in range(len(self.analysis.result_list)):
+                if(len(self.analysis.result_list[i])==0):
+                    continue
+                how_many_slices_analized = len(self.analysis.result_list[i])
+                how_many_slices_total = self.analysis.slices_number[i]
+                how_many_results = self.analysis.calculate_results(i)
+                sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
+                snumbers = np.asarray(self.analysis.get_analysis_summary_numbers(how_many_slices_total,how_many_slices_analized,how_many_results))
+                snumbers = np.column_stack((sheaders,snumbers))
+                pdf.cell(epw, 0.0, 'Analysis details #'+str(counter), align='C')
                 pdf.ln(font_size)
-                for result in diction[key]:
-                    if(diction[key].index(result)==0):
-                        # array with one result
-                        nres = np.transpose(self.get_result_array(result,withHeaders=True))
-                        for row in nres:
-                            for col in row:
-                                if(list(row).index(col)==0):
-                                    pdf.cell(epw/14, font_size, str(col), border=1)
+                diction = self.analysis.get_dictionary_by_method_from_list(i)
+                for key in diction.keys():
+                    parts = key.split(',')
+                    if(len(parts)>2):
+                        pdf.cell(epw,0.0,'Method: '+parts[0]+", CT Window: "+parts[1] + ", Classifier: "+parts[2],align='C')
+                    elif(len(parts)>1):
+                        pdf.cell(epw,0.0,'Method: '+parts[0]+", CT Window: "+parts[1],align='C')
+                    else:
+                        pdf.cell(epw,0.0,'Method: '+parts[0],align='C')
+                    pdf.ln(font_size)
+                    for result in diction[key]:
+                        if(diction[key].index(result)==0):
+                            # array with one result
+                            nres = np.transpose(self.get_result_array(result,withHeaders=True))
+                            for row in nres:
+                                for col in row:
+                                    if(list(row).index(col)==0):
+                                        pdf.cell(epw/10, font_size, str(col), border=1)
+                                    else:
+                                        pdf.cell(9*epw/30, font_size, str(col), border=1)
+                                pdf.ln(font_size)
+                        else:
+                            nres = np.transpose(self.get_result_array(result))
+                            for col in nres:
+                                if(list(nres).index(col)==0):
+                                    pdf.cell(epw/10, font_size, str(col), border=1)
                                 else:
-                                    pdf.cell(13*epw/42, font_size, str(col), border=1)
+                                    pdf.cell(9*epw/30, font_size, str(col), border=1)
                             pdf.ln(font_size)
-                    else:
-                        nres = np.transpose(self.get_result_array(result))
-                        for col in nres:
-                            if(list(nres).index(col)==0):
-                                pdf.cell(epw/14, font_size, str(col), border=1)
-                            else:
-                                pdf.cell(13*epw/42, font_size, str(col), border=1)
+                    pdf.ln(2*font_size)
+                    if(self.analysis.get_actual_analysis_total()<=2 and len(diction[key])<5):
+                        pdf.cell(epw, 0.0, 'Analized images', align='C')
                         pdf.ln(font_size)
-                pdf.ln(2*font_size)
-            
-                pdf.cell(epw, 0.0, 'Analized images', align='C')
-                pdf.ln(font_size)
-                for result in diction[key]:
-                    res = result.get_object_properties_list()
-                    lungs = res[1]
-                    number = str(random.randint(0, 20000000))
-                    temp_image = folder + '/test' + number + '.jpg'
-                    if len(lungs.shape) > 2:
-                        im = PilImage.fromarray(lungs, "RGB")
-                    else:
-                        lung_image = convert_array_to_grayscale(lungs)
-                        im = Image.fromarray(lung_image)
-                    im.save(temp_image)
-                    # imageio.imwrite(temp_image, lung_image)
-                    parts = res[2].split('x')
-                    pdf.add_image_basic(temp_image,int(parts[0])/5,int(parts[1])/5,pdf_w)
-                    pdf.ln(font_size)
-                    pdf.cell(epw,0.0,'File name: '+res[0],align='L')
-                    os.remove(temp_image)
-                    pdf.ln(font_size)
+                        for result in diction[key]:
+                            res = result.get_object_properties_list()
+                            lungs = res[2]
+                            number = str(random.randint(0, 20000000))
+                            temp_image = folder + '/test' + number + '.jpg'
+                            if len(lungs.shape) > 2:
+                                im = PilImage.fromarray(lungs, "RGB")
+                            else:
+                                lung_image = convert_array_to_grayscale(lungs)
+                                im = Image.fromarray(lung_image)
+                            im.save(temp_image)
 
-            pdf.ln(3*font_size)
-            pdf.cell(epw, 0.0, 'Summary', align='C')
+                            parts = res[3].split('x')
+                            h,w = pdf.rescale_image_width_height(int(parts[0]),int(parts[1]),epw)
+                            pdf.add_image_basic(temp_image,h,w,pdf_w)
+                            pdf.ln(font_size)
+                            pdf.cell(epw,0.0,'File name: '+res[1],align='L')
+                            os.remove(temp_image)
+                            pdf.ln(font_size)
+
+                pdf.ln(3*font_size)
+                pdf.cell(epw, 0.0, 'Analysis summary', align='C')
+                pdf.ln(font_size)
+                for row in snumbers:
+                    for col in row:
+                        pdf.cell(epw/2, font_size, str(col), border=1)
+                    pdf.ln(font_size)
+                pdf.ln(3*font_size)
+                counter+=1
+            #report summary
+            pdf.cell(epw, 0.0, 'Report summary', align='C')
             pdf.ln(font_size)
-            for row in snumbers:
+            for row in rsnumbers:
                 for col in row:
                     pdf.cell(epw/2, font_size, str(col), border=1)
                 pdf.ln(font_size)
@@ -167,13 +175,15 @@ class ResultPopup(Popup):
 
     def generate_report_csv(self,folder,filename):
         print('comments ',self.comments)
+        if(not '.csv' in filename):
+            filename+='.csv'
         outputFile = folder+'/'+filename
         if(self.analysis is None):
                 print("No analisys has been made yet")
                 self._popup.dismiss()
                 return
         else:
-            dateStr = 'Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
+            dateStr = 'ImagingCOVID-19  -  Report generated on '+date.today().strftime("%d/%m/%Y")+'\n'
             how_many_slices_analized = len(self.analysis.dictionary.keys())
             how_many_slices_total = self.analysis.slices_number
             how_many_results = self.calculate_results()
@@ -199,7 +209,7 @@ class ResultPopup(Popup):
                     analysis_file.write("\n")
                 # summary
                 analysis_file.write('\n')
-                analysis_file.write('Summary\n')
+                analysis_file.write('Analysis summary\n')
                 analysis_file.write('\n')
                 np.savetxt(analysis_file,snumbers,delimiter=',',fmt='%s')
                 analysis_file.write("\n")

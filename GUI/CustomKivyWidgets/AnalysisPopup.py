@@ -21,7 +21,6 @@ from Analysis.Result import *
 
 # Paths
 MODELS_FOLDER_PATH = str(Path().resolve().parent.parent / "models")
-MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
 MODEL_GLCM_PATH = str(Path().resolve().parent.parent / "models" / "glcmModelFitFinal.joblib")
 MODEL_ALEX_EXTRACT_PATH = str(Path().resolve().parent.parent / "models" / "featureExtraction.joblib")
 # MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
@@ -50,20 +49,21 @@ class AnalysisPopup(Popup):
         else:
             self.indexes = indexes
 
-    def add_result_to_analysis(self,isAlex,prediction,slic):
+    def add_result_to_analysis(self,isAlex,prediction,slic,layer_number,model):
         properties = self.image_object.get_info()
         if(isAlex):
-            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number,model)
         else:
-            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number,model)
         self.analysis.add_to_list(result)
         #dict
-        if(properties["Filename"] in self.analysis.dictionary):
-            self.analysis.dictionary[properties["Filename"]].append(prediction)
+        dict_key = properties["Filename"]+"_"+str(layer_number)
+        if(dict_key in self.analysis.dictionary[self.analysis.current_analysis_index]):
+            self.analysis.dictionary[self.analysis.current_analysis_index][dict_key].append(prediction)
         else:
             temp_list = [prediction]
-            print(properties["Filename"],type(properties["Filename"]))
-            self.analysis.dictionary.update({properties["Filename"]: temp_list})
+            
+            self.analysis.dictionary[self.analysis.current_analysis_index].update({dict_key: temp_list})
         print('Added following result to collection: ',result.get_object_properties_list())
 
     def analysis_classify_recent(self,unknown_argumentxd):
@@ -82,9 +82,9 @@ class AnalysisPopup(Popup):
                     prediction = 'COVID-19'
 
                 if(self.trainAlex.state is 'down'):
-                    self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index))
+                    self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index),index,self.current_model)
                 else:
-                    self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
+                    self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index),index,self.current_model)
             if(len(self.indexes)<=1):
                 text = prediction
             else:
@@ -105,6 +105,7 @@ class AnalysisPopup(Popup):
                     predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(max_features='sqrt').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
                 else:
                     predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(max_features='log2').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                temp_model = Model().modelRandomForest
             else:
                 if(self.trainLbfgs.state is 'down'):
                     predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model().modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
@@ -112,6 +113,7 @@ class AnalysisPopup(Popup):
                     predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(solver='liblinear').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
                 else:
                     predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(solver='saga').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,isPretrained=False)
+                temp_model = Model().modelLogisticRegression
         else:
             self.current_features = 'Alexnet'
             if(self.trainRandomForest.state is 'down'):
@@ -124,7 +126,7 @@ class AnalysisPopup(Popup):
                 else:
                     predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(max_features='log2').modelRandomForest,isPretrained=False)
-
+                temp_model = Model().modelRandomForest
             else:
                 if(self.trainLbfgs.state is 'down'):
                     predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
@@ -135,16 +137,16 @@ class AnalysisPopup(Popup):
                 else:
                     predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(solver='saga').modelLogisticRegression,isPretrained=False)
-
+                temp_model = Model().modelLogisticRegression
 
         if(predict[0]=='normal'):
             prediction = 'Normal'
         else:
             prediction = 'COVID-19'
         if(self.trainAlex.state is 'down'):
-            self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(first_index))
+            self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(first_index),first_index,temp_model)
         else:
-            self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(first_index))
+            self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(first_index),first_index,temp_model)
 
 
         # for rest of indexes we do analysis classify recent
@@ -216,9 +218,9 @@ class AnalysisPopup(Popup):
                 prediction = 'COVID-19'
 
             if(self.preAlex.state is 'down'):
-                self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index))
+                self.add_result_to_analysis(True,prediction,self.image_object.get_specific_slice(index),index,load(classifier_path))
             else:
-                self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index))
+                self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index),index,load(classifier_path))
         if(len(self.indexes)<=1):
             text = prediction
         else:

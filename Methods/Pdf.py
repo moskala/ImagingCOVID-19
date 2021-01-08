@@ -16,6 +16,11 @@ class PDF(FPDF):
         else:
             width+=10
         return width
+    def rescale_image_width_height(self,w,h,epw):
+        new_w = 0.4*epw
+        new_h = new_w/w*h
+        return new_w,new_h
+
     def add_image_basic(self,img,h,w,page_width):
         self.image(img,h=h,w=w)
     def add_image(self,im_jpg,height,width,pdf_h,h,w):
