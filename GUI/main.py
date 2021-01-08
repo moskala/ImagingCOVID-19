@@ -129,7 +129,7 @@ class RootWidget(FloatLayout):
             print(error)
 
     def automatic_layer_choice(self):
-        self.layers_popup = Factory.LayersPopup(self.layer_choice)
+        self.layers_popup = Factory.LayersPopup(self.layer_choice, max_layers_range=self.image_object.total_slice_number)
         self.layers_popup.open()
 
     def save_layer_selection(self, *args):

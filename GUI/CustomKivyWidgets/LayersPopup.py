@@ -17,8 +17,11 @@ from ChooseSlices import LayerChoice, LayerChoiceType
 
 class LayersPopup(Popup):
 
-    def __init__(self, layer_choice: LayerChoice):
+    def __init__(self, layer_choice: LayerChoice, max_layers_range=1):
         super().__init__()
+
+        self.max_layers_range = max_layers_range
+
         grid = GridLayout(cols=3,
                           row_force_default=True,
                           row_default_height=30,
@@ -31,12 +34,6 @@ class LayersPopup(Popup):
         self.box_range.group = "choice"
         self.box_collection.group = "choice"
         self.box_single.group = "choice"
-        if layer_choice.choice_type == LayerChoiceType.SINGLE:
-            self.box_single.active = True
-        elif layer_choice.choice_type == LayerChoiceType.RANGE:
-            self.box_range.active = True
-        else:
-            self.box_collection.active = True
 
         label_range = Label(text="Layers range", width=100, size_hint=(None, 1))
         label_collection = Label(text="User's choice", width=100, size_hint=(None, 1))
@@ -87,19 +84,31 @@ class LayersPopup(Popup):
 
         grid.add_widget(input_box)
 
+        if layer_choice.choice_type == LayerChoiceType.SINGLE:
+            self.box_single.active = True
+        elif layer_choice.choice_type == LayerChoiceType.RANGE:
+            val_from, val_to = layer_choice.get_choice_range()
+            self.box_range.active = True
+            self.input_to.text = str(val_to + 1)
+            self.input_from.text = str(val_from + 1)
+        else:
+            self.box_collection.active = True
+
         self.content.add_widget(grid, index=1)
 
         self.previous_choice = layer_choice
 
         # Warnign
-        self.warning = Label(text='[color=ff0000]Wrong range values![/color]',
+        self.warning = Label(text='[color=ff0000]'
+                                  'Wrong range values!\nShould be in range [1, {}].'                 
+                                  '[/color]'.format(self.max_layers_range),
                              markup=True)
 
     def validate_range(self):
         try:
             val_from = int(self.input_from.text)-1
             val_to = int(self.input_to.text)-1
-            if val_from <= val_to or val_from < 0:
+            if val_from <= val_to  and val_from >= 0 and val_to <= self.max_layers_range:
                 return [val_from, val_to]
             else:
                 return None
@@ -114,7 +123,6 @@ class LayersPopup(Popup):
         elif self.box_range.active:
             limits = self.validate_range()
             if limits is None:
-                print("Warning")
                 self.content.add_widget(self.warning, index=1)
                 return None
             else:
