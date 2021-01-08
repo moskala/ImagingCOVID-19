@@ -92,7 +92,7 @@ class ResultPopup(Popup):
             for i in range(len(self.analysis.result_list)):
                 if(len(self.analysis.result_list[i])==0):
                     continue
-                how_many_slices_analized = len(self.analysis.dictionary[i].keys())
+                how_many_slices_analized = len(self.analysis.result_list[i])
                 how_many_slices_total = self.analysis.slices_number[i]
                 how_many_results = self.analysis.calculate_results(i)
                 sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
@@ -130,7 +130,7 @@ class ResultPopup(Popup):
                                     pdf.cell(9*epw/30, font_size, str(col), border=1)
                             pdf.ln(font_size)
                     pdf.ln(2*font_size)
-                    if(len(self.analysis.result_list)<=2):
+                    if(self.analysis.get_actual_analysis_total()<=2 and len(diction[key])<5):
                         pdf.cell(epw, 0.0, 'Analized images', align='C')
                         pdf.ln(font_size)
                         for result in diction[key]:

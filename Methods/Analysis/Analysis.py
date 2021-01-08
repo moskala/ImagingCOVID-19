@@ -86,14 +86,18 @@ class Analysis():
     
     def get_report_summary_numbers(self):
         res=[]
-        actual_analysis_number = 0
-        for anal in self.result_list:
-            if(len(anal)>0):
-                actual_analysis_number+=1
+        actual_analysis_number = self.get_actual_analysis_total()
         res.append(actual_analysis_number)
         res.extend(self.get_report_summary_result())
         return res
     
+    def get_actual_analysis_total(self):
+        actual_analysis_number = 0
+        for anal in self.result_list:
+            if(len(anal)>0):
+                actual_analysis_number+=1
+        return actual_analysis_number
+
     def get_analysis_summary_numbers(self,total,analyzed,how_many_results):
         return [total,analyzed,how_many_results[1],how_many_results[0],how_many_results[2]]
 

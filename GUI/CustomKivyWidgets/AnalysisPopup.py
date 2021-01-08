@@ -57,12 +57,13 @@ class AnalysisPopup(Popup):
             result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number,model)
         self.analysis.add_to_list(result)
         #dict
-        if(properties["Filename"] in self.analysis.dictionary[self.analysis.current_analysis_index]):
-            self.analysis.dictionary[self.analysis.current_analysis_index][properties["Filename"]].append(prediction)
+        dict_key = properties["Filename"]+"_"+str(layer_number)
+        if(dict_key in self.analysis.dictionary[self.analysis.current_analysis_index]):
+            self.analysis.dictionary[self.analysis.current_analysis_index][dict_key].append(prediction)
         else:
             temp_list = [prediction]
-            print(properties["Filename"],type(properties["Filename"]))
-            self.analysis.dictionary[self.analysis.current_analysis_index].update({properties["Filename"]: temp_list})
+            
+            self.analysis.dictionary[self.analysis.current_analysis_index].update({dict_key: temp_list})
         print('Added following result to collection: ',result.get_object_properties_list())
 
     def analysis_classify_recent(self,unknown_argumentxd):
