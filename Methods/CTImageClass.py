@@ -3,6 +3,7 @@ from ImageClass import *
 import LungSegmentation.LungSegmentation_MethodA_dicom as sgWatershed
 import LungSegmentation.LungSegmentation_MethodB_dicom as sgBinary
 import LungSegmentation.LungSegmentation_MethodKMeans_AllTypes as sgKmeans
+from LungSegmentation.LungSegmentationUtilities import crop_mask_image
 
 
 class CTDicomImage(DicomImage):
@@ -19,8 +20,26 @@ class CTDicomImage(DicomImage):
         return self.ct_window
 
     def get_segmented_lungs(self):
-        gray_img = gray.get_grayscale_from_FileDataset(self.image_data)
-        return sgKmeans.make_lungmask(gray_img, False)
+        gray_img = self.get_current_grayscale_slice()
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+        if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
+            crop_segment, crop_mask = crop_mask_image(segment, mask)
+            return crop_segment
+        else:
+            img = self.get_current_slice()
+            segmented = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            crop_segment, crop_mask = crop_mask_image(segmented, mask)
+            return ctwindow.get_ct_window_grayscale(crop_segment)
+
+    def get_segmented_lungs_kmeans(self):
+        gray_img = self.get_current_grayscale_slice()
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+        if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
+            return segment
+        else:
+            img = self.get_current_slice()
+            segmented = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            return segmented
 
     def get_segmented_lungs_watershed(self):
         """This function runs watershed segmentation"""
@@ -43,7 +62,7 @@ class CTDicomImage(DicomImage):
 
     def get_segmentation_figure(self):
         ct_window = self.check_ct_window()
-        kmeans = self.get_segmented_lungs()
+        kmeans = self.get_segmented_lungs_kmeans()
         figures = [self.get_current_slice(), kmeans]
         titles = ['Original image', 'KMeans segmentation']
 
@@ -74,8 +93,26 @@ class CTNiftiImage(NiftiImage):
         return ct_window
 
     def get_segmented_lungs(self):
-        gray_img = gray.convert_array_to_grayscale(self.get_current_slice())
-        return sgKmeans.make_lungmask(gray_img, False)
+        gray_img = self.get_current_grayscale_slice()
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+        if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
+            crop_segment, crop_mask = crop_mask_image(segment, mask)
+            return crop_segment
+        else:
+            img = self.get_current_slice()
+            segmented = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            crop_segment, crop_mask = crop_mask_image(segmented, mask)
+            return ctwindow.get_ct_window_grayscale(crop_segment)
+
+    def get_segmented_lungs_kmeans(self):
+        gray_img = self.get_current_grayscale_slice()
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+        if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
+            return segment
+        else:
+            img = self.get_current_slice()
+            segmented = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            return segmented
 
     def get_segmented_lungs_watershed(self):
         """This function runs watershed segmentation"""
@@ -97,7 +134,7 @@ class CTNiftiImage(NiftiImage):
 
     def get_segmentation_figure(self):
         ct_window = self.check_ct_window()
-        kmeans = self.get_segmented_lungs()
+        kmeans = self.get_segmented_lungs_kmeans()
         figures = [self.get_current_slice(), kmeans]
         titles = ['Original image', 'KMeans segmentation']
 
@@ -128,10 +165,16 @@ class CTJpgImage(JpgImage):
 
     def get_segmented_lungs(self):
         gray_img = gray.get_grayscale_from_jpg_png(self.src_filename, self.src_folder)
-        return sgKmeans.make_lungmask(gray_img, False)
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=True)
+        return segment
+
+    def get_segmented_lungs_kmeans(self):
+        gray_img = self.get_current_grayscale_slice()
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+        return segment
 
     def get_segmentation_figure(self):
-        kmeans = self.get_segmented_lungs()
+        kmeans = self.get_segmented_lungs_kmeans()
         figures = [self.get_current_slice(), kmeans]
         titles = ['Original image', 'KMeans segmentation']
 
@@ -154,10 +197,16 @@ class CTPngImage(PngImage):
 
     def get_segmented_lungs(self):
         gray_img = gray.get_grayscale_from_jpg_png(self.src_filename, self.src_folder)
-        return sgKmeans.make_lungmask(gray_img, False)
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=True)
+        return segment
+
+    def get_segmented_lungs_kmeans(self):
+        gray_img = self.get_current_grayscale_slice()
+        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+        return segment
 
     def get_segmentation_figure(self):
-        kmeans = self.get_segmented_lungs()
+        kmeans = self.get_segmented_lungs_kmeans()
         figures = [self.get_current_slice(), kmeans]
         titles = ['Original image', 'KMeans segmentation']
 

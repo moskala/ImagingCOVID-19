@@ -277,7 +277,7 @@ class NiftiImage(ImageObject):
         return self.__pixel_array[self.current_slice_number]
 
     def get_current_grayscale_slice(self):
-        gray_img = gray.get_grayscale_from_nifti_slice(self.src_filename, self.src_folder)
+        gray_img = gray.get_grayscale_from_nifti_slice(self.src_filename, self.src_folder, self.current_slice_number)
         return gray_img
 
 
