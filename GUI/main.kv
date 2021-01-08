@@ -7,7 +7,6 @@ RootWidget:
     left_panel: left_panel.__self__
     menu_panel: menu_panel.__self__
     slider: slider.__self__
-    net_label: net_result.__self__
     slices_info: slices_info.__self__
     add_remove_layer: add_remove_layer.__self__
     # dd_btn: btn_dropout
@@ -75,10 +74,6 @@ RootWidget:
                 text: 'Draw lesions'
                 size_hint_max_y: 50
                 on_release: root.draw_lesions()
-            Label:
-                id: net_result
-                text: ''
-                size_hint_max_y: 50
 
             Label:
                 id: space_taker

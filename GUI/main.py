@@ -50,13 +50,19 @@ from PredictHaralick import *
 from PredictGlcmHaralick import *
 from ChooseSlices import *
 from Grayscale import *
-from Analysis.Analysis import *
+from Analysis.Analysis import Analysis
 from Analysis.Result import *
+# except ModuleNotFoundError as err:
+#     popup = Popup(content=Label(text='ModuleNotFoundError has occured. Please make sure all the original files are in the folder \'Folder\''))
+#     popup.open()
+# except:
+#     popup = Popup(content=Label(text='Unknown has occured. Please make sure all the original files are in the folder \'Folder\''))
+#     popup.open()
 
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
-
+MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
 
 
 class RootWidget(FloatLayout):
@@ -73,7 +79,7 @@ class RootWidget(FloatLayout):
 
     _popup = None
     _draw_figure = None
-    analysis = None
+    analysis = Analysis(slices_number=image_object.total_slice_number)
 
     current_model = None
     analysis_popup = None
@@ -188,9 +194,19 @@ class RootWidget(FloatLayout):
     def neural_network(self):
         """This function runs the neural network process for the displayed image"""
         if self.image_object.file_type == ImageType.JPG or self.image_object.file_type == ImageType.PNG:
-            self.net_label.text = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
+            predict = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
+            if(predict=='normal'):
+                prediction='Normal'
+            else:
+                prediction='COVID-19'
+            if(self.analysis is None):
+                self.analysis=Analysis(slices_number=self.image_object.total_slice_number)
+            self.add_result_to_analysis_neural_network(prediction,self.image_object.current_slice_number)
         else:
-            self.net_label.text = "Network accepts only jpg or png files!"
+            prediction = "Network accepts only jpg or png files!"
+        
+        popup = Popup(title='Result',content=Label(text=prediction),size=(400,400),size_hint=(None, None))
+        popup.open()
 
     def lung_segment_binary(self):
         """This function runs binary lung segmentation"""
@@ -219,20 +235,17 @@ class RootWidget(FloatLayout):
         # self.load_specific_slice(self.image_object.current_slice_number)
 
 
-    def add_result_to_analysis(self,isAlex,prediction,slic):
+    def add_result_to_analysis_neural_network(self,prediction,layer_number):
         properties = self.image_object.get_info()
-        if(isAlex):
-            result = AlexnetResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
-        else:
-            result = HaralickGlcmResult(prediction,slic,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"])
+        result=NeuralNetworkResult(prediction,self.image_object.pixel_array,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number)
         self.analysis.add_to_list(result)
         #dict
-        if(properties["Filename"] in self.analysis.dictionary):
-            self.analysis.dictionary[properties["Filename"]].append(prediction)
+        if(properties["Filename"] in self.analysis.dictionary[self.analysis.current_analysis_index]):
+            self.analysis.dictionary[self.analysis.current_analysis_index][properties["Filename"]].append(prediction)
         else:
             temp_list = [prediction]
             print(properties["Filename"],type(properties["Filename"]))
-            self.analysis.dictionary.update({properties["Filename"]: temp_list})
+            self.analysis.dictionary[self.analysis.current_analysis_index].update({properties["Filename"]: temp_list})
         print('Added following result to collection: ',result.get_object_properties_list())
 
     def lung_segment_kmeans(self):
@@ -301,7 +314,10 @@ class RootWidget(FloatLayout):
                                                         self.image_object.total_slice_number)
         self.dismiss_popup()
         # new analysis initialization
-        self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
+        self.analysis.result_list.append([])
+        self.analysis.dictionary.append({})
+        self.analysis.current_analysis_index+=1
+        self.analysis.slices_number.append(self.image_object.total_slice_number)
 
     def save(self, path, filename):
         """This function runs the saving process after pressing 'Save anonymized file' button"""
@@ -340,10 +356,16 @@ class RootWidget(FloatLayout):
         if(self.analysis is None):
             popup.scroll_view.text+='No analysis made yet'
         else:
-            for result in self.analysis.result_list:
-                res = result.get_object_properties_list()
-                string ='File name: '+ res[0]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
-                popup.scroll_view.text+=string
+            counter = 1
+            for anal in self.analysis.result_list:
+                if(len(self.analysis.result_list[self.analysis.result_list.index(anal)])==0):
+                    continue
+                popup.scroll_view.text+='Analysis #'+str(counter)+'\n'
+                for result in anal:
+                    res = result.get_object_properties_list()
+                    string ='File name: '+ res[1]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
+                    popup.scroll_view.text+=string
+                counter+=1
         popup.open()
 
     def __init__(self, *args, **kwargs):
@@ -363,3 +385,5 @@ Factory.register('SaveDialog', cls=SaveDialog)
 
 if __name__ == '__main__':
     Main().run()
+    
+    

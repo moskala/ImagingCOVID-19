@@ -6,6 +6,7 @@ import sys
 from kivy.uix.label import Label
 from pathlib import Path
 import matplotlib.pyplot as plt
+import os
 
 sys.path.append(str(Path().resolve().parent.parent / "Methods"))
 from ImageClass import ImageType
@@ -29,5 +30,6 @@ class LungSegmentationPopup(Popup):
         # bl_labels.add_widget(Label(text='KMeans segmentation'))
         # self.box_layout.add_widget(bl_labels, index=1)
         image.reload()
+        os.remove(filename)
 
 

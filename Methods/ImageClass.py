@@ -111,7 +111,7 @@ class ImageObject(object):
     def get_info(self):
         array = self.pixel_array
         height = array.shape[0]
-        width = array.shape[0]
+        width = array.shape[1]
         ct_window = self.check_ct_window()
         properties = {
             "Filename": self.src_filename,
@@ -266,11 +266,8 @@ class DicomImage(ImageObject):
     def get_segmentation_figure(self):
         # TODO sprawdzić okno
         kmeans = self.get_segmented_lungs()
-        binary = self.get_segmented_lungs_binary()
+        binary =self.get_segmented_lungs_binary()
         water = self.get_segmented_lungs_watershed()
-        print(type(kmeans))
-        print(type(binary))
-        print(type(water))
 
         fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(2, 2)
         ax0.imshow(self.get_current_slice(), cmap='gray')
@@ -350,6 +347,20 @@ class NiftiImage(ImageObject):
         gray_img = gray.get_grayscale_from_nifti_slice(self.src_folder, self.src_filename)
         return gray_img
 
+    def get_info(self):
+        array = self.pixel_array
+        height = array.shape[1]
+        width = array.shape[2]
+        ct_window = self.check_ct_window()
+        properties = {
+            "Filename": self.src_filename,
+            "File type": self.file_type,
+            "Height": height,
+            "Width": width,
+            "CT Window Type": ct_window
+        }
+
+        return properties
 
 class OneLayerImage(ImageObject):
     """
