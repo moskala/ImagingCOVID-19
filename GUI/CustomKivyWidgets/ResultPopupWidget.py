@@ -34,6 +34,7 @@ from Analysis.Analysis import *
 from Analysis.Result import *
 
 
+
 class ResultPopup(Popup):
     analysis = ObjectProperty(None)
     content = ObjectProperty(None)
@@ -98,17 +99,15 @@ class ResultPopup(Popup):
                 sheaders = np.asarray(self.analysis.get_analysis_summary_headers())
                 snumbers = np.asarray(self.analysis.get_analysis_summary_numbers(how_many_slices_total,how_many_slices_analized,how_many_results))
                 snumbers = np.column_stack((sheaders,snumbers))
-                pdf.cell(epw, 0.0, 'Analysis details #'+str(counter), align='C')
+                pdf.cell(epw, 0.0, 'Examination details #'+str(counter), align='C')
                 pdf.ln(font_size)
                 diction = self.analysis.get_dictionary_by_method_from_list(i)
                 for key in diction.keys():
                     parts = key.split(',')
-                    if(len(parts)>2):
-                        pdf.cell(epw,0.0,'Method: '+parts[0]+", CT Window: "+parts[1] + ", Classifier: "+parts[2],align='C')
-                    elif(len(parts)>1):
-                        pdf.cell(epw,0.0,'Method: '+parts[0]+", CT Window: "+parts[1],align='C')
+                    if(len(parts)>3):
+                        pdf.cell(epw,0.0,'Examination type: '+parts[0]+', Method: '+parts[1]+", CT Window: "+parts[2] + ", Classifier: "+parts[3],align='C')
                     else:
-                        pdf.cell(epw,0.0,'Method: '+parts[0],align='C')
+                        pdf.cell(epw,0.0,'Examination type: '+parts[0]+', Method: '+parts[1],align='C')
                     pdf.ln(font_size)
                     for result in diction[key]:
                         if(diction[key].index(result)==0):
@@ -130,6 +129,7 @@ class ResultPopup(Popup):
                                     pdf.cell(9*epw/30, font_size, str(col), border=1)
                             pdf.ln(font_size)
                     pdf.ln(2*font_size)
+                    prev_file = ""
                     if(self.analysis.get_actual_analysis_total()<=2 and len(diction[key])<5):
                         pdf.cell(epw, 0.0, 'Analized images', align='C')
                         pdf.ln(font_size)
@@ -148,13 +148,17 @@ class ResultPopup(Popup):
                             parts = res[3].split('x')
                             h,w = pdf.rescale_image_width_height(int(parts[0]),int(parts[1]),epw)
                             pdf.add_image_basic(temp_image,h,w,pdf_w)
-                            pdf.ln(font_size)
-                            pdf.cell(epw,0.0,'File name: '+res[1],align='L')
+                            if(diction[key].index(result)%2==0):
+                                prev_file = res[1]
+                            else:
+                                pdf.ln(font_size)
+                                pdf.cell(epw,0.0,'File name: '+prev_file,align='L',ln=0)
+                                pdf.cell(epw,0.0,'File name: '+res[1],align='R')
+                                pdf.ln(font_size)
                             os.remove(temp_image)
-                            pdf.ln(font_size)
 
                 pdf.ln(3*font_size)
-                pdf.cell(epw, 0.0, 'Analysis summary', align='C')
+                pdf.cell(epw, 0.0, 'Examination summary', align='C')
                 pdf.ln(font_size)
                 for row in snumbers:
                     for col in row:
@@ -199,7 +203,7 @@ class ResultPopup(Popup):
                 analysis_file.write(self.comments)
                 analysis_file.write('\n')
                 analysis_file.write('\n')
-                analysis_file.write('Analysis details\n')
+                analysis_file.write('Examination details\n')
                 analysis_file.write('\n')
                 # add all results
                 for result in self.analysis.result_list:
@@ -209,7 +213,7 @@ class ResultPopup(Popup):
                     analysis_file.write("\n")
                 # summary
                 analysis_file.write('\n')
-                analysis_file.write('Analysis summary\n')
+                analysis_file.write('Examination summary\n')
                 analysis_file.write('\n')
                 np.savetxt(analysis_file,snumbers,delimiter=',',fmt='%s')
                 analysis_file.write("\n")

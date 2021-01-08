@@ -15,6 +15,7 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 '''this script contains classes necessary to implement GLCM classification method'''
 from Grayscale import *
 from LungSegmentation.LungSegmentation_MethodKMeans_AllTypes import *
+import LungSegmentation.LungSegmentation_MethodXRayUNet_jpg_png as Xray 
 pi = np.pi
 class Matrix:
     '''this class contains methods to create glcm matrix from pixels array and get its properties'''
@@ -119,6 +120,17 @@ class ImageEnsemble:
             for folder in self.folders:
                 for fl in os.listdir(folder):
                     self.dicoms.append(DicomImage(folder,fl))
+
+    def MakeDicoms(self,single_folder=None,single_file=None):
+        if(self.folders is None and single_file is not None):
+            self.dicoms=[]
+            self.dicoms.append(DicomImage(single_folder,single_file))
+        else:
+            self.dicoms=[]
+            for folder in self.folders:
+                for fl in os.listdir(folder):
+                    self.dicoms.append(DicomImage(folder,fl))
+
     def MakeImage(self,image_object):
         self.dicoms=[]
         self.dicoms.append(image_object)
@@ -127,7 +139,17 @@ class ImageEnsemble:
         self.lungs = []
         for dcm in self.dicoms:
             self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm))))
-        
+
+    def GetLungsXray(self):
+        self.lungs = []
+        for fld in self.folders:
+            s,m = Xray.make_lungmask_multiple(os.listdir(fld),fld)
+            self.lungs.extend(s)
+
+    def GetLungsXrayPredict(self,arrays):
+        self.lungs = []
+        for dcm in self.dicoms:
+            self.lungs.append(Xray.predict_single_lung_mask_from_array(convert_array_to_grayscale(dcm)))
 
     def GetMatrices(self):
         self.matrices=[]

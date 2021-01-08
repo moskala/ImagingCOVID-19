@@ -39,22 +39,12 @@ from Grayscale import *
 from Analysis.Analysis import Analysis
 from Analysis.Result import *
 from CTWindowing import CTWindow
+from ExaminationType import ExaminationType
 
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
-
-class ExaminationType(Enum):
-    CT = 0
-    XRAY = 1
-
-    def __str__(self):
-        dictionary = {
-            0: "Computer\ntomography",
-            1: "X-Ray"
-        }
-        return dictionary[self.value]
 
 
 
@@ -72,7 +62,7 @@ class RootWidget(FloatLayout):
 
     _popup = None
     _draw_figure = None
-    analysis = Analysis(slices_number=image_object.total_slice_number)
+    analysis = None
 
     current_model = None
     analysis_popup = None
@@ -118,7 +108,8 @@ class RootWidget(FloatLayout):
             image_with_points = sgUtils.draw_lines_on_image(self.image_object.get_image_to_draw(), regions)
             self.analysis.add_to_list(SeverityResult(result,
                                                      image_with_points,
-                                                     self.image_object.get_info()))
+                                                     self.image_object.get_info(),
+                                                     self.image_object.get_current_slice_number_to_show(),self.examination_type))
             self._popup = Popup(title="Severity score",
                                 content=Label(text=result_text),
                                 size_hint=(0.6, 0.6),
@@ -162,7 +153,7 @@ class RootWidget(FloatLayout):
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
-            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.get_current_slice_number_to_show(),
                                                             self.image_object.total_slice_number)
             self.set_layers_button()
             self.layer_choice.update_choice_singular(self.image_object.current_slice_number)
@@ -188,7 +179,7 @@ class RootWidget(FloatLayout):
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
-            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.get_current_slice_number_to_show(),
                                                             self.image_object.total_slice_number)
             self.slider.value = self.image_object.current_slice_number
             self.set_layers_button()
@@ -208,7 +199,7 @@ class RootWidget(FloatLayout):
                 prediction='COVID-19'
             if(self.analysis is None):
                 self.analysis=Analysis(slices_number=self.image_object.total_slice_number)
-            self.add_result_to_analysis_neural_network(prediction,self.image_object.current_slice_number)
+            self.add_result_to_analysis_neural_network(prediction,self.image_object.get_current_slice_number_to_show())
         else:
             prediction = "Network accepts only jpg or png files!"
 
@@ -223,7 +214,13 @@ class RootWidget(FloatLayout):
 
     def add_result_to_analysis_neural_network(self, prediction, layer_number):
         properties = self.image_object.get_info()
-        result=NeuralNetworkResult(prediction,self.image_object.pixel_array,properties["Height"],properties["Width"],properties["CT Window Type"],properties["Filename"],layer_number)
+        result=NeuralNetworkResult(prediction,
+                                   self.image_object.get_current_grayscale_slice(),
+                                   properties["Height"],
+                                   properties["Width"],
+                                   properties["CT Window Type"],
+                                   properties["Filename"],
+                                   layer_number,self.examination_type)
         self.analysis.add_to_list(result)
         #dict
         dict_key = properties["Filename"]+"_"+str(layer_number)
@@ -279,11 +276,9 @@ class RootWidget(FloatLayout):
         self.slider.range = (0, self.image_object.total_slice_number-1)
         self.slider.value_track = True
 
-        self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.current_slice_number+1,
+        self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.get_current_slice_number_to_show(),
                                                         self.image_object.total_slice_number)
         self.dismiss_popup()
-        # new analysis initialization
-        self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
         # new layer choice initialization
         self.reset_layers_choice()
         self.examination_type_label.text = str(self.examination_type)
@@ -359,7 +354,7 @@ class RootWidget(FloatLayout):
         indexes = self.layer_choice.choose_indexes()
         if(self.analysis_popup is not None):
             self.current_model = self.analysis_popup.current_model
-        self.analysis_popup = Factory.AnalysisPopup(self.analysis, self.image_object, self.current_model, indexes)
+        self.analysis_popup = Factory.AnalysisPopup(self.analysis, self.image_object, self.current_model,self.examination_type,indexes)
         print(self.current_model)
         if(self.current_model is None):
             self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
@@ -380,19 +375,8 @@ class RootWidget(FloatLayout):
         """
         properties = self.image_object.get_info()
         popup = Factory.ResultPopup(analysis = self.analysis)
-        if(self.analysis is None):
-            popup.scroll_view.text+='No analysis made yet'
-        else:
-            counter = 1
-            for anal in self.analysis.result_list:
-                if(len(self.analysis.result_list[self.analysis.result_list.index(anal)])==0):
-                    continue
-                popup.scroll_view.text+='Analysis #'+str(counter)+'\n'
-                for result in anal:
-                    res = result.get_object_properties_list()
-                    string ='File name: '+ res[1]+"    Result: "+res[3]+'    Method: '+result.get_method_name()+'\n'
-                    popup.scroll_view.text+=string
-                counter+=1
+
+        popup.scroll_view.text = self.analysis.add_summary_to_text_element(isAll=True)
         popup.open()
 
     def __init__(self, *args, **kwargs):

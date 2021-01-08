@@ -340,6 +340,28 @@ RootWidget:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
 
+<AutomaticResultPopup@Popup>:
+    id: auto_result_popup
+    scroll_view: scroll_view.__self__
+    info:info.__self__
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [5, 5, 5, 5]
+        ScrollView:
+            size_hint_max_y: 250
+            do_scroll_x: True
+            do_scroll_y: True
+            Label:
+                size_hint_y: None
+                id: scroll_view
+                halign: 'justify'
+                height: self.texture_size[1]
+                text_size: self.width, None
+                padding: 10, 10
+        Label: 
+            height: 100
+            id: info
+            halign: 'justify'
 <ResultPopup@Popup>:
     id: result_popup
     auto_dismiss: False

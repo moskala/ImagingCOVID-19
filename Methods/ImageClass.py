@@ -151,6 +151,9 @@ class ImageObject(object):
     def get_ct_window(self):
         raise NotImplementedError("Method should be overrided in derived classes.")
 
+    def get_current_slice_number_to_show(self):
+        return self.current_slice_number + 1
+
 
 class DicomImage(ImageObject):
     """

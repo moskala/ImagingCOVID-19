@@ -41,11 +41,34 @@ class ClassifierCombination():
         return self.svm.CrossValidateLinearDiscriminant(self.array,self.labels,cv=cv)
     
 
+
+
+# glcm
+flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train")]
+e = ImageEnsemble(flds,gotFolders=True)
+#e.MakeDicoms()
+e.GetLungsXray()
+e.GetMatrices()
+e.GetProps()
+glcmFts = e.props
+# #dump(glcmFts,'glcmFeatures.joblib')
+print('glcm done')
+
 # alex
 alex = Alex(load('featureExtraction.joblib'))
-alexFts = load('csPrePCAFeatures50.joblib')
-alexFts = alex.DoPCA(alexFts,n=50)
-
+alexFts = alex.GetFeaturesFromList(e.lungs)
+alexFts = alex.ChangeDimAndStandardize(alexFts)
+alexFts = alex.DoPCA(alexFts,n=16)
+dump(alexFts,'alexFeatures.joblib')
+print('alex done')
+# #haralick
+# e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
+# e.MakeDicoms()
+# e.GetLungs()
+h = Haralick(e.lungs)
+haralickFts = h.GetHaralickFtsAll()
+dump(np.hstack((haralickFts,glcmFts)),'glcmHaralickFeatures.joblib')
+print('haralick done')
 # glcm
 # flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")]
 # e = ImageEnsemble(flds,gotFolders=True)
@@ -117,10 +140,10 @@ alexFts = alex.DoPCA(alexFts,n=50)
 # print('alexnet - linear discriminant',cc.cross_validateLD(cv=7))
 
 # # combination alexnet, random forest
-cc = ClassifierCombination()
-cc.make_array1(alexFts)
-cc.get_labels()
-print('alexnet - random forest ',cc.cross_validateRF(cv=7))
+# cc = ClassifierCombination()
+# cc.make_array1(alexFts)
+# cc.get_labels()
+# print('alexnet - random forest ',cc.cross_validateRF(cv=7))
 
 # combination alexnet, logistic regression
 # cc = ClassifierCombination()
