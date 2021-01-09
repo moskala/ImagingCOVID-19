@@ -28,7 +28,7 @@ MODELS_XRAY_FOLDER_PATH = str(Path().resolve().parent.parent / "models"/"xray")
 MODEL_ALEX_EXTRACT_NAME = "featureExtraction.joblib"
 # MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
 MODEL_GLCM_HARALICK_DATA_NAME = "glcmHaralickData.joblib"
-MODEL_ALEX_DATA_NAME = "csPrePCAFeatures50.joblib"
+MODEL_ALEX_DATA_NAME = "prePCAFeatures50.joblib"
 # MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
 # MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
 
@@ -82,6 +82,14 @@ class AnalysisPopup(Popup):
         print('Added following result to collection: ',result.get_object_properties_list())
 
     def analysis_classify_recent(self,unknown_argumentxd):
+        if(self.examination_type is ExaminationType.XRAY):
+            MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
+            MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
+            MODEL_ALEX_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_DATA_NAME)
+        else:
+            MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
+            MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
+            MODEL_ALEX_DATA_PATH = os.path.join(MODELS_FOLDER_PATH,MODEL_ALEX_DATA_NAME)
         if(self.current_model is not None):
             for index in self.indexes:
                 self.image_object.get_specific_slice(index)
@@ -111,6 +119,16 @@ class AnalysisPopup(Popup):
             self.dismiss()
     def analysis_classify_train(self):
         # first we train for the first index
+        if(self.examination_type is ExaminationType.XRAY):
+            classifier_path = os.path.join(MODELS_XRAY_FOLDER_PATH,filename)
+            MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
+            MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
+            MODEL_ALEX_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_DATA_NAME)
+        else:
+            classifier_path = os.path.join(MODELS_FOLDER_PATH,filename)
+            MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
+            MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
+            MODEL_ALEX_DATA_PATH = os.path.join(MODELS_FOLDER_PATH,MODEL_ALEX_DATA_NAME)
         first_index = self.indexes[0]
         self.image_object.get_specific_slice(first_index)
         if(self.trainGlcmHaralick.state is'down'):

@@ -9,6 +9,7 @@ import math
 from ExaminationType import ExaminationType
 def PredictAlex(image_object,modelAlex,features,classifier,examination_type=ExaminationType.CT,isPretrained=True):
     '''this function is used by gui when button "Alexnet" is clicked'''
+    print(image_object)
     e = ImageEnsemble()
     e.MakeImage(image_object)
     if(examination_type is ExaminationType.XRAY):
@@ -28,7 +29,10 @@ def PredictAlex(image_object,modelAlex,features,classifier,examination_type=Exam
         model=load(classifier)
     else: 
         model=classifier
-    model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
+    if(examination_type is ExaminationType.XRAY):
+        model.fit(pcafts[0:len(pcafts)-1],Model.GetLabelsXray())
+    else:
+        model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
     test = pcafts[len(pcafts)-1].reshape(1, -1)
     print(test)
     return model.predict(test),model

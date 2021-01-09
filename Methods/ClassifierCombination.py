@@ -25,6 +25,14 @@ class ClassifierCombination():
     def get_labels(self):
         self.labels = Model.GetLabels()
 
+    def get_labels_xray(self):
+        labels = []
+        for i in range(204):
+            labels.append('covid')
+        for i in range(210):
+            labels.append('normal')
+        self.labels= labels
+
     def fit(self):
         return self.svm.FitModel(self.array,self.labels)
     def FitModelLinearDiscriminant(self):
@@ -44,31 +52,31 @@ class ClassifierCombination():
 
 
 # glcm
-flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train")]
+flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train - big",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train - big")]
 e = ImageEnsemble(flds,gotFolders=True)
 #e.MakeDicoms()
 e.GetLungsXray()
-e.GetMatrices()
-e.GetProps()
-glcmFts = e.props
-# #dump(glcmFts,'glcmFeatures.joblib')
-print('glcm done')
+# e.GetMatrices()
+# e.GetProps()
+# glcmFts = e.props
+# # #dump(glcmFts,'glcmFeatures.joblib')
+# print('glcm done')
 
-# alex
+# # alex
 alex = Alex(load('featureExtraction.joblib'))
 alexFts = alex.GetFeaturesFromList(e.lungs)
 alexFts = alex.ChangeDimAndStandardize(alexFts)
-alexFts = alex.DoPCA(alexFts,n=16)
+#alexFts = alex.DoPCA(alexFts,n=50)
 dump(alexFts,'alexFeatures.joblib')
 print('alex done')
-# #haralick
-# e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
-# e.MakeDicoms()
-# e.GetLungs()
-h = Haralick(e.lungs)
-haralickFts = h.GetHaralickFtsAll()
-dump(np.hstack((haralickFts,glcmFts)),'glcmHaralickFeatures.joblib')
-print('haralick done')
+# # #haralick
+# # e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
+# # e.MakeDicoms()
+# # e.GetLungs()
+# h = Haralick(e.lungs)
+# haralickFts = h.GetHaralickFtsAll()
+# dump(np.hstack((haralickFts,glcmFts)),'glcmHaralickFeatures.joblib')
+# print('haralick done')
 # glcm
 # flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")]
 # e = ImageEnsemble(flds,gotFolders=True)
@@ -103,8 +111,9 @@ print('haralick done')
 
 # # making model linear discirminant alexnet
 # cc = ClassifierCombination()
+# alexFts = load('alexFeatures.joblib')
 # cc.make_array1(alexFts)
-# cc.get_labels()
+# cc.get_labels_xray()
 # cc.FitModelLinearDiscriminant()
 # dump(cc.svm.modelLinearDicriminant,'alexnetLinearDiscriminantLsqr.joblib')
 

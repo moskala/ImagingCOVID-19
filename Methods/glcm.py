@@ -99,6 +99,13 @@ class Model:
             labels.append('normal')
         return labels
 
+    def GetLabelsXray():
+        labels = []
+        for i in range(204):
+            labels.append('covid')
+        for i in range(210):
+            labels.append('normal')
+        return labels
 
 class ImageEnsemble:
     '''this class hold a collection of dicom images as well as their respective segmented lungs'''
@@ -144,12 +151,15 @@ class ImageEnsemble:
         self.lungs = []
         for fld in self.folders:
             s,m = Xray.make_lungmask_multiple(os.listdir(fld),fld)
-            self.lungs.extend(s)
+            gs = []
+            for a in s:
+                gs.append(convert_array_to_grayscale(a))
+            self.lungs.extend(gs)
 
-    def GetLungsXrayPredict(self,arrays):
+    def GetLungsXrayPredict(self):
         self.lungs = []
         for dcm in self.dicoms:
-            self.lungs.append(Xray.predict_single_lung_mask_from_array(convert_array_to_grayscale(dcm)))
+            self.lungs.append(convert_array_to_grayscale(Xray.predict_single_lung_mask_from_array(convert_array_to_grayscale(dcm))))
 
     def GetMatrices(self):
         self.matrices=[]

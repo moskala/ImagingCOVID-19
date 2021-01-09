@@ -312,6 +312,9 @@ class OneLayerImage(ImageObject):
     def get_next_slice(self, value):
         return self.get_current_slice()
 
+    def get_specific_slice(self, value):
+        return self.get_current_slice()
+
     def get_current_grayscale_slice(self):
         gray_img = gray.get_grayscale_from_jpg_png(self.src_filename, self.src_folder)
         return gray_img
