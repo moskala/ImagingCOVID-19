@@ -154,6 +154,9 @@ class ImageObject(object):
     def get_current_slice_number_to_show(self):
         return self.current_slice_number + 1
 
+    def get_specific_slice(self, value=0):
+        return self.__pixel_array
+
 
 class DicomImage(ImageObject):
     """
