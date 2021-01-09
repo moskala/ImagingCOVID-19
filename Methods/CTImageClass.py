@@ -20,14 +20,14 @@ class CTDicomImage(DicomImage):
         return self.ct_window
 
     def get_segmented_lungs(self):
-        gray_img = self.get_current_grayscale_slice()
-        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+
         if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
+            gray_img = self.get_current_grayscale_slice()
+            segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
             crop_segment, crop_mask = crop_mask_image(segment, mask)
             return crop_segment
         else:
-            img = self.get_current_slice()
-            segmented = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
             crop_segment, crop_mask = crop_mask_image(segmented, mask)
             return ctwindow.get_ct_window_grayscale(crop_segment)
 
@@ -93,14 +93,14 @@ class CTNiftiImage(NiftiImage):
         return ct_window
 
     def get_segmented_lungs(self):
-        gray_img = self.get_current_grayscale_slice()
-        segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+
         if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
+            gray_img = self.get_current_grayscale_slice()
+            segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
             crop_segment, crop_mask = crop_mask_image(segment, mask)
             return crop_segment
         else:
-            img = self.get_current_slice()
-            segmented = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
             crop_segment, crop_mask = crop_mask_image(segmented, mask)
             return ctwindow.get_ct_window_grayscale(crop_segment)
 
