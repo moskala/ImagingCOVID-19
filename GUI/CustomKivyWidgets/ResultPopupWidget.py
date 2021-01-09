@@ -222,9 +222,11 @@ class ResultPopup(Popup):
 
         for group in groups:
             df = group[-1]
-            severity_results = df[df["Classifier"] == "Severity score"].shape[0]
-            if severity_results > 0:
-                covid += 1
+            severity_results = df[df["Classifier"] == "Severity score"]
+            if severity_results.shape[0] > 0:
+                score = np.any(list(severity_results["Result"].apply(lambda x: x[1])))
+                covid += score
+                normal += not score
             else:
                 slices = list(df.loc[df["Classifier"] != "Severity score"].groupby(["File name", "Layer no"]))
                 for s in slices:

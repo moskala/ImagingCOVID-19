@@ -27,8 +27,13 @@ info1 = {
 analysis.add_to_list(SeverityResult((15, 1), image, info1, 1, ExaminationType.CT))
 analysis.add_to_list(SeverityResult((15, 2), image, info1, 1, ExaminationType.CT))
 analysis.add_to_list(SeverityResult((15, 2), image, info1, 1, ExaminationType.CT))
-analysis.add_to_list(SeverityResult((15, 3), image, info1, 1, ExaminationType.CT))
+analysis.add_to_list(SeverityResult((0, 0), image, info1, 1, ExaminationType.CT))
 analysis.add_to_list(SeverityResult((15, 4), image, info1, 1, ExaminationType.CT))
+
+analysis.result_list.append([])
+analysis.dictionary.append({})
+analysis.current_analysis_index += 1
+analysis.slices_number.append(7)
 
 result = NeuralNetworkResult('COVID-19', image, 512, 512, CTWindow.BoneWindow, "not_exists", 5, ExaminationType.CT)
 analysis.add_to_list(result)
@@ -36,10 +41,7 @@ analysis.add_to_list(result)
 result = AlexnetResult('Normal', image, 512, 512, CTWindow.BoneWindow, "not_exists", 5, ExaminationType.CT, None)
 analysis.add_to_list(result)
 
-analysis.result_list.append([])
-analysis.dictionary.append({})
-analysis.current_analysis_index += 1
-analysis.slices_number.append(7)
+
 
 result = HaralickGlcmResult('Normal', image, 512, 512, CTWindow.BoneWindow, "not_exists", 5, ExaminationType.CT, None)
 analysis.add_to_list(result)
