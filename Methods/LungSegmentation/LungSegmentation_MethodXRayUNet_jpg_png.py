@@ -12,7 +12,7 @@ sys.path.append(str(Path().resolve().parent))
 from Grayscale import get_grayscale_from_jpg_png
 from LungSegmentation.LungSegmentationUtilities import fill_contours
 
-MODEL_WEIGHTS = str(Path().resolve().parent.parent.parent / "models" / "cxr_reg_weights.best.hdf5")
+MODEL_WEIGHTS = str(Path().resolve().parent.parent / "models" / "cxr_reg_weights.best.hdf5")
 INPUT_DIMENSION = 512
 # TODO komentarze!
 
@@ -83,7 +83,7 @@ def predict_multiple_lung_mask(images_names, images_folder, dim=INPUT_DIMENSION,
     images = [get_grayscale_from_jpg_png(name, images_folder) for name in images_names]
     resized = [cv2.resize(img, (dim, dim)) for img in images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
-    model = prepare_model(INPUT_DIMENSION, model_weights_path)
+    model = prepare_model(dim, model_weights_path)
     predictions = model.predict(np.array(reshaped))  # TODO przetestować wydajność
     # predictions = [model.predict(np.array([img])) for img in reshaped]
     return [np.squeeze(pred) for pred in predictions]
@@ -132,7 +132,7 @@ def make_lungmask_multiple(filenames, folder):
 def make_lungmask(filename, folder, model_weights_path=MODEL_WEIGHTS):
     image = get_grayscale_from_jpg_png(filename, folder)
     img_to_process = prepare_image_to_segmentation(image)
-    mask = predict_single_lung_mask_from_array(img_to_process, model_weights_path)
+    mask = predict_single_lung_mask_from_array(img_to_process, model_weights_path=model_weights_path)
     mask = adjust_mask(mask)
     segment = mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION))
     return segment, mask
@@ -141,7 +141,7 @@ def make_lungmask(filename, folder, model_weights_path=MODEL_WEIGHTS):
 def make_lungmask_multiple(filenames, folder, model_weights_path=MODEL_WEIGHTS):
     images = [get_grayscale_from_jpg_png(filename, folder) for filename in filenames]
     img_to_process = [prepare_image_to_segmentation(image) for image in images]
-    masks = predict_multiple_lung_mask_from_array(img_to_process, model_weights_path)
+    masks = predict_multiple_lung_mask_from_array(img_to_process, model_weights_path=model_weights_path)
     masks = [adjust_mask(mask) for mask in masks]
     segments = [mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION)) for image, mask in zip(images, masks)]
     return segments, masks
