@@ -120,12 +120,10 @@ class AnalysisPopup(Popup):
     def analysis_classify_train(self):
         # first we train for the first index
         if(self.examination_type is ExaminationType.XRAY):
-            classifier_path = os.path.join(MODELS_XRAY_FOLDER_PATH,filename)
             MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
             MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
             MODEL_ALEX_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_DATA_NAME)
         else:
-            classifier_path = os.path.join(MODELS_FOLDER_PATH,filename)
             MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
             MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
             MODEL_ALEX_DATA_PATH = os.path.join(MODELS_FOLDER_PATH,MODEL_ALEX_DATA_NAME)

@@ -11,7 +11,10 @@ def PredictGlcmHaralick(image_object,model_path,train_data,examination_type=Exam
         model = load(model_path) 
     else:
         model=model_path 
-        model.fit(load(train_data),Model.GetLabels())
+        if(examination_type is ExaminationType.XRAY):
+            model.fit(load(train_data),Model.GetLabelsXray())
+        else:
+            model.fit(load(train_data),Model.GetLabels())
     e = ImageEnsemble()
     e.MakeImage(image_object)
     if(examination_type is ExaminationType.XRAY):
@@ -23,6 +26,6 @@ def PredictGlcmHaralick(image_object,model_path,train_data,examination_type=Exam
     e.GetMatrices()
     e.GetProps()
     stck = np.hstack((fts,e.props[0]))
-    print(fts)
-    print(e.props)
+    # print(fts)
+    # print(e.props)
     return model.predict(stck.reshape(1, -1)),model

@@ -34,7 +34,7 @@ def PredictAlex(image_object,modelAlex,features,classifier,examination_type=Exam
     else:
         model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
     test = pcafts[len(pcafts)-1].reshape(1, -1)
-    print(test)
+    #print(test)
     return model.predict(test),model
     
         

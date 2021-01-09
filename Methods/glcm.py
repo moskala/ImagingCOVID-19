@@ -53,7 +53,7 @@ class Model:
     modelLinearDicriminant = None
     modelLogisticRegression = None
     def __init__(self,kernel='rbf',max_features='auto',solver='liblinear'):
-        self.model = svm.SVC(kernel=kernel)
+        self.model = svm.SVC(kernel='linear')
         self.modelRandomForest = RandomForestClassifier(max_features=max_features)
         self.modelLogisticRegression = LogisticRegression(max_iter=1000,solver=solver)
         self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='lsqr',shrinkage='auto')
@@ -99,6 +99,7 @@ class Model:
             labels.append('normal')
         return labels
 
+    @staticmethod   
     def GetLabelsXray():
         labels = []
         for i in range(204):

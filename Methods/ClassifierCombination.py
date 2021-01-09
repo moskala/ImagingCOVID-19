@@ -52,23 +52,23 @@ class ClassifierCombination():
 
 
 # glcm
-flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train - big",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train - big")]
-e = ImageEnsemble(flds,gotFolders=True)
-#e.MakeDicoms()
-e.GetLungsXray()
-# e.GetMatrices()
-# e.GetProps()
-# glcmFts = e.props
-# # #dump(glcmFts,'glcmFeatures.joblib')
-# print('glcm done')
+# flds = [os.path.join(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train - big",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\covidSeg\Train\Train - big")]
+# e = ImageEnsemble(flds,gotFolders=True)
+# #e.MakeDicoms()
+# e.GetLungsXray()
+# # e.GetMatrices()
+# # e.GetProps()
+# # glcmFts = e.props
+# # # #dump(glcmFts,'glcmFeatures.joblib')
+# # print('glcm done')
 
-# # alex
-alex = Alex(load('featureExtraction.joblib'))
-alexFts = alex.GetFeaturesFromList(e.lungs)
-alexFts = alex.ChangeDimAndStandardize(alexFts)
-#alexFts = alex.DoPCA(alexFts,n=50)
-dump(alexFts,'alexFeatures.joblib')
-print('alex done')
+# # # alex
+# alex = Alex(load('featureExtraction.joblib'))
+# alexFts = alex.GetFeaturesFromList(e.lungs)
+# alexFts = alex.ChangeDimAndStandardize(alexFts)
+# alexFts = alex.DoPCA(alexFts,n=50)
+# dump(alexFts,'alexFeatures.joblib')
+# print('alex done')
 # # #haralick
 # # e = ImageEnsemble([os.path.join(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs",fold) for fold in os.listdir(r"C:\Users\Maya\studia\4rok\inz\repo\covidSeg\cs")],gotFolders=True)
 # # e.MakeDicoms()
@@ -103,19 +103,26 @@ print('alex done')
 # dump(cc.svm.modelLinearDicriminant,'glcmHaralickLinearDiscriminant.joblib')
 
 # # making model linear discirminant glcm+haralick
-# cc = ClassifierCombination()
-# cc.make_array2(haralickFts,glcmFts)
-# cc.get_labels()
-# cc.FitModelLinearDiscriminant()
-# dump(cc.svm.modelLinearDicriminant,'glcmHaralickLinearDiscriminantLsqr.joblib')
+cc = ClassifierCombination()
+gh = load('glcmHaralickFeatures.joblib')
+cc.make_array1(gh)
+cc.get_labels_xray()
+cc.fit()
+dump(cc.svm.model,'glcmHaralickSvmLinear.joblib')
 
 # # making model linear discirminant alexnet
 # cc = ClassifierCombination()
 # alexFts = load('alexFeatures.joblib')
 # cc.make_array1(alexFts)
 # cc.get_labels_xray()
-# cc.FitModelLinearDiscriminant()
-# dump(cc.svm.modelLinearDicriminant,'alexnetLinearDiscriminantLsqr.joblib')
+# cc.fit()
+# dump(cc.svm.model,'alexneSvmLinear.joblib')
+
+# cc = ClassifierCombination()
+# cc.make_array1(load('glcmHaralickFeatures.joblib'))
+# cc.get_labels_xray()
+
+# print('glcm+haralick - linear discriminant',cc.cross_validateLD(cv=7))
 
 #print(haralickFts)
 # kernel linear

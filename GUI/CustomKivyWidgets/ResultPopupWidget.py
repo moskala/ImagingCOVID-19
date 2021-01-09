@@ -148,13 +148,9 @@ class ResultPopup(Popup):
                             parts = res[3].split('x')
                             h,w = pdf.rescale_image_width_height(int(parts[0]),int(parts[1]),epw)
                             pdf.add_image_basic(temp_image,h,w,pdf_w)
-                            if(diction[key].index(result)%2==0):
-                                prev_file = res[1]
-                            else:
-                                pdf.ln(font_size)
-                                pdf.cell(epw,0.0,'File name: '+prev_file,align='L',ln=0)
-                                pdf.cell(epw,0.0,'File name: '+res[1],align='R')
-                                pdf.ln(font_size)
+                            pdf.ln(font_size)
+                            pdf.cell(epw,0.0,'File name: '+res[1],align='L')
+                            pdf.ln(font_size)
                             os.remove(temp_image)
 
                 pdf.ln(3*font_size)

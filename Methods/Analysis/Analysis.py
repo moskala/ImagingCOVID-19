@@ -98,7 +98,7 @@ class Analysis():
     def get_analysis_summary_headers(self):
         res = []
         res.append('Total number of layers')
-        res.append('Number of analyzed layers')
+        res.append('Number of examinations')
         res.append('COVID-19 layers')
         res.append('Normal layers')
         res.append('Uncertain layers')
