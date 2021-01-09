@@ -61,3 +61,6 @@ class LayerChoice:
             return self.start_layer <= self.end_layer
         else:
             return True
+
+    def get_choice_range(self):
+        return self.start_layer, self.end_layer

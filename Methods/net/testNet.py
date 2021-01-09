@@ -1,4 +1,4 @@
-from net.model import *
+from net.model import CovidNet
 import torch
 from PIL import Image
 from torchvision import transforms
