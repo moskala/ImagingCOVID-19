@@ -1,7 +1,6 @@
-from ImageClass import JpgImage, PngImage
-import CTWindowing as ctwindow
+from ImageMedical.ImageClass import JpgImage, PngImage
 import LungSegmentation.LungSegmentationUtilities as sgUtils
-import LungSegmentation.LungSegmentation_MethodXRayUNet_jpg_png as sgUnet
+import LungSegmentation.MethodUNetXRay as sgUnet
 
 
 class XRayJpgImage(JpgImage):

@@ -1,5 +1,5 @@
-from LungSegmentation_MethodA_dicom import SegmentationA
-from LungSegmentation_MethodB_dicom import SegmentationB
+from MethodWatershed import SegmentationA
+from MethodBinary import SegmentationB
 import matplotlib.pyplot as plt
 
 path = r"D:\Ala\covid\test\test"

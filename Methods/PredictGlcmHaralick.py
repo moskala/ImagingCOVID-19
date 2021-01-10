@@ -2,8 +2,8 @@ import pickle
 from joblib import dump, load
 import sys,os
 from pathlib import Path
-from haralick import *
-from glcm import *
+from Haralick import *
+from Glcm import *
 import numpy as np
 from ExaminationType import ExaminationType
 def PredictGlcmHaralick(image_object,index,model_path,train_data,examination_type=ExaminationType.CT,isPretrained=True):

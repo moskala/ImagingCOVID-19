@@ -1,12 +1,9 @@
-from context import CustomKivyWidgets
 from CustomKivyWidgets.ResultPopupWidget import ResultPopup
-
-from context import Methods
 
 from Analysis.Analysis import Analysis
 from Analysis.Result import SeverityResult, AlexnetResult, HaralickGlcmResult, NeuralNetworkResult
-from CTWindowing import CTWindow
-from ImageClass import ImageType
+from ImageMedical.CTWindowing import CTWindow
+from ImageMedical.ImageClass import ImageType
 from ExaminationType import ExaminationType
 
 import numpy as np

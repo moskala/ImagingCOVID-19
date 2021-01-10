@@ -3,8 +3,8 @@ from joblib import dump, load
 import sys,os
 from pathlib import Path
 sys.path.append(str(Path().resolve().parent))
-from glcm import *
-from alexnet import Alex
+from Glcm import *
+from Alexnet import Alex
 import math
 from ExaminationType import ExaminationType
 def PredictAlex(image_object,index,modelAlex,features,classifier,examination_type=ExaminationType.CT,isPretrained=True):

@@ -3,16 +3,12 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 
 # Python imports
-from pathlib import Path
 import random
 import sys
-from joblib import load
-import imageio
 from datetime import date
 from PIL import Image as PilImage
 import pandas as pd
 import os
-import csv
 
 # Custom kivy widgets imports
 # sys.path.append(str(Path().resolve()))
@@ -23,13 +19,8 @@ from CustomKivyWidgets.DialogWidgets import SaveDialog
 # Implemented methods imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', "Methods")))
 from Pdf import *
-from ImageClass import *
-from net.testNet import Net
-from PredictGLCM import *
-from PredictAlexnet import *
 from PredictHaralick import *
 from Grayscale import *
-from Analysis.Analysis import *
 from Analysis.Result import *
 
 

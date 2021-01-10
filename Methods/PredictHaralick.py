@@ -2,7 +2,7 @@ import pickle
 from joblib import dump, load
 import sys,os
 from pathlib import Path
-from haralick import *
+from Haralick import *
 
 def PredictHaralick(folder,file,model_path):
     model = load(model_path) 

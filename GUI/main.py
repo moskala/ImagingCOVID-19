@@ -1,6 +1,3 @@
-from keras.models import *
-from keras.layers import *
-
 # Kivy imports
 from kivy.app import App
 from kivy.uix.label import Label
@@ -14,29 +11,22 @@ from kivy.uix.popup import Popup
 # Custom kivy widgets imports
 from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog
 from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
-from CustomKivyWidgets.DrawLesionsWidgets import DrawPopup, DrawFigure
-from CustomKivyWidgets.ResultPopupWidget import ResultPopup
-from CustomKivyWidgets.AnalysisPopup import AnalysisPopup
+from CustomKivyWidgets.DrawLesionsWidgets import DrawFigure
 from CustomKivyWidgets.LungSegmentationPopup import LungSegmentationPopup
-from CustomKivyWidgets.LayersPopup import LayersPopup
 
 # Python imports
 from pathlib import Path
 import sys
+import os
 
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
 # Implemented methods imports
-from ImageClass import ImageType, ImageObject, JpgImage, PngImage, DicomImage, NiftiImage
-from CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
+from ImageMedical.CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
 from XRayImageClass import XRayJpgImage, XRayPngImage
-from net.testNet import Net
-from PredictGLCM import *
-from PredictAlexnet import *
-from PredictHaralick import *
+from CovidCTNet.testNet import Net
 from PredictGlcmHaralick import *
 from ChooseSlices import LayerChoice
-from Grayscale import *
 from Analysis.Analysis import Analysis
 from Analysis.Result import *
 from ExaminationType import ExaminationType
@@ -44,7 +34,7 @@ from ExaminationType import ExaminationType
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
-MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
+MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'ct', 'best_checkpoint.pth'))
 
 
 class RootWidget(FloatLayout):
@@ -109,9 +99,8 @@ class RootWidget(FloatLayout):
             self.analysis.add_to_list(SeverityResult(result,
                                                      image_with_points,
                                                      self.image_object.get_info(),
-                                                     self.image_object.get_current_slice_number_to_show(),self.examination_type))
                                                      self.image_object.get_current_slice_number_to_show(),
-                                                     self.examination_type)
+                                                     self.examination_type))
             self._popup = Popup(title="Severity score",
                                 content=Label(text=result_text),
                                 size_hint=(0.6, 0.6),

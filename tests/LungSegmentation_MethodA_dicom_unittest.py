@@ -4,7 +4,7 @@ import dicom
 import numpy as np
 from pathlib import Path
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'Methods'))
-from LungSegmentation_MethodA_dicom import SegmentationA
+from MethodWatershed import SegmentationA
 
 # testowy pacjent
 testDir = '/Users/Maya/studia/4rok/inz/repo/ImagingCOVID-19/tests/test_data/79262/'

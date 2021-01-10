@@ -1,6 +1,6 @@
-from glcm import *
-from alexnet import *
-from haralick import *
+from Glcm import *
+from Alexnet import *
+from Haralick import *
 import numpy as np
 
 class ClassifierCombination():

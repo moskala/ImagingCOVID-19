@@ -2,7 +2,7 @@ import pickle
 from joblib import dump, load
 import sys,os
 from pathlib import Path
-from glcm import *
+from Glcm import *
 
 
 def PredictGLCM(folder,file,model_path):
