@@ -121,6 +121,13 @@ def prepare_image_to_segmentation(image):
     equ = cv2.equalizeHist(img)
     return equ / 255
 
+def make_lungmask_multiple(filenames, folder):
+    images = [get_grayscale_from_jpg_png(filename, folder) for filename in filenames]
+    img_to_process = [prepare_image_to_segmentation(image) for image in images]
+    masks = predict_multiple_lung_mask_from_array(img_to_process)
+    masks = [adjust_mask(mask) for mask in masks]
+    segments = [mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION)) for image, mask in zip(images, masks)]
+    return segments, masks
 
 def make_lungmask(filename, folder):
     image = get_grayscale_from_jpg_png(filename, folder)

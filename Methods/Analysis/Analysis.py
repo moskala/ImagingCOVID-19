@@ -14,21 +14,48 @@ class Analysis():
         self.current_analysis_index=0
         self.slices_number = []
         self.slices_number.append(slices_number)
+
     def add_to_list(self,result):
         self.result_list[self.current_analysis_index].append(result)
+
+    def add_summary_to_text_element(self,isAll = False):
+        counter = 1
+        text_element=""
+        if(isAll):
+            for anal in self.result_list:
+                if(len(self.result_list[self.result_list.index(anal)])==0):
+                    continue
+                text_element+='Examination #'+str(counter)+'\n'
+                for result in anal:
+                    res = result.get_object_properties_list()
+                    string ='Layer no: '+ str(res[0]) +"    Result: "+ str(res[-1]) +'    Method: '+result.get_method_name()+'\n'
+                    text_element+=string
+                counter+=1
+        else:
+            text_element+='Examination #'+str(counter)+'\n'
+            for result in self.result_list[self.current_analysis_index]:
+                res = result.get_object_properties_list()
+                string ='Layer no: '+ str(res[0]) +"    Result: "+ str(res[-1]) +'    Method: '+result.get_method_name()+'\n'
+                text_element+=string
+            counter+=1
+        print(text_element)
+        return text_element
 
     def get_dictionary_by_method_from_list(self,index):
         dictionary_method = {}
         for result in self.result_list[index]:
+            examination_type = str(result.get_examination_type())
             ct_window = str(result.get_object_ct_window())
             classifier = str(result.get_classifier())
-            if(len(ct_window)>0):
-                if(len(classifier)>0):
-                    method = result.get_method_name()+","+str(result.get_object_ct_window())+","+str(classifier)
-                else:
-                    method = result.get_method_name()+","+str(result.get_object_ct_window())
-            else:
-                method = result.get_method_name()
+            method_name = result.get_method_name()
+            method=examination_type
+            if(len(method_name)>0):
+                method+=str(","+method_name)
+            if(ct_window is not None):
+                method+=str(","+ct_window)
+            if(len(classifier)>0):
+                method+=str(","+classifier)
+            
             if(dictionary_method.keys().__contains__(method)):
                 dictionary_method[method].append(result)
             else:
@@ -71,7 +98,7 @@ class Analysis():
     def get_analysis_summary_headers(self):
         res = []
         res.append('Total number of layers')
-        res.append('Number of analyzed layers')
+        res.append('Number of examinations')
         res.append('COVID-19 layers')
         res.append('Normal layers')
         res.append('Uncertain layers')

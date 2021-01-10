@@ -39,22 +39,12 @@ from Grayscale import *
 from Analysis.Analysis import Analysis
 from Analysis.Result import *
 from CTWindowing import CTWindow
+from ExaminationType import ExaminationType
 
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
-
-class ExaminationType(Enum):
-    CT = 0
-    XRAY = 1
-
-    def __str__(self):
-        dictionary = {
-            0: "Computer\ntomography",
-            1: "X-Ray"
-        }
-        return dictionary[self.value]
 
 
 
@@ -119,7 +109,8 @@ class RootWidget(FloatLayout):
             self.analysis.add_to_list(SeverityResult(result,
                                                      image_with_points,
                                                      self.image_object.get_info(),
-                                                     self.image_object.get_current_slice_number_to_show()))
+                                                     self.image_object.get_current_slice_number_to_show(),
+                                                     self.examination_type))
             self._popup = Popup(title="Severity score",
                                 content=Label(text=result_text),
                                 size_hint=(0.6, 0.6),
@@ -230,7 +221,8 @@ class RootWidget(FloatLayout):
                                    properties["Width"],
                                    properties["CT Window Type"],
                                    properties["Filename"],
-                                   layer_number)
+                                   layer_number,
+                                   self.examination_type)
         self.analysis.add_to_list(result)
         #dict
         dict_key = properties["Filename"]+"_"+str(layer_number)
@@ -364,7 +356,7 @@ class RootWidget(FloatLayout):
         indexes = self.layer_choice.choose_indexes()
         if(self.analysis_popup is not None):
             self.current_model = self.analysis_popup.current_model
-        self.analysis_popup = Factory.AnalysisPopup(self.analysis, self.image_object, self.current_model, indexes)
+        self.analysis_popup = Factory.AnalysisPopup(self.analysis, self.image_object, self.current_model,self.examination_type,indexes)
         print(self.current_model)
         if(self.current_model is None):
             self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
@@ -385,19 +377,8 @@ class RootWidget(FloatLayout):
         """
         properties = self.image_object.get_info()
         popup = Factory.ResultPopup(analysis = self.analysis)
-        if(self.analysis is None):
-            popup.scroll_view.text+='No analysis made yet'
-        else:
-            counter = 1
-            for anal in self.analysis.result_list:
-                if(len(self.analysis.result_list[self.analysis.result_list.index(anal)])==0):
-                    continue
-                popup.scroll_view.text+='Analysis #'+str(counter)+'\n'
-                for result in anal:
-                    res = result.get_object_properties_list()
-                    string ='File name: '+ str(res[1]) +"    Result: "+ str(res[-1]) +'    Method: '+result.get_method_name()+'\n'
-                    popup.scroll_view.text+=string
-                counter+=1
+
+        popup.scroll_view.text = self.analysis.add_summary_to_text_element(isAll=True)
         popup.open()
 
     def __init__(self, *args, **kwargs):

@@ -62,6 +62,8 @@ class Alex:
             for matrix in ft:
                 for row in matrix:
                     for col in row:
+                        # print(col)
+                        # print(mx)
                         pcaM.append(col)
                         if(col>mx):
                             mx=col

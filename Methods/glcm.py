@@ -15,6 +15,7 @@ sys.path.append(str(Path().resolve().parent / "Methods"))
 '''this script contains classes necessary to implement GLCM classification method'''
 from Grayscale import *
 from LungSegmentation.LungSegmentation_MethodKMeans_AllTypes import *
+import LungSegmentation.LungSegmentation_MethodXRayUNet_jpg_png as Xray 
 pi = np.pi
 class Matrix:
     '''this class contains methods to create glcm matrix from pixels array and get its properties'''
@@ -52,7 +53,7 @@ class Model:
     modelLinearDicriminant = None
     modelLogisticRegression = None
     def __init__(self,kernel='rbf',max_features='auto',solver='liblinear'):
-        self.model = svm.SVC(kernel=kernel)
+        self.model = svm.SVC(kernel='linear')
         self.modelRandomForest = RandomForestClassifier(max_features=max_features)
         self.modelLogisticRegression = LogisticRegression(max_iter=1000,solver=solver)
         self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='lsqr',shrinkage='auto')
@@ -98,6 +99,14 @@ class Model:
             labels.append('normal')
         return labels
 
+    @staticmethod   
+    def GetLabelsXray():
+        labels = []
+        for i in range(204):
+            labels.append('covid')
+        for i in range(210):
+            labels.append('normal')
+        return labels
 
 class ImageEnsemble:
     '''this class hold a collection of dicom images as well as their respective segmented lungs'''
@@ -119,16 +128,29 @@ class ImageEnsemble:
             for folder in self.folders:
                 for fl in os.listdir(folder):
                     self.dicoms.append(DicomImage(folder,fl))
-    def MakeImage(self,image_object):
-        self.dicoms=[]
-        self.dicoms.append(image_object)
 
-    def GetLungs(self):
+    
+    def MakeImage(self,image_object,index):
+        self.lungs=[]
+        image_object.get_next_slice(index)
+        print('image object slice: ',image_object.current_slice_number)
+        lungs = image_object.get_segmented_lungs()
+
+        self.lungs.append(convert_array_to_grayscale(lungs))
+
+
+
+    
+    def GetLungsXray(self):
         self.lungs = []
-        for dcm in self.dicoms:
-            self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm))))
-        
+        for fld in self.folders:
+            s,m = Xray.make_lungmask_multiple(os.listdir(fld),fld)
+            gs = []
+            for a in s:
+                gs.append(convert_array_to_grayscale(a))
+            self.lungs.extend(gs)
 
+   
     def GetMatrices(self):
         self.matrices=[]
         for lung in self.lungs:

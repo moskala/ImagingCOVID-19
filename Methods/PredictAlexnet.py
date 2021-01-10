@@ -6,12 +6,16 @@ sys.path.append(str(Path().resolve().parent))
 from glcm import *
 from alexnet import Alex
 import math
-
-def PredictAlex(image_object,modelAlex,features,classifier,isPretrained=True):
+from ExaminationType import ExaminationType
+def PredictAlex(image_object,index,modelAlex,features,classifier,examination_type=ExaminationType.CT,isPretrained=True):
     '''this function is used by gui when button "Alexnet" is clicked'''
+    print(image_object)
     e = ImageEnsemble()
-    e.MakeImage(image_object)
-    e.GetLungs()
+    e.MakeImage(image_object,index)
+    # if(examination_type is ExaminationType.XRAY):
+    #     e.GetLungsXrayPredict()
+    # else:
+    #     e.GetLungs()
     alex = Alex(load(modelAlex))
     testft = alex.GetFeatures(e.lungs[0])
     testft = alex.ChangeDimAndStandardize(testft,isTensor=False)
@@ -25,9 +29,12 @@ def PredictAlex(image_object,modelAlex,features,classifier,isPretrained=True):
         model=load(classifier)
     else: 
         model=classifier
-    model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
+    if(examination_type is ExaminationType.XRAY):
+        model.fit(pcafts[0:len(pcafts)-1],Model.GetLabelsXray())
+    else:
+        model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
     test = pcafts[len(pcafts)-1].reshape(1, -1)
-    print(test)
+    #print(test)
     return model.predict(test),model
     
         

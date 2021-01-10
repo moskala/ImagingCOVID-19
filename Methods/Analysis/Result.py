@@ -1,4 +1,8 @@
 
+import sys
+from pathlib import Path
+
+
 class Result():
     result = None
     lung_image = None
@@ -8,14 +12,15 @@ class Result():
     file_name = None
     layer_number = None
 
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number):
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type):
         self.result = result
         self.lung_image = lung_image
         self.scale = scale
         self.image_height = image_height
         self.image_width = image_width
         self.file_name = file_name
-        self.layer_number = layer_number
+        self.layer_number = layer_number+1
+        self.examination_type = examination_type
 
     def get_object_properties_headers(self):
         res = []
@@ -40,6 +45,9 @@ class Result():
     def get_classifier(self):
         return ""
 
+    def get_examination_type(self):
+        return self.examination_type
+
     def to_csv(self):
         pass
 
@@ -51,8 +59,8 @@ class Result():
 
 
 class AlexnetResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,classifier):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number)
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type,classifier):
+        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type)
         self.classifier = classifier
 
     def get_classifier(self):
@@ -63,8 +71,8 @@ class AlexnetResult(Result):
 
 
 class HaralickGlcmResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,classifier):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number)
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type,classifier):
+        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type)
         self.classifier = classifier
 
     def get_classifier(self):
@@ -75,8 +83,8 @@ class HaralickGlcmResult(Result):
 
 
 class NeuralNetworkResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number)
+    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type):
+        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type)
 
     def get_method_name(self):
         return 'Neural network for jpg/png'
@@ -87,14 +95,15 @@ class SeverityResult(Result):
     severity = None
     percentage = None
 
-    def __init__(self, result, slice, image_properties, layer_number):
+    def __init__(self, result, slice, image_properties, layer_number,examination_type):
         super().__init__(result,
                          lung_image=slice,
                          image_height=image_properties["Height"],
                          image_width=image_properties["Width"],
                          scale=image_properties["CT Window Type"],
                          file_name=image_properties["Filename"],
-                         layer_number=layer_number)
+                         layer_number=layer_number,
+                         examination_type=examination_type)
 
         self.percentage = result[0]
         self.severity = result[1]
