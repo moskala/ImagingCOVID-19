@@ -14,7 +14,7 @@ import Grayscale as gray
 from LungSegmentation.LungSegmentationUtilities import *
 
 
-def make_lungmask(img, display=False):
+def make_lungmask(img, crop=True, display=False):
     img_copy = img.copy()
     row_size = img.shape[0]
     col_size = img.shape[1]
@@ -72,19 +72,22 @@ def make_lungmask(img, display=False):
         mask = mask + np.where(labels == N, 1, 0)
 
     # Oryginal mask
-    mask1 = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
+    mask_dil = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
     # Improved due to covid changes
-    mask2 = morphology.area_closing(mask1, connectivity=2)
+    mask_close = morphology.area_closing(mask_dil, connectivity=2)
 
-    # Cropped image and mask
-    crop_img, crop_mask = crop_mask_image(img, mask2)
-    # Find contours and fill mask
-    filled_mask = fill_contours(crop_mask, min_length=100)
-    # Find convex polygon and change mask
-    # final_segment, final_mask = apply_convex_polygon(crop_img, filled_mask)
+    if crop:
+        # Cropped image and mask
+        crop_img, crop_mask = crop_mask_image(img, mask_close)
+        # Find contours and fill mask
+        final_mask = fill_contours(crop_mask, min_length=100)
+        final_img = crop_img
+    else:
+        final_mask = fill_contours(mask_close, min_length=100)
+        final_img = img.copy()
 
-    final_mask = filled_mask
-    final_segment = final_mask*crop_img
+    final_segment = final_mask * final_img
+
     if display:
         fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
         ax1.set_title("Original")
@@ -105,7 +108,7 @@ def make_lungmask(img, display=False):
 
         plt.show()
 
-    return final_segment
+    return final_segment, final_mask
 
 
 # Przykładowe wywołania z rysowaniem

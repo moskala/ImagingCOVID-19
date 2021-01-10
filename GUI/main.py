@@ -23,6 +23,7 @@ from CustomKivyWidgets.LayersPopup import LayersPopup
 # Python imports
 from pathlib import Path
 import sys
+
 sys.path.append(str(Path().resolve().parent / "Methods"))
 
 # Implemented methods imports
@@ -34,18 +35,16 @@ from PredictGLCM import *
 from PredictAlexnet import *
 from PredictHaralick import *
 from PredictGlcmHaralick import *
-from ChooseSlices import LayerChoice, LayerChoiceType
+from ChooseSlices import LayerChoice
 from Grayscale import *
 from Analysis.Analysis import Analysis
 from Analysis.Result import *
-from CTWindowing import CTWindow
 from ExaminationType import ExaminationType
 
 # Paths
 GUI_FOLDER = str(Path().resolve())
 MY_FOLDER = Path()
 MODEL_PATH = str(Path().resolve().parent.parent / "models" / "best_checkpoint.pth")
-
 
 
 class RootWidget(FloatLayout):
@@ -62,6 +61,7 @@ class RootWidget(FloatLayout):
 
     _popup = None
     _draw_figure = None
+    _draw_popup = None
     analysis = None
 
     current_model = None
@@ -109,8 +109,9 @@ class RootWidget(FloatLayout):
             self.analysis.add_to_list(SeverityResult(result,
                                                      image_with_points,
                                                      self.image_object.get_info(),
+                                                     self.image_object.get_current_slice_number_to_show(),self.examination_type))
                                                      self.image_object.get_current_slice_number_to_show(),
-                                                     self.examination_type))
+                                                     self.examination_type)
             self._popup = Popup(title="Severity score",
                                 content=Label(text=result_text),
                                 size_hint=(0.6, 0.6),
@@ -120,7 +121,8 @@ class RootWidget(FloatLayout):
             print(error)
 
     def automatic_layer_choice(self):
-        self.layers_popup = Factory.LayersPopup(self.layer_choice)
+        self.layers_popup = Factory.LayersPopup(self.layer_choice,
+                                                max_layers_range=self.image_object.total_slice_number)
         self.layers_popup.open()
 
     def save_layer_selection(self, *args):
@@ -159,7 +161,7 @@ class RootWidget(FloatLayout):
             self.set_layers_button()
             self.layer_choice.update_choice_singular(self.image_object.current_slice_number)
 
-    def load_specific_slice(self,which_slice):
+    def load_specific_slice(self, which_slice):
         if self.plot is not None and self.image_object is not None:
             slice_number = int(which_slice)
             self.left_panel.remove_widget(self.plot)
@@ -167,7 +169,7 @@ class RootWidget(FloatLayout):
             self.left_panel.add_widget(self.plot)
             self.slices_info.text = "Slice: {0}/{1}".format(which_slice,
                                                             self.image_object.total_slice_number)
-            #update image object in root widget
+            # update image object in root widget
             self.image_object.get_specific_slice(slice_number)
             self.slider.value = self.image_object.current_slice_number
             self.layer_choice.update_choice_singular(self.image_object.current_slice_number)
@@ -192,19 +194,24 @@ class RootWidget(FloatLayout):
 
     def neural_network(self):
         """This function runs the neural network process for the displayed image"""
+
         if self.image_object.file_type == ImageType.JPG or self.image_object.file_type == ImageType.PNG:
             predict = Net.testImage(self.image_object.get_file_path(), MODEL_PATH)
-            if(predict=='normal'):
-                prediction='Normal'
+            if predict == 'normal':
+                prediction = 'Normal'
             else:
-                prediction='COVID-19'
-            if(self.analysis is None):
-                self.analysis=Analysis(slices_number=self.image_object.total_slice_number)
-            self.add_result_to_analysis_neural_network(prediction,self.image_object.get_current_slice_number_to_show())
+                prediction = 'COVID-19'
+            if self.analysis is None:
+                self.analysis = Analysis(slices_number=self.image_object.total_slice_number)
+            self.add_result_to_analysis_neural_network(prediction,
+                                                       self.image_object.get_current_slice_number_to_show())
         else:
             prediction = "Network accepts only jpg or png files!"
 
-        popup = Popup(title='Result',content=Label(text=prediction),size=(400,400),size_hint=(None, None))
+        popup = Popup(title='Result',
+                      content=Label(text=prediction),
+                      size=(400, 400),
+                      size_hint=(None, None))
         popup.open()
 
     def lung_tissue_segmentation(self):
@@ -215,28 +222,29 @@ class RootWidget(FloatLayout):
 
     def add_result_to_analysis_neural_network(self, prediction, layer_number):
         properties = self.image_object.get_info()
-        result=NeuralNetworkResult(prediction,
-                                   self.image_object.get_current_grayscale_slice(),
-                                   properties["Height"],
-                                   properties["Width"],
-                                   properties["CT Window Type"],
-                                   properties["Filename"],
-                                   layer_number,
-                                   self.examination_type)
+        result = NeuralNetworkResult(prediction,
+                                     self.image_object.get_current_grayscale_slice(),
+                                     properties["Height"],
+                                     properties["Width"],
+                                     properties["CT Window Type"],
+                                     properties["Filename"],
+                                     layer_number,
+                                     self.examination_type)
         self.analysis.add_to_list(result)
-        #dict
-        dict_key = properties["Filename"]+"_"+str(layer_number)
-        if(dict_key in self.analysis.dictionary[self.analysis.current_analysis_index]):
+
+        dict_key = properties["Filename"] + "_" + str(layer_number)
+        if dict_key in self.analysis.dictionary[self.analysis.current_analysis_index]:
             self.analysis.dictionary[self.analysis.current_analysis_index][dict_key].append(prediction)
         else:
             temp_list = [prediction]
             self.analysis.dictionary[self.analysis.current_analysis_index].update({dict_key: temp_list})
-        print('Added following result to collection: ',result.get_object_properties_list())
+        print('Added following result to collection: ', result.get_object_properties_list())
 
     def show_load(self):
         """This function runs load dialog"""
         content = LoadDialog(cancel=self.dismiss_popup)
-        self._popup = Popup(title="Load file", content=content,
+        self._popup = Popup(title="Load file",
+                            content=content,
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
@@ -263,7 +271,7 @@ class RootWidget(FloatLayout):
     def update_analysis(self):
         self.analysis.result_list.append([])
         self.analysis.dictionary.append({})
-        self.analysis.current_analysis_index+=1
+        self.analysis.current_analysis_index += 1
         self.analysis.slices_number.append(self.image_object.total_slice_number)
 
     def update_panel(self):
@@ -275,7 +283,7 @@ class RootWidget(FloatLayout):
         self.left_panel.add_widget(self.plot)
         self.slider.value = 0
         self.slider.step = 1
-        self.slider.range = (0, self.image_object.total_slice_number-1)
+        self.slider.range = (0, self.image_object.total_slice_number - 1)
         self.slider.value_track = True
 
         self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.get_current_slice_number_to_show(),
@@ -316,7 +324,6 @@ class RootWidget(FloatLayout):
     def load_ct(self, path, filename):
         """This function runs the load process for an image selected in the load dialog"""
 
-
         image_folder = path
         image_file_name = str(Path(filename[0]).name)
 
@@ -342,7 +349,6 @@ class RootWidget(FloatLayout):
         #     if self._popup is not None:
         #         self.dismiss_popup()
 
-
     def save(self, path, filename):
         """This function runs the saving process after pressing 'Save anonymized file' button"""
         success = self.image_object.save_anonymized_file(filename, path)
@@ -354,21 +360,24 @@ class RootWidget(FloatLayout):
 
     def show_analysis_popup(self):
         indexes = self.layer_choice.choose_indexes()
-        if(self.analysis_popup is not None):
+        if self.analysis_popup is not None:
             self.current_model = self.analysis_popup.current_model
-        self.analysis_popup = Factory.AnalysisPopup(self.analysis, self.image_object, self.current_model,self.examination_type,indexes)
+        self.analysis_popup = Factory.AnalysisPopup(self.analysis,
+                                                    self.image_object,
+                                                    self.current_model,
+                                                    self.examination_type,
+                                                    indexes)
         print(self.current_model)
-        if(self.current_model is None):
-            self.analysis_popup.box_layout.add_widget(Label(text='None yet!'),index=9)
+        if self.current_model is None:
+            self.analysis_popup.box_layout.add_widget(Label(text='None yet!'), index=9)
         else:
             bl = BoxLayout(orientation='horizontal')
             bl.add_widget(Label(text=str(type(self.current_model).__name__)))
-            bl.add_widget(Button(text='Classify',on_release=self.analysis_popup.analysis_classify_recent))
-            self.analysis_popup.box_layout.add_widget(bl,index=9)
+            bl.add_widget(Button(text='Classify',
+                                 on_release=self.analysis_popup.analysis_classify_recent))
+            self.analysis_popup.box_layout.add_widget(bl, index=9)
         self.analysis_popup.open()
-        self.current_model =self.analysis_popup.current_model
-
-
+        self.current_model = self.analysis_popup.current_model
 
     def show_result_popup(self):
         """

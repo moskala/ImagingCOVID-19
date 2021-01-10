@@ -116,11 +116,12 @@ def get_grayscale_from_jpg_png(filename: str, src_folder: str):
     path = Path(src_folder) / filename
     pixel_array = PixelArrays.get_pixel_array_jpg_png(str(path))
     if len(pixel_array.shape) == 3:
-        gray_array = convert_rgb_to_grayscale(pixel_array)
+        pixel_array = convert_rgb_to_grayscale(pixel_array)
     elif np.max(pixel_array) > 255 or np.min(pixel_array) < 0:
         raise ValueError("Image not in grayscale: {0}".format(path))
-    else:
-        gray_array = pixel_array
+
+    gray_array = get_grayscale_from_normal_array(pixel_array)
+
     return gray_array
 
 
@@ -154,3 +155,12 @@ def get_grayscale_from_nifti_slice(filename: str, src_solder: str, slice_number)
     gray_array = convert_array_to_grayscale(ct_arrays[slice_number])
 
     return gray_array
+
+
+def get_grayscale_from_normal_array(array):
+    if np.max(array) <= 1:
+        gray_array = 255 * array
+        return np.array(gray_array, dtype='uint8')
+
+    else:
+        return np.array(array, dtype='uint8')

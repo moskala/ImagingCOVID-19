@@ -39,6 +39,14 @@ class Result():
         res.append(self.result)
         return res
 
+    def get_object_properties_list_without_image(self):
+        res = []
+        res.append(self.layer_number)
+        res.append(self.file_name)
+        res.append(str(self.image_height)+"x"+str(self.image_width))
+        res.append(self.result)
+        return res
+
     def get_object_ct_window(self):
         return self.scale
 

@@ -1,27 +1,30 @@
 
 
-class Analysis():
+class Analysis:
+
     result_list = None
     dictionary = None
-    def __init__(self,slices_number,lst=None):
-        if(lst is None):
+
+    def __init__(self, slices_number, lst=None):
+
+        if lst is None:
             self.result_list = []
         else:
             self.result_list = lst
         self.result_list.append([])
         self.dictionary = []
         self.dictionary.append({})
-        self.current_analysis_index=0
+        self.current_analysis_index = 0
         self.slices_number = []
         self.slices_number.append(slices_number)
 
-    def add_to_list(self,result):
+    def add_to_list(self, result):
         self.result_list[self.current_analysis_index].append(result)
 
-    def add_summary_to_text_element(self,isAll = False):
+    def add_summary_to_text_element(self, isAll = False):
         counter = 1
-        text_element=""
-        if(isAll):
+        text_element = ""
+        if isAll:
             for anal in self.result_list:
                 if(len(self.result_list[self.result_list.index(anal)])==0):
                     continue
@@ -41,7 +44,7 @@ class Analysis():
         print(text_element)
         return text_element
 
-    def get_dictionary_by_method_from_list(self,index):
+    def get_dictionary_by_method_from_list(self, index):
         dictionary_method = {}
         for result in self.result_list[index]:
             examination_type = str(result.get_examination_type())
@@ -61,12 +64,12 @@ class Analysis():
             else:
                 temp_list = [result]
                 dictionary_method.update({method:temp_list})
-        return dictionary_method   
+        return dictionary_method
 
-    def calculate_results(self,i):
-        how_many_results = [0,0,0] #0-normal,1-covid,2-undefined
+    def calculate_results(self, i):
+        how_many_results = [0, 0, 0] #0-normal,1-covid,2-undefined
         for key in self.dictionary[i]:
-            how_many_results_temp = [0,0]
+            how_many_results_temp = [0, 0]
             for result in self.dictionary[i][key]:
                 if(result=='COVID-19'):
                     how_many_results_temp[1]+=1
@@ -103,6 +106,7 @@ class Analysis():
         res.append('Normal layers')
         res.append('Uncertain layers')
         return res
+
     def get_report_summary_headers(self):
         res = []
         res.append('Total number of tests')
