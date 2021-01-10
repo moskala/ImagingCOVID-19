@@ -110,11 +110,12 @@ class AnalysisPopup(Popup):
                     self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index),index,self.current_model)
             if(len(self.indexes)<=1):
                 text = prediction
+                popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
             else:
                 text = self.analysis.add_summary_to_text_element()
-            popup = AutomaticResultPopup(title='Result',size=(600,400),size_hint=(None, None))
-            popup.scroll_view.text = text
-            popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
+                popup = AutomaticResultPopup(title='Result',size=(600,400),size_hint=(None, None))
+                popup.scroll_view.text = text
+                popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
             popup.open()
             self.dismiss()
     def analysis_classify_train(self):
@@ -191,11 +192,12 @@ class AnalysisPopup(Popup):
         print('len indexes: ',len(self.indexes))
         if(len(self.indexes)<=1):
             text = prediction
+            popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
         else:
             text = self.analysis.add_summary_to_text_element()
-        popup = AutomaticResultPopup(title='Result',size=(600,400),size_hint=(None, None))
-        popup.scroll_view.text = text
-        popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
+            popup = AutomaticResultPopup(title='Result',size=(600,400),size_hint=(None, None))
+            popup.scroll_view.text = text
+            popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
         popup.open()
 
 
@@ -266,10 +268,11 @@ class AnalysisPopup(Popup):
                 self.add_result_to_analysis(False,prediction,self.image_object.get_specific_slice(index),index,load(classifier_path))
         if(len(self.indexes)<=1):
             text = prediction
+            popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
         else:
             text = self.analysis.add_summary_to_text_element()
-        popup = AutomaticResultPopup(title='Result',size=(600,400),size_hint=(None, None))
-        popup.scroll_view.text = text
-        popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
+            popup = AutomaticResultPopup(title='Result',size=(600,400),size_hint=(None, None))
+            popup.scroll_view.text = text
+            popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
         popup.open()
         self.dismiss()
