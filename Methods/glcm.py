@@ -138,7 +138,8 @@ class ImageEnsemble:
     def GetLungs(self):
         self.lungs = []
         for dcm in self.dicoms:
-            self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm))))
+            segment, mask = make_lungmask(convert_array_to_grayscale(dcm))
+            self.lungs.append(convert_array_to_grayscale(segment))
 
     def GetLungsXray(self):
         self.lungs = []
