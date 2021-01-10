@@ -154,7 +154,7 @@ class ResultPopup(Popup):
                 if self.analysis.get_actual_analysis_total() <= 2 and len(diction[key]) < 5:
                     pdf.cell(epw, 0.0, 'Analyzed images', align='C')
                     pdf.ln(font_size)
-                    
+
                     for result in diction[key]:
                         res = result.get_object_properties_list()
                         lungs = res[2]
