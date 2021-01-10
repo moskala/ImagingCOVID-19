@@ -6,7 +6,7 @@ from haralick import *
 from glcm import *
 import numpy as np
 from ExaminationType import ExaminationType
-def PredictGlcmHaralick(image_object,model_path,train_data,examination_type=ExaminationType.CT,isPretrained=True):
+def PredictGlcmHaralick(image_object,index,model_path,train_data,examination_type=ExaminationType.CT,isPretrained=True):
     if(isPretrained):
         model = load(model_path) 
     else:
@@ -16,11 +16,11 @@ def PredictGlcmHaralick(image_object,model_path,train_data,examination_type=Exam
         else:
             model.fit(load(train_data),Model.GetLabels())
     e = ImageEnsemble()
-    e.MakeImage(image_object)
-    if(examination_type is ExaminationType.XRAY):
-        e.GetLungsXrayPredict()
-    else:
-        e.GetLungs()
+    e.MakeImage(image_object,index)
+    # if(examination_type is ExaminationType.XRAY):
+    #     e.GetLungsXrayPredict()
+    # else:
+    #     e.GetLungs()
     h = Haralick()
     fts = h.GetHaralickFts(e.lungs[0])
     e.GetMatrices()

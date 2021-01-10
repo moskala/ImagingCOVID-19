@@ -129,25 +129,18 @@ class ImageEnsemble:
                 for fl in os.listdir(folder):
                     self.dicoms.append(DicomImage(folder,fl))
 
-    def MakeDicoms(self,single_folder=None,single_file=None):
-        if(self.folders is None and single_file is not None):
-            self.dicoms=[]
-            self.dicoms.append(DicomImage(single_folder,single_file))
-        else:
-            self.dicoms=[]
-            for folder in self.folders:
-                for fl in os.listdir(folder):
-                    self.dicoms.append(DicomImage(folder,fl))
+    
+    def MakeImage(self,image_object,index):
+        self.lungs=[]
+        image_object.get_next_slice(index)
+        print('image object slice: ',image_object.current_slice_number)
+        lungs = image_object.get_segmented_lungs()
 
-    def MakeImage(self,image_object):
-        self.dicoms=[]
-        self.dicoms.append(image_object)
+        self.lungs.append(convert_array_to_grayscale(lungs))
 
-    def GetLungs(self):
-        self.lungs = []
-        for dcm in self.dicoms:
-            self.lungs.append(convert_array_to_grayscale(make_lungmask(convert_array_to_grayscale(dcm))))
 
+
+    
     def GetLungsXray(self):
         self.lungs = []
         for fld in self.folders:
@@ -157,11 +150,7 @@ class ImageEnsemble:
                 gs.append(convert_array_to_grayscale(a))
             self.lungs.extend(gs)
 
-    def GetLungsXrayPredict(self):
-        self.lungs = []
-        for dcm in self.dicoms:
-            self.lungs.append(convert_array_to_grayscale(Xray.predict_single_lung_mask_from_array(convert_array_to_grayscale(dcm))))
-
+   
     def GetMatrices(self):
         self.matrices=[]
         for lung in self.lungs:

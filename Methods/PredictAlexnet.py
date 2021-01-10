@@ -7,15 +7,15 @@ from glcm import *
 from alexnet import Alex
 import math
 from ExaminationType import ExaminationType
-def PredictAlex(image_object,modelAlex,features,classifier,examination_type=ExaminationType.CT,isPretrained=True):
+def PredictAlex(image_object,index,modelAlex,features,classifier,examination_type=ExaminationType.CT,isPretrained=True):
     '''this function is used by gui when button "Alexnet" is clicked'''
     print(image_object)
     e = ImageEnsemble()
-    e.MakeImage(image_object)
-    if(examination_type is ExaminationType.XRAY):
-        e.GetLungsXrayPredict()
-    else:
-        e.GetLungs()
+    e.MakeImage(image_object,index)
+    # if(examination_type is ExaminationType.XRAY):
+    #     e.GetLungsXrayPredict()
+    # else:
+    #     e.GetLungs()
     alex = Alex(load(modelAlex))
     testft = alex.GetFeatures(e.lungs[0])
     testft = alex.ChangeDimAndStandardize(testft,isTensor=False)

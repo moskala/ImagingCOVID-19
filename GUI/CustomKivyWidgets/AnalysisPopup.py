@@ -23,7 +23,7 @@ from ExaminationType import ExaminationType
 
 # Paths
 MODELS_FOLDER_PATH = str(Path().resolve().parent.parent / "models")
-MODELS_XRAY_FOLDER_PATH = str(Path().resolve().parent.parent / "models"/"xray")
+MODELS_XRAY_FOLDER_PATH = str(Path().resolve().parent.parent / "models" / "xray")
 
 MODEL_ALEX_EXTRACT_NAME = "featureExtraction.joblib"
 # MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
@@ -94,10 +94,10 @@ class AnalysisPopup(Popup):
             for index in self.indexes:
                 self.image_object.get_specific_slice(index)
                 if(self.current_features is 'GlcmHaralick'):
-                    predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),self.current_model,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,_ = PredictGlcmHaralick(self.image_object,index,self.current_model,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
 
                 else:
-                    predict,_ = PredictAlex(self.image_object.get_specific_slice(index),MODEL_ALEX_EXTRACT_PATH,
+                    predict,_ = PredictAlex(self.image_object,index,MODEL_ALEX_EXTRACT_PATH,
                                         MODEL_ALEX_DATA_PATH,self.current_model,self.examination_type,isPretrained=False)
                 if(predict[0]=='normal'):
                     prediction = 'Normal'
@@ -134,42 +134,42 @@ class AnalysisPopup(Popup):
             self.current_features = 'GlcmHaralick'
             if(self.trainRandomForest.state is 'down'):
                 if(self.trainAuto.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model().modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object,first_index,Model().modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
                 elif(self.trainSqrt.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(max_features='sqrt').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object,first_index,Model(max_features='sqrt').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(max_features='log2').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object,first_index,Model(max_features='log2').modelRandomForest,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
                 temp_model = Model().modelRandomForest
             else:
                 if(self.trainLbfgs.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model().modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object,first_index,Model().modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
                 elif(self.trainLiblinear.state is 'down'):
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(solver='liblinear').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object,first_index,Model(solver='liblinear').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictGlcmHaralick(self.image_object.get_specific_slice(first_index),Model(solver='saga').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
+                    predict,self.current_model = PredictGlcmHaralick(self.image_object,first_index,Model(solver='saga').modelLogisticRegression,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type,isPretrained=False)
                 temp_model = Model().modelLogisticRegression
         else:
             self.current_features = 'Alexnet'
             if(self.trainRandomForest.state is 'down'):
                 if(self.trainAuto.state is 'down'):
-                   predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
+                   predict,self.current_model = PredictAlex(self.image_object,first_index,MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model().modelRandomForest,self.examination_type,isPretrained=False)
                 elif(self.trainSqrt.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object,first_index,MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(max_features='sqrt').modelRandomForest,self.examination_type,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object,first_index,MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(max_features='log2').modelRandomForest,self.examination_type,isPretrained=False)
                 temp_model = Model().modelRandomForest
             else:
                 if(self.trainLbfgs.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object,first_index,MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model().modelLogisticRegression,self.examination_type,isPretrained=False)
                 elif(self.trainLiblinear.state is 'down'):
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object,first_index,MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(solver='liblinear').modelLogisticRegression,self.examination_type,isPretrained=False)
                 else:
-                    predict,self.current_model = PredictAlex(self.image_object.get_specific_slice(first_index),MODEL_ALEX_EXTRACT_PATH,
+                    predict,self.current_model = PredictAlex(self.image_object,first_index,MODEL_ALEX_EXTRACT_PATH,
                                      MODEL_ALEX_DATA_PATH,Model(solver='saga').modelLogisticRegression,self.examination_type,isPretrained=False)
                 temp_model = Model().modelLogisticRegression
 
@@ -249,11 +249,11 @@ class AnalysisPopup(Popup):
         for index in self.indexes:
             if(self.preGlcmHaralick.state is'down'):
                 self.image_object.get_specific_slice(index)
-                predict,_ = PredictGlcmHaralick(self.image_object.get_specific_slice(index),classifier_path,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type)
+                predict,_ = PredictGlcmHaralick(self.image_object,index,classifier_path,MODEL_GLCM_HARALICK_DATA_PATH,self.examination_type)
 
                 self.current_features_for_automatic = 'GlcmHaralick'
             else:
-                predict,_ = PredictAlex(self.image_object.get_specific_slice(index),MODEL_ALEX_EXTRACT_PATH,
+                predict,_ = PredictAlex(self.image_object,index,MODEL_ALEX_EXTRACT_PATH,
                                         MODEL_ALEX_DATA_PATH,
                                         classifier_path,self.examination_type)
                 self.current_features_for_automatic = 'Alexnet'
