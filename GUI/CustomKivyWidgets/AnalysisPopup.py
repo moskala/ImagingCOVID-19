@@ -10,7 +10,9 @@ from kivy.uix.boxlayout import BoxLayout
 # Python imports
 from pathlib import Path
 import sys
-sys.path.append(str(Path().resolve().parent.parent / "Methods"))
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
 
 # Implemented methods imports
 from PredictAlexnet import *

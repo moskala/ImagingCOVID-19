@@ -211,7 +211,7 @@ class DicomImage(ImageObject):
         else:
             self.current_slice_number = value
             
-        self.src_filename = self.slices_path_list[value].name
+        self.src_filename = self.slices_path_list[self.current_slice_number].name
         
         self.image_data = anonym.get_anonymized_dicom(self.src_filename, self.src_folder)
         self.__pixel_array = self.get_hounsfield()

@@ -9,17 +9,22 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 
 # Custom kivy widgets imports
+from CustomKivyWidgets.AnalysisPopup import AnalysisPopup
 from CustomKivyWidgets.DialogWidgets import LoadDialog, SaveDialog
-from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
 from CustomKivyWidgets.DrawLesionsWidgets import DrawFigure
+from CustomKivyWidgets.LayersPopup import LayersPopup
 from CustomKivyWidgets.LungSegmentationPopup import LungSegmentationPopup
+from CustomKivyWidgets.ShowImageWidget import MyFigure, START_IMAGE
+from CustomKivyWidgets.ResultPopupWidget import ResultPopup
+
 
 # Python imports
 from pathlib import Path
 import sys
 import os
+import copy
 
-sys.path.append(str(Path().resolve().parent / "Methods"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
 
 # Implemented methods imports
 from ImageMedical.CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
@@ -110,8 +115,7 @@ class RootWidget(FloatLayout):
             print(error)
 
     def automatic_layer_choice(self):
-        self.layers_popup = Factory.LayersPopup(self.layer_choice,
-                                                max_layers_range=self.image_object.total_slice_number)
+        self.layers_popup = Factory.LayersPopup(self.layer_choice, max_layers_range=self.image_object.total_slice_number)
         self.layers_popup.open()
 
     def save_layer_selection(self, *args):
@@ -352,7 +356,7 @@ class RootWidget(FloatLayout):
         if self.analysis_popup is not None:
             self.current_model = self.analysis_popup.current_model
         self.analysis_popup = Factory.AnalysisPopup(self.analysis,
-                                                    self.image_object,
+                                                    copy.deepcopy(self.image_object),
                                                     self.current_model,
                                                     self.examination_type,
                                                     indexes)
@@ -373,8 +377,7 @@ class RootWidget(FloatLayout):
         Function creates adn show PopUp in application with some data about image.
         :return: None
         """
-        properties = self.image_object.get_info()
-        popup = Factory.ResultPopup(analysis = self.analysis)
+        popup = Factory.ResultPopup(analysis=self.analysis)
 
         popup.scroll_view.text = self.analysis.add_summary_to_text_element(isAll=True)
         popup.open()
