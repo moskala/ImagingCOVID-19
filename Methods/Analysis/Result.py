@@ -19,7 +19,7 @@ class Result():
         self.image_height = image_height
         self.image_width = image_width
         self.file_name = file_name
-        self.layer_number = layer_number+1
+        self.layer_number = layer_number
         self.examination_type = examination_type
 
     def get_object_properties_headers(self):
