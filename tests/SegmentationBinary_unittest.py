@@ -1,51 +1,54 @@
 import unittest
-import os, sys
 import pydicom
 import numpy as np
 from pathlib import Path
 
-#sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'Methods'))
-sys.path.append(str(Path().resolve().parent))
-
-from LungSegmentation.MethodBinary import SegmentationB
-
-# testowy pacjent
-testDir = 'test_data/79262/'
-testFile = 'test_data/79262/1-001.dcm'
-testFile2 = 'test_data/79262/1-050.dcm'
+from TestsContext import Methods
+from Methods.LungSegmentation.MethodBinary import SegmentationB
 
 
 class LungSegmentationMethodBDicomUnittest(unittest.TestCase):
+
+    # testowy pacjent
+    testDir = Path('test_data/testcase_dicom_hu/').resolve()
+    testFile1 = 'testcase_hounsfield1.dcm'
+    testFile2 = 'testcase_hounsfield2.dcm'
+
     def test_read_ct_scan(self):
         sgm = SegmentationB()
-        scns = sgm.read_ct_scan(testDir)
+        scns = sgm.read_ct_scan(self.testDir)
         self.assertIsNotNone(scns)
         self.assertIsInstance(scns, np.ndarray)
         self.assertIsInstance(scns[0], np.ndarray)
 
     def test_get_segmented_lungs(self):
-        arr = pydicom.read_file(testFile).pixel_array
+        test_file = self.testDir / self.testFile1
+        arr = pydicom.read_file(test_file).pixel_array
         sgm = SegmentationB()
         im = sgm.get_segmented_lungs(arr)
         self.assertIsNotNone(im)
         self.assertIsInstance(im, np.ndarray)
 
     def test_segment_lung_from_ct_scan(self):
+        test_file1 = self.testDir / self.testFile1
+        test_file2 = self.testDir / self.testFile2
         lst = []
-        file1 = pydicom.read_file(testFile).pixel_array
+        file1 = pydicom.read_file(test_file1).pixel_array
         lst.append(file1)
-        file2 = pydicom.read_file(testFile2).pixel_array
+        file2 = pydicom.read_file(test_file2).pixel_array
         lst.append(file2)
         sgm = SegmentationB()
-        arr=sgm.segment_lung_from_ct_scan(lst,1)
+        arr = sgm.segment_lung_from_ct_scan(lst, 1)
         self.assertIsNotNone(arr)
-        self.assertEqual(len(arr),len(file2))
+        self.assertEqual(len(arr), len(file2))
     
     def test_segment_lung_from_ct_scan_all(self):
+        test_file1 = self.testDir / self.testFile1
+        test_file2 = self.testDir / self.testFile2
         lst = []
-        file1 = pydicom.read_file(testFile).pixel_array
+        file1 = pydicom.read_file(test_file1).pixel_array
         lst.append(file1)
-        file2 = pydicom.read_file(testFile2).pixel_array
+        file2 = pydicom.read_file(test_file2).pixel_array
         lst.append(file2)
         sgm = SegmentationB()
         arr = sgm.segment_lung_from_ct_scan_all(lst)

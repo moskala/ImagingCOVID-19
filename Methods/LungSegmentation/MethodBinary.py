@@ -93,8 +93,8 @@ class SegmentationB:
         get_high_vals = binary == 0
         im[get_high_vals] = 0
 
-        plt.imshow(binary)
-        plt.show()
+        # plt.imshow(binary)
+        # plt.show()
         
         return im
 
