@@ -5,7 +5,7 @@ from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 import matplotlib.pyplot as plt
 import sys
 import os
-from pathlib import Path
+import logging
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
 from PlotUtilities import get_plot_data_jpg_png
@@ -38,4 +38,4 @@ class ResultFigure(FigureCanvasKivyAgg):
             super(ResultFigure, self).__init__(fig, **kwargs)
             self.curPlt = fig
         else:
-            print("Error")
+            logging.error("Segmentation figure: fig is None")

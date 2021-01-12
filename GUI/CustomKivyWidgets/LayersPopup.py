@@ -9,6 +9,7 @@ from kivy.uix.textinput import TextInput
 # Python imports
 import sys
 import os
+import logging
 
 # Implemented methods imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
@@ -113,7 +114,7 @@ class LayersPopup(Popup):
             else:
                 return None
         except Exception as error:
-            print(error)
+            logging.warning('Layers range validation' + str(error))
             return None
 
     def get_settings(self):

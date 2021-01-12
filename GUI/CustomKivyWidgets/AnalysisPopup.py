@@ -4,16 +4,18 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.boxlayout import BoxLayout
-# Custom kivy widgets imports
-
 
 # Python imports
 import sys
 import os
+import logging
+
+# Custom kivy widgets imports
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+from ErrorPopup import ErrorPopup
 
 # Implemented methods imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
-
 from PredictAlexnet import *
 from PredictGlcmHaralick import *
 from ChooseSlices import *
@@ -23,7 +25,6 @@ from Analysis.Result import *
 from ExaminationType import ExaminationType
 
 # Paths
-
 MODELS_CT_FOLDER_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'ct'))
 MODELS_XRAY_FOLDER_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'xray'))
 
@@ -34,8 +35,10 @@ MODEL_ALEX_DATA_NAME = "prePCAFeatures50.joblib"
 # MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
 # MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
 
+
 class AutomaticResultPopup(Popup):
     scroll_view = ObjectProperty(None)
+
 
 class AnalysisPopup(Popup):
 
@@ -44,6 +47,7 @@ class AnalysisPopup(Popup):
     box_layout = ObjectProperty(None)
     current_model = ObjectProperty(None)
     current_features = None
+    _error_popup = None
 
     def __init__(self,analysis,image_object,current_model,examination_type,indexes=None, **kwargs):
         super().__init__()
@@ -53,7 +57,7 @@ class AnalysisPopup(Popup):
         if(indexes is None):
             self.indexes = []
             self.indexes.append(image_object.current_slice_number)
-            print(image_object.current_slice_number)
+            # print(image_object.current_slice_number)
         else:
             self.indexes = indexes
         self.examination_type = examination_type
@@ -83,9 +87,8 @@ class AnalysisPopup(Popup):
             temp_list = [prediction]
             
             self.analysis.dictionary[self.analysis.current_analysis_index].update({dict_key: temp_list})
-        print('Added following result to collection: ',result.get_object_properties_list())
 
-    def analysis_classify_recent(self,unknown_argumentxd):
+    def analysis_classify_recent(self, *args):
         if(self.examination_type is ExaminationType.XRAY):
             MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
             MODEL_ALEX_EXTRACT_PATH =  os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_ALEX_EXTRACT_NAME)
@@ -122,7 +125,15 @@ class AnalysisPopup(Popup):
                 popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
             popup.open()
             self.dismiss()
+
     def analysis_classify_train(self):
+        try:
+            self.get_analysis_classify_train()
+        except Exception as error:
+            logging.error(": " + str(error))
+            self._error_popup = ErrorPopup(message=str(error))
+
+    def get_analysis_classify_train(self):
         # first we train for the first index
         if(self.examination_type is ExaminationType.XRAY):
             MODEL_GLCM_HARALICK_DATA_PATH = os.path.join(MODELS_XRAY_FOLDER_PATH,MODEL_GLCM_HARALICK_DATA_NAME)
@@ -193,7 +204,7 @@ class AnalysisPopup(Popup):
             self.analysis_classify_recent(0)
 
     # print(self.current_model)
-        print('len indexes: ',len(self.indexes))
+    #     print('len indexes: ',len(self.indexes))
         if(len(self.indexes)<=1):
             text = prediction
             popup = Popup(title='Result',content=Label(text=text),size=(400, 400),size_hint=(None, None))
@@ -204,10 +215,16 @@ class AnalysisPopup(Popup):
             popup.info.text = '\nAutomatic analysis finished!\n Go to \'Reports\' to generate a report file'
         popup.open()
 
-
         self.dismiss()
 
     def analysis_classify_pretrained(self):
+        try:
+            self.get_analysis_classify_pretrained()
+        except Exception as error:
+            logging.error(": " + str(error))
+            self._error_popup = ErrorPopup(message=str(error))
+
+    def get_analysis_classify_pretrained(self):
         filename = ""
         if(self.preGlcmHaralick.state is'down'):
             filename+='glcmHaralick'
