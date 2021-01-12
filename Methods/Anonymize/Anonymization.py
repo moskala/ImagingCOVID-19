@@ -1,3 +1,10 @@
+# Dokument opisujący standardy anonimizacji zdjęć dicom:
+# http://dicom.nema.org/dicom/2013/output/chtml/part15/chapter_E.html#table_E.1-1
+
+# Przydante informacje o formacie dicom:
+# https://nipy.org/nibabel/dicom/dicom_intro.html#dicom-data-format
+
+
 from pathlib import Path
 import nibabel
 from PIL import Image
@@ -90,3 +97,10 @@ def get_anonymized_dicom(file_name: str, input_folder: str):
     return None
 
 
+def anonymize_selected_tags_dicom(input_file_path, output_file_path, tag="patient"):
+    dataset = pydicom.dcmread(input_file_path)
+    data_elements = dataset.dir(tag)
+    for data_element in data_elements:
+        del dataset[data_element]
+
+    dataset.save_as(output_file_path)
