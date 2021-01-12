@@ -148,7 +148,7 @@ RootWidget:
                 text: "Load X-Ray image"
                 on_release: app.root.load_xray(filechooser.path, filechooser.selection)
 
-<AnalysisPopup@Popup>:
+<AnalysisPopup>:
     id: analysis_dialog
     box_layout: box_layout.__self__
     title: 'Choose a classifier'
@@ -340,7 +340,7 @@ RootWidget:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
 
-<AutomaticResultPopup@Popup>:
+<AutomaticResultPopup>:
     id: auto_result_popup
     scroll_view: scroll_view.__self__
     info:info.__self__
@@ -362,7 +362,8 @@ RootWidget:
             height: 100
             id: info
             halign: 'justify'
-<ResultPopup@Popup>:
+
+<ResultPopup>:
     id: result_popup
     auto_dismiss: False
     title: 'Report popup'
@@ -406,7 +407,7 @@ RootWidget:
                 text: 'Close'
                 on_release: result_popup.dismiss()
 
-<LungSegmentationPopup@Popup>:
+<LungSegmentationPopup>:
     title: 'Lung tissue segmentation comparison'
     id: lung_segmentation
     box_layout: box_layout.__self__
@@ -418,7 +419,7 @@ RootWidget:
             size_hint_max_y: 50
             on_release:lung_segmentation.dismiss()
 
-<DrawPopup@Popup>:
+<DrawPopup>:
     id: draw_dialog
     title: 'Draw dialog'
     draw_panel: draw_panel.__self__
@@ -462,7 +463,7 @@ RootWidget:
                 size_hint_max_y: 50
 
 
-<LayersPopup@Popup>:
+<LayersPopup>:
     id: layers_popup
     auto_dismiss: False
     title: 'Layers selection'

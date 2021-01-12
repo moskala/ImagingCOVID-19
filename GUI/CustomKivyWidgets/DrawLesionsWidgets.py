@@ -7,10 +7,11 @@ from kivy.uix.popup import Popup
 # Python imports
 from pathlib import Path
 import sys
+import os
 from PIL import Image as PilImage
 
 # Implemented methods imports
-sys.path.append(str(Path().resolve().parent / "Methods"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
 from Grayscale import *
 
 

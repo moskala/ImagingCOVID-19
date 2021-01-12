@@ -8,11 +8,12 @@ from kivy.uix.boxlayout import BoxLayout
 
 
 # Python imports
-from pathlib import Path
 import sys
-sys.path.append(str(Path().resolve().parent.parent / "Methods"))
+import os
 
 # Implemented methods imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
+
 from PredictAlexnet import *
 from PredictGlcmHaralick import *
 from ChooseSlices import *
@@ -37,12 +38,14 @@ class AutomaticResultPopup(Popup):
     scroll_view = ObjectProperty(None)
 
 class AnalysisPopup(Popup):
+
     image_object = ObjectProperty(None)
     analysis = ObjectProperty(None)
     box_layout = ObjectProperty(None)
     current_model = ObjectProperty(None)
     current_features = None
-    def __init__(self,analysis,image_object,current_model,examination_type,indexes = None):
+
+    def __init__(self,analysis,image_object,current_model,examination_type,indexes=None, **kwargs):
         super().__init__()
         self.image_object = image_object
         self.analysis = analysis

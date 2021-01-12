@@ -4,9 +4,10 @@ from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 # Python imports
 import matplotlib.pyplot as plt
 import sys
+import os
 from pathlib import Path
 
-sys.path.append(str(Path().resolve().parent / "Methods"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
 from PlotUtilities import get_plot_data_jpg_png
 
 

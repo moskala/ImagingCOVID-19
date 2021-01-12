@@ -1,11 +1,8 @@
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
-import sys
 from pathlib import Path
 import matplotlib.pyplot as plt
-
-sys.path.append(str(Path().resolve().parent.parent / "Methods"))
 
 
 class LungSegmentationPopup(Popup):

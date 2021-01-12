@@ -8,10 +8,10 @@ from kivy.uix.textinput import TextInput
 
 # Python imports
 import sys
-from pathlib import Path
+import os
 
 # Implemented methods imports
-sys.path.append(str(Path().resolve().parent.parent / "Methods"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
 from ChooseSlices import LayerChoice, LayerChoiceType
 
 
