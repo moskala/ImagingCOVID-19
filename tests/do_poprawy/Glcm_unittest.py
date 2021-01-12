@@ -8,7 +8,7 @@ from Methods.Glcm import ImageEnsemble, Matrix, Model
 
 class TestGLCM(unittest.TestCase):
 
-    test_folder = Path('test_data/testcase_dicom_hu').resolve()
+    test_folder = Path('../test_data/testcase_dicom_hu').resolve()
     test_file = 'testcase_hounsfield1.dcm'
 
     def test_image_ensebmle(self):

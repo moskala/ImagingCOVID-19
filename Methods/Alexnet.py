@@ -1,7 +1,9 @@
 from alexnet_pytorch import AlexNet #- to trzeba tylko raz uruchomic?
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from Glcm import *
 import torch
-from Glcm import *
 import torchvision.transforms as transforms
 #alex2 = AlexNet.from_pretrained('alexnet')
 from PIL import Image
