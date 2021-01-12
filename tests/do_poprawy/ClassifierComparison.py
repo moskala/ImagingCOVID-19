@@ -1,14 +1,12 @@
 import pickle
 from joblib import dump, load
-import sys,os
+import sys
+import os
 from pathlib import Path
-sys.path.append(str(Path().resolve().parent))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Glcm import *
 from Alexnet import Alex
 from sklearn import metrics
-
-
-
 from Glcm import *
 
 # model = load('glcmModelFitFinal.joblib') 

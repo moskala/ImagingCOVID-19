@@ -1,7 +1,5 @@
 # Kivy imports
 from kivy.uix.popup import Popup
-from kivy.uix.label import Label
-
 
 class ErrorPopup(Popup):
 

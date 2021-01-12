@@ -403,9 +403,9 @@ class RootWidget(FloatLayout):
         try:
             success = self.image_object.save_anonymized_file(filename, path)
             if success:
-                logging.info('File saved')
+                logging.info('Saving file: File saved')
             else:
-                logging.info('File not saved')
+                logging.warning('Saving file: File not saved')
             self.dismiss_popup()
         except Exception as error:
             logging.error("Save image: " + str(error))

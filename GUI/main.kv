@@ -1,6 +1,3 @@
-#:import path pathlib
-# it means: import pathlib as path
-
 RootWidget:
     id: root_widget
     plot: plot.__self__
@@ -133,8 +130,6 @@ RootWidget:
         orientation: "vertical"
         FileChooserIconView:
             id: filechooser
-            path: str(path.Path().resolve().parent.parent / "images_data")
-
         BoxLayout:
             size_hint_y: None
             height: 30
@@ -318,7 +313,6 @@ RootWidget:
         FileChooserIconView:
             id: filechooser
             on_selection: text_input.text = self.selection and self.selection[0] or ''
-            path: str(path.Path().resolve().parent.parent / "images_data")
 
         Label:
             height: 30
