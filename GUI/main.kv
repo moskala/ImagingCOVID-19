@@ -480,3 +480,15 @@ RootWidget:
             Button:
                 text: 'Cancel'
                 on_release: layers_popup.dismiss()
+
+<ErrorPopup>:
+    id: error_popup
+    title: 'Error'
+    size_hint: (.6, .6)
+    Label:
+        text: 'error message'
+        text_size: self.width, None
+#        size_hint: 1, None
+        size: self.texture_size
+        height: self.texture_size[1]
+        markup: True
