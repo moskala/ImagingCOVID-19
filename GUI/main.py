@@ -171,7 +171,7 @@ class RootWidget(FloatLayout):
             self.left_panel.remove_widget(self.plot)
             self.plot = MyFigure(image_data=self.image_object.get_next_slice(slice_number))
             self.left_panel.add_widget(self.plot)
-            self.slices_info.text = "Slice: {0}/{1}".format(self.image_object.get_current_slice_number_to_show(),
+            self.slices_info.text = "Layer: {0}/{1}".format(self.image_object.get_current_slice_number_to_show(),
                                                             self.image_object.total_slice_number)
             self.slider.value = self.image_object.current_slice_number
             self.set_layers_button()
