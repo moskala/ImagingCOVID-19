@@ -8,6 +8,9 @@ import numpy as np
 import os
 
 
+MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'ct', 'best_checkpoint.pth'))
+
+
 class Net:
     @staticmethod
     def load_model(path):
@@ -37,7 +40,8 @@ class Net:
         return d[index.item()], probability, score
 
     @staticmethod
-    def testImage(path,modelPath):
+    def testImage(path):
+        modelPath = MODEL_PATH
         site = 'ucsd'
         trans = transforms.Compose([transforms.Resize([224, 224]),
                                     transforms.ToTensor(),
