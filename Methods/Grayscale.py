@@ -28,7 +28,10 @@ def convert_array_to_grayscale(array):
 
     # Rescaling grey scale between 0-255
     array -= array.min()
-    array *= 255.0 / array.max()
+    max_val = array.max()
+    if max_val == 0:
+        max_val = 1
+    array *= 255.0 / max_val
 
     # Convert to uint
     array_gray = np.uint8(array)

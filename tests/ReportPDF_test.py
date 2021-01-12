@@ -49,7 +49,7 @@ def add_alexnet_results(test_analysis):
 
 def add_haralick_results(test_analysis):
     image = np.ones((512, 512))
-    result = HaralickGlcmResult('Normal', image, 512, 512, CTWindow.BoneWindow, "not_exists", 5, ExaminationType.CT,
+    result = HaralickGlcmResult('Normal', image, 512, 512, CTWindow.BoneWindow, "not_exists", 6, ExaminationType.CT,
                                 None)
     test_analysis.add_to_list(result)
 
@@ -73,7 +73,7 @@ def prepare_analysis():
 def test_popup(test_analysis, folder, filename):
     popup = ResultPopup(test_analysis)
     popup.dismiss()
-
+    popup.comments = "My comment: this report is awesome!"
     popup.generate_report_pdf(folder, filename)
 
 
