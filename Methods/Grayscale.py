@@ -8,9 +8,13 @@ import numpy as np
 from pathlib import Path
 import pydicom
 from pydicom.pixel_data_handlers.util import apply_modality_lut
-import PixelArrays
 import pylibjpeg
 import nibabel as nib
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+import PixelArrays
 
 
 def convert_array_to_grayscale(array):
