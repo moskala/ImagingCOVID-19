@@ -144,6 +144,64 @@ RootWidget:
                 text: "Load X-Ray image"
                 on_release: app.root.load_xray(filechooser.path, filechooser.selection)
 
+<MySaveDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserIconView:
+            id: filechooser_save
+        BoxLayout:
+            orientation: "horizontal"
+            Label:
+                height: 30
+                size_hint_y: None
+                text: 'Write file name'
+            TextInput:
+                id: text_input
+                size_hint_y: None
+                height: 30
+                multiline: False
+            BoxLayout:
+                size_hint_y: None
+                height: 30
+                Button:
+                    text: "Cancel"
+                    on_release: app.root.dismiss_popup()
+                Button:
+                    text: "Save"
+                    on_release: app.root.save(filechooser_save.path, text_input.text)
+
+<SaveDialog>:
+    text_input: text_input.__self__
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            filters: [lambda folder, filename: not filename.endswith('.sys')]
+#            on_selection: text_input.text = self.selection and self.selection[0] or ''
+        BoxLayout:
+            Label:
+                height: 30
+                size_hint_y: None
+                text: 'Write file name'
+            TextInput:
+                id: text_input
+                size_hint_y: None
+                height: 30
+                multiline: False
+            BoxLayout:
+                size_hint_y: None
+                height: 30
+                Button:
+                    text: "Cancel"
+                    on_release: root.cancel()
+                Button:
+                    text: "Save"
+                    on_release: root.save(filechooser.path, text_input.text)
+
 <AnalysisPopup>:
     id: analysis_dialog
     box_layout: box_layout.__self__
@@ -302,38 +360,7 @@ RootWidget:
 
 
 
-<SaveDialog>:
-    text_input: text_input
-    id: savePopup
-    auto_dismiss: True
-    BoxLayout:
-        id: save
-        size: root.size
-        pos: root.pos
-        orientation: "vertical"
-        FileChooserIconView:
-            id: filechooser
-            on_selection: text_input.text = self.selection and self.selection[0] or ''
 
-        Label:
-            height: 30
-            size_hint_y: None
-            text: 'Write file name'
-        TextInput:
-            id: text_input
-            size_hint_y: None
-            height: 30
-            multiline: False
-
-        BoxLayout:
-            size_hint_y: None
-            height: 30
-            Button:
-                text: "Cancel"
-                on_release: savePopup.cancel()
-            Button:
-                text: "Save"
-                on_release: root.save(filechooser.path, text_input.text)
 
 <AutomaticResultPopup>:
     id: auto_result_popup

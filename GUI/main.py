@@ -83,7 +83,7 @@ from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 # Custom kivy widgets imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'CustomKivyWidgets')))
 from AnalysisPopup import AnalysisPopup
-from DialogWidgets import LoadDialog, SaveDialog
+from DialogWidgets import LoadDialog, MySaveDialog, SaveDialog
 from DrawLesionsWidgets import DrawFigure, DrawPopup
 from ErrorPopup import ErrorPopup
 from LayersPopup import LayersPopup
@@ -349,8 +349,10 @@ class RootWidget(FloatLayout):
     def show_save(self):
         """This function runs save dialog"""
         try:
-            content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
-            self._popup = Popup(title="Save file", content=content,
+            # save=self.save,
+            content = MySaveDialog(cancel=self.dismiss_popup)
+            self._popup = Popup(title="Save file",
+                                content=content,
                                 size_hint=(0.9, 0.9))
             self._popup.open()
 
@@ -542,6 +544,7 @@ class Main(App):
 Factory.register('RootWidget', cls=RootWidget)
 Factory.register('AnalysisPopup', cls=AnalysisPopup)
 Factory.register('LoadDialog', cls=LoadDialog)
+Factory.register('MySaveDialog', cls=MySaveDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
 Factory.register('DrawFigure', cls=DrawFigure)
 Factory.register('ErrorPopup', cls=ErrorPopup)
