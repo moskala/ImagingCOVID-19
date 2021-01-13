@@ -1,12 +1,12 @@
-from CovidCTNet.model import CovidNet
 import torch
-from PIL import Image
+from PIL import Image as PilImage
 from torchvision import transforms
 from torch.autograd import Variable
 import h5py
 import numpy as np
-import os
-
+import os,sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from model import CovidNet
 
 MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'ct', 'best_checkpoint.pth'))
 
@@ -46,7 +46,7 @@ class Net:
         trans = transforms.Compose([transforms.Resize([224, 224]),
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-        img = Image.open(path).convert('RGB')
+        img = PilImage.open(path).convert('RGB')
         pred, prob, score = Net.predict(img, site, trans,modelPath)
         return pred
 

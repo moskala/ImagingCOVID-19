@@ -9,10 +9,76 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 
 # Python imports
+import matplotlib
 from pathlib import Path
 import sys
 import os
 import logging
+
+# import dicomanonymizer
+# import pydicom
+# import nibabel
+# from PIL import Image as PilImage
+# import matplotlib.pyplot as plt
+# import torch
+# import torchvision
+# from torchvision import transforms
+# from torch.autograd import Variable
+# import numpy as np
+# import argparse
+# import torch.nn as nn
+# import torch.nn.functional as F
+# from math import *
+# from pydicom.pixel_data_handlers.util import apply_modality_lut
+# from enum import Enum
+# from scipy import interpolate
+# from PIL import Image, ImageDraw
+# import pandas as pd
+# import scipy.misc
+# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+# from scipy import ndimage as ndi
+# import scipy.ndimage as ndimage
+# from skimage import measure
+# from skimage.morphology import ball, disk, dilation, binary_erosion, remove_small_objects, erosion, closing, reconstruction, binary_closing
+# from skimage.measure import label,regionprops, perimeter
+# from skimage.filters import roberts, sobel
+# from skimage import measure, feature
+# from skimage.segmentation import clear_border
+# from skimage import data
+# from skimage import morphology
+# from skimage import measure, morphology, segmentation
+# from skimage import measure
+# from sklearn.cluster import KMeans
+# from sklearn.decomposition import PCA
+# from sklearn.preprocessing import StandardScaler
+# from joblib import dump, load
+# import math
+# from alexnet_pytorch import AlexNet
+# from pydicom.pixel_data_handlers.util import apply_modality_lut
+# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.model_selection import cross_val_score
+# from sklearn import svm
+# from skimage.feature import texture as ft
+# import nibabel as nib
+# import glob
+# import mahotas
+# from sklearn import metrics
+# from fpdf import FPDF
+# import matplotlib.image as mpimg
+# import pickle
+# from datetime import date
+# from datetime import date
+
+import pylibjpeg
+import tensorflow
+from keras.models import *
+from keras.layers import *
+import cv2
+import h5py
+matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 # Custom kivy widgets imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'CustomKivyWidgets')))
@@ -27,15 +93,21 @@ from ShowImageWidget import MyFigure, START_IMAGE
 
 # Implemented methods imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
-from ImageMedical.ImageClass import ImageType, DicomImage, NiftiImage, JpgImage, PngImage
-from ImageMedical.CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
-from ImageMedical.XRayImageClass import XRayJpgImage, XRayPngImage
-from CovidCTNet.testNet import Net
 from ChooseSlices import LayerChoice
-from Analysis.Analysis import Analysis
-from Analysis.Result import NeuralNetworkResult, SeverityResult
 from ExaminationType import ExaminationType
-from LungSegmentation.LungSegmentationUtilities import draw_lines_on_image
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','Analysis')))
+from Analysis import Analysis
+from Result import NeuralNetworkResult, SeverityResult
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','LungSegmentation')))
+from LungSegmentationUtilities import draw_lines_on_image
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','ImageMedical')))
+from ImageClass import ImageType, DicomImage, NiftiImage, JpgImage, PngImage
+from CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
+from XRayImageClass import XRayJpgImage, XRayPngImage
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','CovidCTNet')))
+from testNet import Net
+
+import win32timezone
 
 # Paths
 GUI_FOLDER = os.path.abspath(os.path.dirname(__file__))
