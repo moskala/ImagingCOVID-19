@@ -10,7 +10,8 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Grayscale as gray
-from LungSegmentation.LungSegmentationUtilities import *
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','LungSegmentation')))
+from LungSegmentationUtilities import *
 
 
 def make_lungmask(img, crop=True, display=False):

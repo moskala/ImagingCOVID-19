@@ -9,10 +9,6 @@ class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.ids.filechooser.path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                                 '..', '..', '..', 'images_data'))
 
 
 class SaveDialog(FloatLayout):
@@ -21,8 +17,4 @@ class SaveDialog(FloatLayout):
     img = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.ids.filechooser.path = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                                 '..', '..', '..', 'images_data'))
 

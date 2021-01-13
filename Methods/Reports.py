@@ -12,7 +12,9 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from Pdf import *
 # from PredictHaralick import *
 from Grayscale import convert_array_to_grayscale
-from Analysis.Result import *
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),'Analysis'))
+from Result import *
 
 
 def get_result_array(result, with_headers=False):

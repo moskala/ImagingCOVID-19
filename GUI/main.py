@@ -13,6 +13,18 @@ from pathlib import Path
 import sys
 import os
 import logging
+#additional imports for packeging
+import matplotlib
+import matplotlib.pyplot as plt
+import pylibjpeg
+import win32timezone
+import tensorflow
+import h5py
+from keras.models import *
+from keras.layers import *
+matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+
 
 # Custom kivy widgets imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'CustomKivyWidgets')))
@@ -27,15 +39,20 @@ from ShowImageWidget import MyFigure, START_IMAGE
 
 # Implemented methods imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
-from ImageMedical.ImageClass import ImageType, DicomImage, NiftiImage, JpgImage, PngImage
-from ImageMedical.CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
-from ImageMedical.XRayImageClass import XRayJpgImage, XRayPngImage
-from CovidCTNet.testNet import Net
-from ChooseSlices import LayerChoice
-from Analysis.Analysis import Analysis
-from Analysis.Result import NeuralNetworkResult, SeverityResult
+from ChooseSlices import *
 from ExaminationType import ExaminationType
-from LungSegmentation.LungSegmentationUtilities import draw_lines_on_image
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','Analysis')))
+from Analysis import Analysis
+from Result import NeuralNetworkResult, SeverityResult
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','LungSegmentation')))
+from LungSegmentationUtilities import draw_lines_on_image
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','ImageMedical')))
+from ImageClass import ImageType, DicomImage, NiftiImage, JpgImage, PngImage
+from CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
+from XRayImageClass import XRayJpgImage, XRayPngImage
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','CovidCTNet')))
+from testNet import Net
+
 
 # Paths
 GUI_FOLDER = os.path.abspath(os.path.dirname(__file__))

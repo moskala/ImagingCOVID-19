@@ -1,6 +1,5 @@
 from Glcm import *
 import torch
-from Glcm import *
 import torchvision.transforms as transforms
 from PIL import Image
 import Grayscale as gray

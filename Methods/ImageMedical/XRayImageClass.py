@@ -1,10 +1,11 @@
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','ImageMedical')))
 
-from ImageMedical.ImageClass import JpgImage, PngImage
-import LungSegmentation.LungSegmentationUtilities as sgUtils
-import LungSegmentation.MethodUNetXRay as sgUnet
+from ImageClass import JpgImage, PngImage
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','LungSegmentation')))
+import LungSegmentationUtilities as sgUtils
+import MethodUNetXRay as sgUnet
 
 
 class XRayJpgImage(JpgImage):
