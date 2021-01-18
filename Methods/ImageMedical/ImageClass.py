@@ -70,13 +70,6 @@ class ImageObject(object):
         """
         pass
 
-    def get_specific_size(self, value):
-        """
-        Method load specific slice (for dicom or nifti images)
-        and returns array containing pixel data for given slice.
-        """
-        pass
-
     def get_file_path(self):
         """
         Methods returns path to image file as string.
