@@ -1,12 +1,15 @@
 import pickle
 from joblib import dump, load
-import sys,os
+import sys
+import os
 from pathlib import Path
-sys.path.append(str(Path().resolve().parent))
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from Glcm import *
 from Alexnet import Alex
 import math
 from ExaminationType import ExaminationType
+
 def PredictAlex(image_object,index,modelAlex,features,classifier,examination_type=ExaminationType.CT,isPretrained=True):
     '''this function is used by gui when button "Alexnet" is clicked'''
     print(image_object)
@@ -36,7 +39,3 @@ def PredictAlex(image_object,index,modelAlex,features,classifier,examination_typ
     test = pcafts[len(pcafts)-1].reshape(1, -1)
     #print(test)
     return model.predict(test),model
-    
-        
-
-    

@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
 
 import Grayscale as gray
-from ImageMedical import CTWindowing as ctwindow
+import CTWindowing as ctwindow
 import LungSegmentation.LungSegmentationUtilities as sgUtils
 from SeverityScoringSystem import calculate_ratio_tts
 import Anonymize.Anonymization as anonym
@@ -66,13 +66,6 @@ class ImageObject(object):
     def get_next_slice(self, value):
         """
         Method load next slice (for dicom or nifti images)
-        and returns array containing pixel data for given slice.
-        """
-        pass
-
-    def get_specific_size(self, value):
-        """
-        Method load specific slice (for dicom or nifti images)
         and returns array containing pixel data for given slice.
         """
         pass

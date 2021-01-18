@@ -8,9 +8,13 @@ import numpy as np
 from pathlib import Path
 import pydicom
 from pydicom.pixel_data_handlers.util import apply_modality_lut
-import PixelArrays
 import pylibjpeg
 import nibabel as nib
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+import PixelArrays
 
 
 def convert_array_to_grayscale(array):
@@ -24,7 +28,10 @@ def convert_array_to_grayscale(array):
 
     # Rescaling grey scale between 0-255
     array -= array.min()
-    array *= 255.0 / array.max()
+    max_val = array.max()
+    if max_val == 0:
+        max_val = 1
+    array *= 255.0 / max_val
 
     # Convert to uint
     array_gray = np.uint8(array)

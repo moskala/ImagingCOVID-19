@@ -7,10 +7,16 @@ from kivy.uix.popup import Popup
 # Python imports
 from pathlib import Path
 import sys
+import os
 from PIL import Image as PilImage
+import logging
+
+# Custom kivy widgets imports
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+from ErrorPopup import ErrorPopup
 
 # Implemented methods imports
-sys.path.append(str(Path().resolve().parent / "Methods"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
 from Grayscale import *
 
 
@@ -25,6 +31,7 @@ class DrawFigure(UixImage):
     marked_regions = None
     current_marked_points = None
     temp_filename = 'temp.jpg'
+    _error_popup = None
 
     def __init__(self, image_data, **kwargs):
         image = PilImage.fromarray(convert_array_to_grayscale(image_data))
@@ -97,17 +104,25 @@ class DrawFigure(UixImage):
         return super(DrawFigure, self).on_touch_down(touch)
 
     def add_new_region(self, *args):
-        if len(self.current_marked_points) > 2:
-            self.marked_regions.append(list(self.current_marked_points))
-            self.current_marked_points = []
-            self.redraw_regions()
+        try:
+            if len(self.current_marked_points) > 2:
+                self.marked_regions.append(list(self.current_marked_points))
+                self.current_marked_points = []
+                self.redraw_regions()
+        except Exception as error:
+            logging.error("Add region: " + str(error))
+            self._error_popup = ErrorPopup(message=str(error))
 
     def delete_current_region(self, *args):
-        if self.current_marked_points:
-            self.current_marked_points = []
-        else:
-            self.marked_regions = self.marked_regions[0:-1]
-        self.redraw_regions()
+        try:
+            if self.current_marked_points:
+                self.current_marked_points = []
+            else:
+                self.marked_regions = self.marked_regions[0:-1]
+            self.redraw_regions()
+        except Exception as error:
+            logging.error("Delete region: " + str(error))
+            self._error_popup = ErrorPopup(message=str(error))
 
     def calculate_coefficients(self, size, pos):
         curr_img_width, curr_img_height = self.calculate_image_size(size)
@@ -153,7 +168,11 @@ class DrawFigure(UixImage):
         return self.marked_regions
 
     def delete_source_file(self, *args):
-        Path(self.temp_filename).unlink()
+        try:
+            Path(self.temp_filename).unlink()
+        except Exception as error:
+            logging.error(": " + str(error))
+            self._error_popup = ErrorPopup(message=str(error))
 
     def draw_warning_rectangle(self):
 

@@ -99,20 +99,18 @@ class Analysis:
         return how_many_results_final
 
     def get_analysis_summary_headers(self):
-        res = []
-        res.append('Total number of layers')
-        res.append('Number of examinations')
-        res.append('COVID-19 layers')
-        res.append('Normal layers')
-        res.append('Uncertain layers')
+        res = ['Total number of layers',
+               'Number of analyzed layers',
+               'COVID-19 layers',
+               'Normal layers',
+               'Uncertain layers']
         return res
 
     def get_report_summary_headers(self):
-        res = []
-        res.append('Total number of tests')
-        res.append('Tests classified as normal')
-        res.append('Tests classified as COVID-19')
-        res.append('Uncertain tests')
+        res = ['Total number of tests',
+               'Tests classified as normal',
+               'Tests classified as COVID-19',
+               'Uncertain tests']
         return res
     
     def get_report_summary_numbers(self):

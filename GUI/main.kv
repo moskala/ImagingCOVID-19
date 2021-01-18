@@ -1,6 +1,3 @@
-#:import path pathlib
-# it means: import pathlib as path
-
 RootWidget:
     id: root_widget
     plot: plot.__self__
@@ -133,8 +130,6 @@ RootWidget:
         orientation: "vertical"
         FileChooserIconView:
             id: filechooser
-            path: str(path.Path().resolve().parent.parent / "images_data")
-
         BoxLayout:
             size_hint_y: None
             height: 30
@@ -148,7 +143,7 @@ RootWidget:
                 text: "Load X-Ray image"
                 on_release: app.root.load_xray(filechooser.path, filechooser.selection)
 
-<AnalysisPopup@Popup>:
+<AnalysisPopup>:
     id: analysis_dialog
     box_layout: box_layout.__self__
     title: 'Choose a classifier'
@@ -318,8 +313,6 @@ RootWidget:
         FileChooserIconView:
             id: filechooser
             on_selection: text_input.text = self.selection and self.selection[0] or ''
-            path: str(path.Path().resolve().parent.parent / "images_data")
-
         Label:
             height: 30
             size_hint_y: None
@@ -340,7 +333,7 @@ RootWidget:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
 
-<AutomaticResultPopup@Popup>:
+<AutomaticResultPopup>:
     id: auto_result_popup
     scroll_view: scroll_view.__self__
     info:info.__self__
@@ -362,7 +355,8 @@ RootWidget:
             height: 100
             id: info
             halign: 'justify'
-<ResultPopup@Popup>:
+
+<ResultPopup>:
     id: result_popup
     auto_dismiss: False
     title: 'Report popup'
@@ -406,7 +400,7 @@ RootWidget:
                 text: 'Close'
                 on_release: result_popup.dismiss()
 
-<LungSegmentationPopup@Popup>:
+<LungSegmentationPopup>:
     title: 'Lung tissue segmentation comparison'
     id: lung_segmentation
     box_layout: box_layout.__self__
@@ -418,7 +412,7 @@ RootWidget:
             size_hint_max_y: 50
             on_release:lung_segmentation.dismiss()
 
-<DrawPopup@Popup>:
+<DrawPopup>:
     id: draw_dialog
     title: 'Draw dialog'
     draw_panel: draw_panel.__self__
@@ -462,7 +456,7 @@ RootWidget:
                 size_hint_max_y: 50
 
 
-<LayersPopup@Popup>:
+<LayersPopup>:
     id: layers_popup
     auto_dismiss: False
     title: 'Layers selection'
@@ -479,3 +473,15 @@ RootWidget:
             Button:
                 text: 'Cancel'
                 on_release: layers_popup.dismiss()
+
+<ErrorPopup>:
+    id: error_popup
+    title: 'Error'
+    size_hint: (.6, .6)
+    Label:
+        text: 'error message'
+        text_size: self.width, None
+#        size_hint: 1, None
+        size: self.texture_size
+        height: self.texture_size[1]
+        markup: True

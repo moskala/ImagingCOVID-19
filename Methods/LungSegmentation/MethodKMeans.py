@@ -5,11 +5,10 @@ import matplotlib.pyplot as plt
 from skimage import morphology
 from skimage import measure
 from sklearn.cluster import KMeans
-from pathlib import Path
 import sys
-import scipy.ndimage as ndimage
+import os
 
-sys.path.append(str(Path().resolve().parent))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Grayscale as gray
 from LungSegmentation.LungSegmentationUtilities import *
 

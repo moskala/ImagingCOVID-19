@@ -1,19 +1,20 @@
+'''this script contains classes necessary to implement GLCM classification method'''
 from skimage.feature import texture as ft
 import sys,os
-from ImageMedical.ImageClass import *
 from sklearn import svm
 from pathlib import Path
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
-sys.path.append(str(Path().resolve().parent / "Methods"))
 
-'''this script contains classes necessary to implement GLCM classification method'''
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__))))
+from ImageMedical.ImageClass import *
 from Grayscale import *
 from LungSegmentation.MethodKMeans import *
 import LungSegmentation.MethodUNetXRay as Xray
 pi = np.pi
+
 class Matrix:
     '''this class contains methods to create glcm matrix from pixels array and get its properties'''
     image_array = None

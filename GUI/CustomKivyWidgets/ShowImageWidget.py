@@ -4,9 +4,10 @@ from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 # Python imports
 import matplotlib.pyplot as plt
 import sys
-from pathlib import Path
+import os
+import logging
 
-sys.path.append(str(Path().resolve().parent / "Methods"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods')))
 from PlotUtilities import get_plot_data_jpg_png
 
 
@@ -19,7 +20,7 @@ class MyFigure(FigureCanvasKivyAgg):
         """constructor"""
         if image_data is None:
             image_data = get_plot_data_jpg_png(START_IMAGE)
-
+        plt.clf()   # very important to clear plt before new figure
         plt.axis('off')
         plt.imshow(image_data, cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
@@ -32,15 +33,9 @@ class ResultFigure(FigureCanvasKivyAgg):
 
     def __init__(self, fig=None, **kwargs):
         """constructor"""
-        if(fig is not None):
-            # plt.clf()
+        if fig is not None:
+            plt.clf()   # very important to clear plt before new figure
             super(ResultFigure, self).__init__(fig, **kwargs)
             self.curPlt = fig
         else:
-            print("Error")
-
-
-        # super(MyFigure, self).__init__(plt.gcf(), **kwargs)
-        # self.curPlt = plt.gcf()
-        # self.image_data = image_data
-        # self.val = val
+            logging.error("Segmentation figure: fig is None")
