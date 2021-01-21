@@ -25,20 +25,20 @@ class ClassifierCombination():
 
     def get_labels(self):#105 normal, 118 covid = 223 images
         self.labels = Model.GetLabels()
-        # for i in range(16):
-        #     self.labels.append('normal')
-        # for i in range(11):
-        #     self.labels.append('covid')
-        # for i in range(16):
-        #     self.labels.append('normal')
-        # for i in range(11):
-        #     self.labels.append('covid')
-        # for i in range(11):
-        #     self.labels.append('normal')
-        # for i in range(21):
-        #     self.labels.append('covid')
-        # for i in range(20):
-        #     self.labels.append('covid')
+        for i in range(16):
+            self.labels.append('normal')
+        for i in range(11):
+            self.labels.append('covid')
+        for i in range(16):
+            self.labels.append('normal')
+        for i in range(11):
+            self.labels.append('covid')
+        for i in range(11):
+            self.labels.append('normal')
+        for i in range(21):
+            self.labels.append('covid')
+        for i in range(20):
+            self.labels.append('covid')
 
     def get_labels_xray(self):
         labels = []
