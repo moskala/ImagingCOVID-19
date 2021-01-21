@@ -1,13 +1,14 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from Grayscale import *
 from ImageClass import *
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..','LungSegmentation')))
 import MethodWatershed as sgWatershed
 import MethodBinary as sgBinary
 import MethodKMeans as sgKmeans
 from LungSegmentationUtilities import crop_mask_image
+
 
 
 class CTDicomImage(DicomImage):
@@ -33,7 +34,8 @@ class CTDicomImage(DicomImage):
         else:
             segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
             crop_segment, crop_mask = crop_mask_image(segmented, mask)
-            return ctwindow.get_ct_window_grayscale(crop_segment)
+            #return ctwindow.get_ct_window_grayscale(crop_segment)
+            return convert_array_to_grayscale(crop_segment)
 
     def get_segmented_lungs_kmeans(self):
         gray_img = self.get_current_grayscale_slice()
@@ -106,7 +108,8 @@ class CTNiftiImage(NiftiImage):
         else:
             segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
             crop_segment, crop_mask = crop_mask_image(segmented, mask)
-            return ctwindow.get_ct_window_grayscale(crop_segment)
+            #return ctwindow.get_ct_window_grayscale(crop_segment)
+            return convert_array_to_grayscale(crop_segment)
 
     def get_segmented_lungs_kmeans(self):
         gray_img = self.get_current_grayscale_slice()
