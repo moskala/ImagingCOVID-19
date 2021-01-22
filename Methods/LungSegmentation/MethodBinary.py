@@ -1,21 +1,15 @@
 # zrodlo: https://www.kaggle.com/zstarosolski/lung-segmentation
 
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import skimage, os
-from skimage.morphology import ball, disk, dilation, binary_erosion, remove_small_objects, erosion, closing, reconstruction, binary_closing
-from skimage.measure import label,regionprops, perimeter
-from skimage.filters import roberts, sobel
-from skimage import measure, feature
+import skimage
+import os
+from skimage.morphology import disk, binary_erosion, binary_closing
+from skimage.measure import label, regionprops
+from skimage.filters import roberts
 from skimage.segmentation import clear_border
-from skimage import data
 from scipy import ndimage as ndi
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import pydicom
-import scipy.misc
 import numpy as np
-import pylibjpeg
+
 
 class SegmentationB:
     @staticmethod
@@ -41,27 +35,17 @@ class SegmentationB:
         return slices
 
     @staticmethod
-    def get12_range(array):
-        """
-        Function finds a half of the range of given array
-
-        :param array: numpy ndarray
-        :return: int: 
-        """
-        return 0.5*abs(max(array.flatten())-min(array.flatten()))
-    @staticmethod
-    def get_segmented_lungs(im):
+    def get_segmented_lungs(im, threshold=604):
         """
         This funtion segments the lungs from the given 2D slice in the form of numpy ndarray.
 
-        :param im: numpy ndarray of a 2D slice 
+        :param threshold: threshold value
+        :param im: numpy ndarray of a 2D slice
         :return: im: numpy ndarray of a 2D slice with segmented lungs
         """        
         # Convert into a binary image. 
-        # binary = im < SegmentationB.get12_range(im)
-        binary = im < 604
-        # plt.imshow(binary, cmap=plt.cm.gray)
-        
+        binary = im < threshold
+
         # Remove the blobs connected to the border of the image
         cleared = clear_border(binary)
 
@@ -98,7 +82,6 @@ class SegmentationB:
         
         return im
 
-                
     @staticmethod
     def segment_lung_from_ct_scan(ct_scan,val):
         """

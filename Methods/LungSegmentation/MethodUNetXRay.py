@@ -122,6 +122,7 @@ def prepare_image_to_segmentation(image):
     equ = cv2.equalizeHist(img)
     return equ / 255
 
+
 def make_lungmask_multiple(filenames, folder):
     images = [get_grayscale_from_jpg_png(filename, folder) for filename in filenames]
     img_to_process = [prepare_image_to_segmentation(image) for image in images]
@@ -129,6 +130,7 @@ def make_lungmask_multiple(filenames, folder):
     masks = [adjust_mask(mask) for mask in masks]
     segments = [mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION)) for image, mask in zip(images, masks)]
     return segments, masks
+
 
 def make_lungmask(filename, folder, model_weights_path=MODEL_WEIGHTS):
     image = get_grayscale_from_jpg_png(filename, folder)
@@ -148,20 +150,21 @@ def make_lungmask_multiple(filenames, folder, model_weights_path=MODEL_WEIGHTS):
     return segments, masks
 
 #Testowanie
-# import os
-# folder_name = r"D:\Studia\sem7\inzynierka\data\COVID-19 Radiography Database"
-# covid_folder = Path(folder_name) / "COVID-19"
-# normal_folder = Path(folder_name) / "NORMAL"
 
-# covid = os.listdir(covid_folder)
-# normal = os.listdir(normal_folder)
+import os
+folder_name = r"D:\Studia\sem7\inzynierka\data\COVID-19 Radiography Database"
+covid_folder = Path(folder_name) / "COVID-19"
+normal_folder = Path(folder_name) / "NORMAL"
 
-# image = get_grayscale_from_jpg_png(normal[10], str(normal_folder))
-# # mask = predict_single_lung_mask(normal[10], str(normal_folder))
-# img_to_porcess = prepare_image_to_segmentation(image)
-# mask = predict_single_lung_mask_from_array(img_to_porcess)
-# mask = adjust_mask(mask)
-#
+covid = os.listdir(covid_folder)
+normal = os.listdir(normal_folder)
+
+image = get_grayscale_from_jpg_png(covid[10], str(normal_folder))
+# mask = predict_single_lung_mask(normal[10], str(normal_folder))
+img_to_porcess = prepare_image_to_segmentation(image)
+mask = predict_single_lung_mask_from_array(img_to_porcess)
+mask = adjust_mask(mask)
+
 
 
 # images_normal = [get_grayscale_from_jpg_png(normal[i], str(normal_folder)) for i in range(10)]

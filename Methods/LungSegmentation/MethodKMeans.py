@@ -126,3 +126,4 @@ def make_lungmask(img, crop=True, display=False):
 #                                       str(Path().resolve().parent.parent.parent / "images_data"))
 # mask = make_lungmask(image, True)
 
+# Standardize the pixel values

@@ -1,17 +1,10 @@
 # zrodlo: https://www.kaggle.com/ankasor/improved-lung-segmentation-using-watershed
 
-import matplotlib
-import numpy as np 
-import pandas as pd 
+import numpy as np
 import pydicom
 import os
 import scipy.ndimage as ndimage
-import matplotlib.pyplot as plt
-from pathlib import Path
-import pylibjpeg
-
 from skimage import measure, morphology, segmentation
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
 class SegmentationA:
@@ -26,7 +19,7 @@ class SegmentationA:
         :return: slices: a list of FileDataset objects
         """
         slices = [pydicom.dcmread(os.path.join(path,s)) for s in os.listdir(path)]
-        slices.sort(key = lambda x: int(x.InstanceNumber))
+        slices.sort(key=lambda x: int(x.InstanceNumber))
         try:
             slice_thickness = np.abs(slices[0].ImagePositionPatient[2] - slices[1].ImagePositionPatient[2])
         except:
@@ -154,6 +147,37 @@ class SegmentationA:
         # return segmented, lungfilter, outline, watershed, sobel_gradient, marker_internal, marker_external, marker_watershed
 
 
+def generate_markers(image):
+    """
+    Function generates markers necessary for lung segmentation process
+
+    :param image: a pixel array
+    :return: marker_internal, marker_external, marker_watershed: np ndarrays of markers
+    """
+    # Creation of the internal Marker
+    marker_internal = image < -400
+    marker_internal = segmentation.clear_border(marker_internal)
+    marker_internal_labels = measure.label(marker_internal)
+    areas = [r.area for r in measure.regionprops(marker_internal_labels)]
+    areas.sort()
+    if len(areas) > 2:
+        for region in measure.regionprops(marker_internal_labels):
+            if region.area < areas[-2]:
+                for coordinates in region.coords:
+                    marker_internal_labels[coordinates[0], coordinates[1]] = 0
+    marker_internal = marker_internal_labels > 0
+    # Creation of the external Marker
+    external_a = ndimage.binary_dilation(marker_internal, iterations=10)
+    external_b = ndimage.binary_dilation(marker_internal, iterations=55)
+    marker_external = external_b ^ external_a
+    # Creation of the Watershed Marker matrix
+    marker_watershed = np.zeros((len(image), len(image[0])), dtype=np.int)
+    marker_watershed += marker_internal * 255
+    marker_watershed += marker_external * 128
+
+    return marker_internal, marker_external, marker_watershed
+
+
 def seperate_lungs_and_mask(image):
     """
     Function conducts lung segmentation process using watershed algorithm
@@ -163,7 +187,7 @@ def seperate_lungs_and_mask(image):
     np ndarrays of segmented lungs (segmented) and other markers used in the process
     """
     # Creation of the markers as shown above:
-    marker_internal, marker_external, marker_watershed = SegmentationA.generate_markers(image)
+    marker_internal, marker_external, marker_watershed = generate_markers(image)
 
     # Creation of the Sobel-Gradient
     sobel_filtered_dx = ndimage.sobel(image, 1)
