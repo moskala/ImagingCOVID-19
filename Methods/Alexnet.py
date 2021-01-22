@@ -14,16 +14,19 @@ from joblib import dump, load
 import math
 import numpy as np
 
+
 class Alex:
     '''this class uses pytorch pretrained alexnet to extract deep features from pixel arrays'''
+
     alex = None
-    def __init__(self,model=None):
+
+    def __init__(self, model=None):
         if(model is None):
             self.alex = AlexNet.from_pretrained('alexnet', num_classes=2)
         else:
             self.alex = model
     
-    def GetFeatures(self,image):
+    def GetFeatures(self, image):
         preprocess = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
@@ -34,13 +37,13 @@ class Alex:
         tensor = preprocess(im.convert('RGB')).unsqueeze(0)
         return self.alex.extract_features(tensor)
 
-    def GetFeaturesFromList(self,lungList):
+    def GetFeaturesFromList(self, lungList):
         lis = []
         for image in lungList:
             lis.append(self.GetFeatures(image))
         return lis
 
-    def ChangeDimAndStandardize(self,features,isTensor = True):
+    def ChangeDimAndStandardize(self,features, isTensor = True):
         # standaryzacja
         newfts=[]
         for ft in features:

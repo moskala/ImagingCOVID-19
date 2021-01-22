@@ -1,9 +1,6 @@
 
-import sys
-from pathlib import Path
 
-
-class Result():
+class Result:
     result = None
     lung_image = None
     scale = None
@@ -12,7 +9,7 @@ class Result():
     file_name = None
     layer_number = None
 
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type):
+    def __init__(self, result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type):
         self.result = result
         self.lung_image = lung_image
         self.scale = scale
@@ -23,28 +20,16 @@ class Result():
         self.examination_type = examination_type
 
     def get_object_properties_headers(self):
-        res = []
-        res.append('Layer no')
-        res.append('File name')
-        res.append('Image size')
-        res.append('Result')
+        res = ['Layer no', 'File name', 'Image size', 'Result']
         return res
 
     def get_object_properties_list(self):
-        res = []
-        res.append(self.layer_number)
-        res.append(self.file_name)
-        res.append(self.lung_image)
-        res.append(str(self.image_height)+"x"+str(self.image_width))
-        res.append(self.result)
+        res = [self.layer_number, self.file_name, self.lung_image, str(self.image_height) + "x" + str(self.image_width),
+               self.result]
         return res
 
     def get_object_properties_list_without_image(self):
-        res = []
-        res.append(self.layer_number)
-        res.append(self.file_name)
-        res.append(str(self.image_height)+"x"+str(self.image_width))
-        res.append(self.result)
+        res = [self.layer_number, self.file_name, str(self.image_height) + "x" + str(self.image_width), self.result]
         return res
 
     def get_object_ct_window(self):
@@ -56,19 +41,13 @@ class Result():
     def get_examination_type(self):
         return self.examination_type
 
-    def to_csv(self):
-        pass
-
-    def to_pdf(self):
-        pass
-
     def get_method_name(self):
         pass
 
 
 class AlexnetResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type,classifier):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type)
+    def __init__(self, result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type, classifier):
+        super().__init__(result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type)
         self.classifier = classifier
 
     def get_classifier(self):
@@ -79,8 +58,8 @@ class AlexnetResult(Result):
 
 
 class HaralickGlcmResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type,classifier):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type)
+    def __init__(self, result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type, classifier):
+        super().__init__(result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type)
         self.classifier = classifier
 
     def get_classifier(self):
@@ -91,8 +70,8 @@ class HaralickGlcmResult(Result):
 
 
 class NeuralNetworkResult(Result):
-    def __init__(self,result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type):
-        super().__init__(result,lung_image,image_height,image_width,scale,file_name,layer_number,examination_type)
+    def __init__(self, result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type):
+        super().__init__(result, lung_image, image_height, image_width, scale, file_name, layer_number, examination_type)
 
     def get_method_name(self):
         return 'Neural network for jpg/png'
@@ -103,7 +82,7 @@ class SeverityResult(Result):
     severity = None
     percentage = None
 
-    def __init__(self, result, slice, image_properties, layer_number,examination_type):
+    def __init__(self, result, slice, image_properties, layer_number, examination_type):
         super().__init__(result,
                          lung_image=slice,
                          image_height=image_properties["Height"],
