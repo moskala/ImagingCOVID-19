@@ -1,5 +1,6 @@
+"""this file contains the Analysis class, which handles all current results"""
 
-' this file contains the Analysis class, which handles all current results '
+
 class Analysis:
 
     result_list = None
@@ -100,7 +101,6 @@ class Analysis:
                 how_many_results_final[0] += 1
         return how_many_results_final
 
-    @staticmethod
     def get_analysis_summary_headers(self):
         res = ['Total number of layers',
                'Number of analyzed layers',
@@ -109,7 +109,6 @@ class Analysis:
                'Uncertain layers']
         return res
 
-    @staticmethod
     def get_report_summary_headers(self):
         res = ['Total number of tests',
                'Tests classified as normal',
