@@ -3,7 +3,7 @@ from skimage import measure
 from scipy import interpolate
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
-# TODO comments
+
 
 def crop_mask_image(img, mask):
 
@@ -68,9 +68,7 @@ def fill_contours(mask, min_length=0, smoothing=True):
         for contour in contours:
             points = list(zip(contour[:, 1], contour[:, 0]))
             mask_spline = fill_polygon_points(mask_spline, points)
-    # for contour in contours:
-    #     mask_spline[np.round(contour[:, 0]).astype('int'), np.round(contour[:, 1]).astype('int')] = 1
-    #     mask_spline = ndimage.binary_fill_holes(mask_spline)
+    
 
     return mask_spline
 
@@ -88,7 +86,6 @@ def fill_polygon_points(img, points):
     image = Image.fromarray(img)
     ImageDraw.Draw(image).polygon(points, outline=1, fill=1)
     mask = np.array(image)
-    # Zwórcić uwagę na obroty!
     return mask
 
 
@@ -168,33 +165,3 @@ def get_segmentation_figure(figures, titles):
 
 
 
-# import matplotlib.pyplot as plt
-#
-# # Figura
-# t = np.arange(0, 1.1, .1)
-# xs = np.sin(2*np.pi*t)
-# ys = np.cos(2*np.pi*t)
-# xy = list(zip(xs*100+200, ys*100+200))
-# rog = list(zip(xs*200+400, ys*200+250))
-#
-# img1 = np.zeros((512, 400))
-# mask1 = fill_polygon_points(img1, xy)
-# new_mask = fill_contours(mask1, smoothing=False)
-#
-# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
-# ax1.imshow(mask1)
-# ax2.imshow(new_mask)
-# plt.show()
-# img = Image.open("..\..\GUI\sample_image.jpg")
-# rgbimg = Image.new("RGB", img.size)
-# rgbimg.paste(img)
-# arr = np.array(rgbimg)
-# width = arr.shape[1]
-# height = arr.shape[0]
-# array = arr.reshape((height, width, 3))
-# img = Image.fromarray(array, mode='RGB')
-# contours = draw_lines_on_image(np.array(img), [xy])
-# plt.imshow(contours)
-# plt.show()
-
-# im = Image.fromarray(arr, "RGB")

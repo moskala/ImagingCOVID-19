@@ -15,7 +15,7 @@ from LungSegmentation.LungSegmentationUtilities import fill_contours
 
 MODEL_WEIGHTS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'xray', "cxr_reg_weights.best.hdf5"))
 INPUT_DIMENSION = 512
-# TODO komentarze!
+
 
 def unet(input_size=(256, 256, 1)):
     """
@@ -85,8 +85,7 @@ def predict_multiple_lung_mask(images_names, images_folder, dim=INPUT_DIMENSION,
     resized = [cv2.resize(img, (dim, dim)) for img in images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
     model = prepare_model(dim, model_weights_path)
-    predictions = model.predict(np.array(reshaped))  # TODO przetestować wydajność
-    # predictions = [model.predict(np.array([img])) for img in reshaped]
+    predictions = model.predict(np.array(reshaped))  
     return [np.squeeze(pred) for pred in predictions]
 
 
@@ -102,8 +101,7 @@ def predict_multiple_lung_mask_from_array(grayscale_images, dim=INPUT_DIMENSION,
     resized = [cv2.resize(img, (dim, dim)) for img in grayscale_images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
     model = prepare_model(dim, model_weights_path)
-    predictions = model.predict(np.array(reshaped))  # TODO przetestować wydajność
-    # predictions = [model.predict(np.array([img])) for img in reshaped]
+    predictions = model.predict(np.array(reshaped))  
     return [np.squeeze(pred) for pred in predictions]
 
 
@@ -149,39 +147,3 @@ def make_lungmask_multiple(filenames, folder, model_weights_path=MODEL_WEIGHTS):
     segments = [mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION)) for image, mask in zip(images, masks)]
     return segments, masks
 
-#Testowanie
-
-import os
-folder_name = r"D:\Studia\sem7\inzynierka\data\COVID-19 Radiography Database"
-covid_folder = Path(folder_name) / "COVID-19"
-normal_folder = Path(folder_name) / "NORMAL"
-
-covid = os.listdir(covid_folder)
-normal = os.listdir(normal_folder)
-
-image = get_grayscale_from_jpg_png(covid[10], str(normal_folder))
-# mask = predict_single_lung_mask(normal[10], str(normal_folder))
-img_to_porcess = prepare_image_to_segmentation(image)
-mask = predict_single_lung_mask_from_array(img_to_porcess)
-mask = adjust_mask(mask)
-
-
-
-# images_normal = [get_grayscale_from_jpg_png(normal[i], str(normal_folder)) for i in range(10)]
-# masks_normal = predict_multiple_lung_mask(normal[0:10], str(normal_folder))
-# print("Not crushed! :)")
-
-# from LungSegmentationUtilities import compare_plots
-
-# compare_plots(image, mask)
-# compare_plots(image, mask*cv2.resize(image, (512, 512)))
-# compare_plots(masks_normal[0], masks_normal[1])
-
-# mask = make_lungmask(covid[10], str(covid_folder))
-# compare_plots(get_grayscale_from_jpg_png(covid[10], str(covid_folder)), mask)
-
-# covid = os.listdir(covid_folder)[0:10]
-# normal = os.listdir(normal_folder)[0:10]
-# res = make_lungmask_multiple(covid, covid_folder)
-#
-# compare_plots(res[0][5], res[1][5])

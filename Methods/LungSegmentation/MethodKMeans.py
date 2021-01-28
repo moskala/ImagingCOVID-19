@@ -110,20 +110,4 @@ def make_lungmask(img, crop=True, display=False):
     return final_segment, final_mask
 
 
-# Przykładowe wywołania z rysowaniem
-# print("Przyklad dicom Italy")
-# image = gray.get_grayscale_from_dicom("Italy_case010060.dcm",
-#                                       str(Path().resolve().parent.parent.parent / "images_data" / "pacjent_dcm" ))
-# mask = make_lungmask(image, True)
-#
-# print("Przyklad jpg")
-# image = gray.get_grayscale_from_jpg_png("covid5.jpg",
-#                                         str(Path().resolve().parent.parent.parent / "images_data"))
-# mask = make_lungmask(image, True)
-#
-# print("Przyklad dicom China")
-# image = gray.get_grayscale_from_dicom("ser203img00109.dcm",
-#                                       str(Path().resolve().parent.parent.parent / "images_data"))
-# mask = make_lungmask(image, True)
 
-# Standardize the pixel values

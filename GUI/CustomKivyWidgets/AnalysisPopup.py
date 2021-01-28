@@ -29,11 +29,8 @@ MODELS_CT_FOLDER_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 
 MODELS_XRAY_FOLDER_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'xray'))
 
 MODEL_ALEX_EXTRACT_NAME = "featureExtraction.joblib"
-# MODEL_ALEX_EXTRACT = load(MODEL_ALEX_EXTRACT_PATH)
 MODEL_GLCM_HARALICK_DATA_NAME = "glcmHaralickData.joblib"
 MODEL_ALEX_DATA_NAME = "prePCAFeatures50.joblib"
-# MODEL_ALEX_DATA = load(MODEL_ALEX_DATA_PATH)
-# MODEL_ALEX_SVM = load(MODEL_ALEX_SVM_PATH)
 
 
 class AutomaticResultPopup(Popup):
@@ -65,10 +62,9 @@ class AnalysisPopup(Popup):
         bl = BoxLayout(orientation='vertical')
         scroll_view = ScrollView(do_scroll_x=True,do_scroll_y=True,size_hint_max_y=200)
         label = Label(size_hint_y=None,halign='justify',text_size=(self.width, None),text=text,padding=(20,20))
-        label.bind(height=self.setter('texture_size[1]'))# - jak to sie robi?
+        label.bind(height=self.setter('texture_size[1]'))
         scroll_view.add_widget(label)
         bl.add_widget(scroll_view)
-        #label = Label(text=text)
         return bl
 
     def add_result_to_analysis(self,isAlex,prediction,slic,layer_number,model):

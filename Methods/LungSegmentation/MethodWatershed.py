@@ -31,7 +31,6 @@ class SegmentationA:
         return slices
 
 
-    # jakie inty tutaj?
     @staticmethod
     def get_pixels_hu(scans):
         """

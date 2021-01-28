@@ -32,14 +32,7 @@ class CTWindow(Enum):
         return dictionary[self.value]
 
 
-# Przedziały wartości dla poszczególnych typów okna, ważna kolejność!
-# intervals = {
-#   CTWindow.GrayscaleWindow: (0, 255),
-#   CTWindow.SoftTissueWindow: (-125, 225),
-#   CTWindow.BoneWindow: (-700, 1300),
-#   CTWindow.LungWindow: (-1350, 150)
-#   # CTWindow.LungWindow: (-1200, 800),
-# }
+
 
 # types of CT windows with levels and widths
 CT_windows_parameters = {
@@ -176,8 +169,6 @@ def check_dicom_lut_windowing(file, folder):
     image = dicomfile.pixel_array
     # Apply Modality LUT or Rescale Operation
     hu = apply_modality_lut(image, dicomfile)
-#     wd = pydicom.pixel_data_handlers.util.apply_voi_lut(hu, dicomfile)
-#     wd = pydicom.pixel_data_handlers.util.apply_windowing(hu, dicomfile, index=0)
     width = dicomfile.WindowWidth
     center = dicomfile.WindowCenter
     lower_bound = int(center - width / 2)

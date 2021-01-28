@@ -10,7 +10,6 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from Pdf import *
-# from PredictHaralick import *
 from Grayscale import convert_array_to_grayscale
 from Analysis.Result import *
 
@@ -22,7 +21,6 @@ def get_result_array(result, with_headers=False):
         headers = result.get_object_properties_headers()
         nres = np.asarray(res)
         nheaders = np.asarray(headers)
-        # array with one result
         nres = np.column_stack((nheaders, nres))
         return nres
     else:

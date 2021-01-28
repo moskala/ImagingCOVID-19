@@ -6,7 +6,7 @@ from ImageMedical.ImageClass import JpgImage, PngImage
 import LungSegmentation.LungSegmentationUtilities as sgUtils
 import LungSegmentation.MethodUNetXRay as sgUnet
 
-
+from pathlib import Path
 class XRayJpgImage(JpgImage):
     """
     Class for representing jpg image object.

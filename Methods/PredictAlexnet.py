@@ -15,18 +15,11 @@ def PredictAlex(image_object,index,modelAlex,features,classifier,examination_typ
     print(image_object)
     e = ImageEnsemble()
     e.MakeImage(image_object,index)
-    # if(examination_type is ExaminationType.XRAY):
-    #     e.GetLungsXrayPredict()
-    # else:
-    #     e.GetLungs()
     alex = Alex(load(modelAlex))
     testft = alex.GetFeatures(e.lungs[0])
     testft = alex.ChangeDimAndStandardize(testft,isTensor=False)
     newfts = load(features)
     newfts.append(testft[0])
-    # print(newfts[len(newfts)-1])
-    # print(math.nan in newfts)
-    # print(math.inf in newfts)
     pcafts = alex.DoPCA(newfts)
     if(isPretrained):
         model=load(classifier)
@@ -37,5 +30,5 @@ def PredictAlex(image_object,index,modelAlex,features,classifier,examination_typ
     else:
         model.fit(pcafts[0:len(pcafts)-1],Model.GetLabels())
     test = pcafts[len(pcafts)-1].reshape(1, -1)
-    #print(test)
+    
     return model.predict(test),model

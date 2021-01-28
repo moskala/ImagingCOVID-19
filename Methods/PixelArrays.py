@@ -55,11 +55,7 @@ def show_jpg_png(file_path):
     plt.show()
 
 
-# Przykłady:
-# show_dicom(r"D:\Studia\sem7\inzynierka\data\covidctscans_org\16_Italy\Original Dicom\Italy_case010000.dcm")
-# show_nii(r"D:\Studia\sem7\inzynierka\data\segmentation\ct_scan\coronacases_org_001.nii", 5)
-# show_jpg_png(r'D:\Studia\sem7\inzynierka\data\test\test\0.jpg')
-# show_jpg_png(r'D:\Studia\sem7\inzynierka\data\test\test\2237.png')
+
 
 def get_pixel_array_dicom(file_path):
     return pydicom.dcmread(file_path).pixel_array

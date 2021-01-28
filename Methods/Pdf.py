@@ -1,3 +1,4 @@
+' this is the class containing the PDF creating methods '
 from fpdf import FPDF
 
 class PDF(FPDF):

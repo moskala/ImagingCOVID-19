@@ -20,7 +20,7 @@ class MyFigure(FigureCanvasKivyAgg):
         """constructor"""
         if image_data is None:
             image_data = get_plot_data_jpg_png(START_IMAGE)
-        plt.clf()   # very important to clear plt before new figure
+        plt.clf()   
         plt.axis('off')
         plt.imshow(image_data, cmap='gray')
         super(MyFigure, self).__init__(plt.gcf(), **kwargs)
@@ -34,7 +34,7 @@ class ResultFigure(FigureCanvasKivyAgg):
     def __init__(self, fig=None, **kwargs):
         """constructor"""
         if fig is not None:
-            plt.clf()   # very important to clear plt before new figure
+            plt.clf()   
             super(ResultFigure, self).__init__(fig, **kwargs)
             self.curPlt = fig
         else:

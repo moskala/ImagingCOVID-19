@@ -14,7 +14,6 @@ total_severity_score = {
 
 
 def calculate_ratio_tts(lung_mask, infection_mask):
-    # TODO dodac komentarze
     lung_area = np.count_nonzero(lung_mask)
     if lung_area == 0:
         return -1, -1
@@ -32,7 +31,6 @@ def calculate_ratio_tts(lung_mask, infection_mask):
 
 
 def check_examination(lung_slices, infection_slices):
-    # TODO dodac komentarze
     analyzed_slices = []
     results = []
     for i in range(len(lung_slices)):
@@ -44,7 +42,6 @@ def check_examination(lung_slices, infection_slices):
 
 
 def create_report_severity(lung_slices, infection_slices):
-    # TODO dodac komentarze
     # Total number of slices of analyzed image
     total_slices = len(lung_slices)
     result = check_examination(lung_slices, infection_slices)
@@ -69,7 +66,6 @@ def create_report_severity(lung_slices, infection_slices):
 
 
 def create_dataframe_from_nitfi_images(folder_path, save_path=None):
-    # TODO dodac komentarze
     path = Path(folder_path)
     lungs_path = path / "lung_mask"
     infection_path = path / "infection_mask"
@@ -99,7 +95,3 @@ def create_dataframe_from_nitfi_images(folder_path, save_path=None):
 
     return df
 
-
-# Przykład wywołania
-# path = Path(r"D:\Studia\sem7\inzynierka\data\segmented_nii_kaggle")
-# df = create_dataframe_from_nitfi_images(path)

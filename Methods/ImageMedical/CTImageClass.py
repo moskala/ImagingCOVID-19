@@ -9,7 +9,7 @@ import LungSegmentation.MethodBinary as sgBinary
 import LungSegmentation.MethodKMeans as sgKmeans
 from LungSegmentation.LungSegmentationUtilities import crop_mask_image
 
-
+from pathlib import Path
 class CTDicomImage(DicomImage):
 
     def __init__(self, folder, filename):

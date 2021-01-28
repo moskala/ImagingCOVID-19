@@ -1,5 +1,5 @@
 
-
+' this file contains the Analysis class, which handles all current results '
 class Analysis:
 
     result_list = None
