@@ -10,6 +10,7 @@ import MethodBinary as sgBinary
 import MethodKMeans as sgKmeans
 from LungSegmentationUtilities import crop_mask_image
 import CTWindowing as ctwindow
+import matplotlib.pyplot as plt
 
 
 
@@ -34,10 +35,13 @@ class CTDicomImage(DicomImage):
             crop_segment, crop_mask = crop_mask_image(segment, mask)
             return crop_segment
         else:
-            segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
-            crop_segment, crop_mask = crop_mask_image(segmented, mask)
-            #return ctwindow.get_ct_window_grayscale(crop_segment)
-            return convert_array_to_grayscale(crop_segment)
+            gray_img = self.get_current_grayscale_slice()
+            segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+            img = self.get_current_slice()
+            segmented_hu = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
+            center, width = ctwindow.get_window_interval(ctwindow.CTWindow.LungWindow)
+            crop_segment, crop_mask = crop_mask_image(segmented_hu, mask)
+            return ctwindow.get_ct_window_grayscale(crop_segment, width=width, center=center)
 
     def get_segmented_lungs_kmeans(self):
         gray_img = self.get_current_grayscale_slice()
@@ -103,21 +107,18 @@ class CTNiftiImage(NiftiImage):
     def get_segmented_lungs(self):
 
         if self.ct_window is ctwindow.CTWindow.GrayscaleWindow:
-            print("Grayscale nifti")
             gray_img = self.get_current_grayscale_slice()
             segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
             crop_segment, crop_mask = crop_mask_image(segment, mask)
             return crop_segment
         else:
-            segmented, mask = sgWatershed.seperate_lungs_and_mask(self.get_current_slice())
-            # ct_scan = self.get_current_slice().copy()
-            # segmented, mask = sgBinary.get_segmented_lungs_and_mask(ct_scan, threshold=-400)
-            crop_segment, crop_mask = crop_mask_image(segmented, mask)
+            gray_img = self.get_current_grayscale_slice()
+            segment, mask = sgKmeans.make_lungmask(gray_img, crop=False)
+            img = self.get_current_slice()
+            segmented_hu = np.where(mask == 1, img, -2000 * np.ones((len(img), len(img[0]))))
             center, width = ctwindow.get_window_interval(ctwindow.CTWindow.LungWindow)
-            # print("Center: {0}, Width: {1}".format(center, width))
+            crop_segment, crop_mask = crop_mask_image(segmented_hu, mask)
             return ctwindow.get_ct_window_grayscale(crop_segment, width=width, center=center)
-
-            # return convert_array_to_grayscale(crop_segment)
 
     def get_segmented_lungs_kmeans(self):
         gray_img = self.get_current_grayscale_slice()

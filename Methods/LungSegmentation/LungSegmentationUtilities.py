@@ -11,14 +11,15 @@ def crop_mask_image(img, mask):
     regions = measure.regionprops(labels)
     if len(regions) == 0:
         return img, mask
+
     # Find boundries of regions
     min_row = (min(regions, key=lambda region: region.bbox[0])).bbox[0]
     min_col = (min(regions, key=lambda region: region.bbox[1])).bbox[1]
     max_row = (max(regions, key=lambda region: region.bbox[2])).bbox[2]
     max_col = (max(regions, key=lambda region: region.bbox[3])).bbox[3]
-
+    # print(min_row, min_col, max_row, max_col)
     # Crop images
-    shift = 4
+    shift = 0
     crop_mask = mask[(min_row - shift):(max_row + shift), (min_col - shift):(max_col + shift)]
     crop_image = img[(min_row - shift):(max_row + shift), (min_col - shift):(max_col + shift)]
 
@@ -110,10 +111,10 @@ def flip_mask_vertically(mask):
     return np.flip(mask, 0)
 
 
-def compare_plots(image1, image2):
+def compare_plots(image1, image2, color='gray'):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
-    ax1.imshow(image1)
-    ax2.imshow(image2)
+    ax1.imshow(image1, cmap=color)
+    ax2.imshow(image2, cmap=color)
     plt.show()
 
 

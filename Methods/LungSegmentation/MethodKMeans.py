@@ -10,7 +10,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Grayscale as gray
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','LungSegmentation')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'LungSegmentation')))
 from LungSegmentationUtilities import *
 
 
@@ -72,7 +72,8 @@ def make_lungmask(img, crop=True, display=False):
         mask = mask + np.where(labels == N, 1, 0)
 
     # Oryginal mask
-    mask_dil = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
+    # mask_dil = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
+    mask_dil = mask
     # Improved due to covid changes
     mask_close = morphology.area_closing(mask_dil, connectivity=2)
 
@@ -80,10 +81,12 @@ def make_lungmask(img, crop=True, display=False):
         # Cropped image and mask
         crop_img, crop_mask = crop_mask_image(img, mask_close)
         # Find contours and fill mask
-        final_mask = fill_contours(crop_mask, min_length=100)
+        # final_mask = fill_contours(crop_mask, min_length=100)
         final_img = crop_img
+        final_mask = crop_mask
     else:
-        final_mask = fill_contours(mask_close, min_length=100)
+        # final_mask = fill_contours(mask_close, min_length=100)
+        final_mask = mask_close
         final_img = img.copy()
 
     final_segment = final_mask * final_img
