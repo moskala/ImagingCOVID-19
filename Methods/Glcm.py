@@ -53,11 +53,13 @@ class Model:
     modelRandomForest = None
     modelLinearDicriminant = None
     modelLogisticRegression = None
-    def __init__(self,kernel='rbf',max_features='auto',solver='liblinear'):
-        self.model = svm.SVC(kernel='linear')
-        self.modelRandomForest = RandomForestClassifier(max_features=max_features)
-        self.modelLogisticRegression = LogisticRegression(max_iter=1000,solver=solver)
-        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='lsqr',shrinkage='auto')
+
+    def __init__(self, kernel='rbf', max_features='auto', solver='liblinear'):
+        self.model = svm.SVC(kernel='linear')  # linear
+        self.modelRandomForest = RandomForestClassifier(max_features='sqrt')    # max_features
+        self.modelLogisticRegression = LogisticRegression(max_iter=10000, solver='saga')    # solver
+        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')   # lsqr, shrinkage='auto'
+
     def FitModel(self,data,labels):
         self.model.fit(data,labels)
 
@@ -76,6 +78,7 @@ class Model:
     
     def PredictModelLogisticRegression(self,data):
         return self.modelLogisticRegression.predict(data)
+
     def PredictModelLinearDiscriminant(self,data):
         return self.modelLinearDicriminant.predict(data)
 
@@ -83,10 +86,20 @@ class Model:
         labels_pred = cross_val_predict(self.model, data, labels, cv=cv)
         tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
         return tn, fp, fn, tp
+
+    def GetModelEvaluationLR(self,data,labels,cv=5):
+        labels_pred = cross_val_predict(self.modelLogisticRegression, data, labels, cv=cv)
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
+        return tn, fp, fn, tp
+
+    def GetModelEvaluationRF(self,data,labels,cv=5):
+        labels_pred = cross_val_predict(self.modelRandomForest, data, labels, cv=cv)
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
+        return tn, fp, fn, tp
     
     def GetModelEvaluationLD(self,data,labels,cv=5):
         labels_pred = cross_val_predict(self.modelLinearDicriminant, data, labels, cv=cv)
-        tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred ,labels=['normal','covid']).ravel()
         return tn, fp, fn, tp
 
     def CrossValidate(self,data,labels,scoring='accuracy',cv=5):
@@ -126,6 +139,7 @@ class ImageEnsemble:
     lungs = None
     matrices = None
     props = None
+
     def __init__(self,folders=None,gotFolders=False):
         self.lungs = []
         if(gotFolders):
@@ -143,12 +157,14 @@ class ImageEnsemble:
 
     
     def MakeImage(self,image_object,index):
+
         #self.lungs=[]
         image_object.get_next_slice(index)
         # print('image object slice: ',image_object.current_slice_number)
         lungs = image_object.get_segmented_lungs()
 
-        self.lungs.append(convert_array_to_grayscale(lungs))
+        # self.lungs.append(convert_array_to_grayscale(lungs))
+        self.lungs.append(lungs)
 
 
 

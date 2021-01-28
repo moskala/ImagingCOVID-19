@@ -32,18 +32,6 @@ ct4_indexes = list(range(1109, 1110, 1))
 def get_study_name(study_id):
     return "study_{0}.nii.gz".format(study_id)
 
-
-# slice_no = 19
-# image = CTNiftiImage(data_folder_ct3, get_study_name('1072'))
-# slice_image = image.get_next_slice(slice_no)
-# segment = image.get_segmented_lungs()
-# compare_plots(slice_image, segment)
-# min_val = np.min(slice_image)
-# slice_image_filter = np.where(slice_image == min_val, 0, slice_image)
-# compare_plots(slice_image, slice_image_filter)
-# compare_plots(slice_image_filter, slice_image_filter)
-
-
 number_of_covid_layers = 0
 number_of_normal_layers = 0
 
@@ -51,7 +39,6 @@ e = ImageEnsemble(gotFolders=False)
 
 
 def append_study(folder, study_name, image_indexes):
-    return
     global e
     io = CTNiftiImage(folder, study_name)
     for idx in image_indexes:
@@ -722,7 +709,7 @@ print("Covid set done")
 print("Normal layers: {0}".format(number_of_normal_layers))
 print("Covid layers: {0}".format(number_of_covid_layers))
 
-train_name = 'WatershedLungWindowRussia'
+train_name = 'KMeansLungWindowRussia'
 
 
 def dump_image_ensemble(name):
@@ -738,15 +725,16 @@ def load_image_ensemble(name):
 
 
 def subset_image_ensemble():
-    normal_subset = e.lungs[0:260]
+    global e
+    normal_subset = e.lungs[0:150]
     covid_subset = e.lungs[600:]
     e.lungs = normal_subset + covid_subset
     print(len(e.lungs))
 
 
 # # Odkomentować wybrane
-# dump_image_ensemble(train_name)
-load_image_ensemble(train_name)
+dump_image_ensemble(train_name)
+# load_image_ensemble(train_name)
 # subset_image_ensemble()
 
 
@@ -762,27 +750,45 @@ print('glcm done')
 # Haralick ##########################################################################################################
 h = Haralick(e.lungs)
 haralickFts = h.GetHaralickFtsAll()
-# # # dump(np.hstack((haralickFts,glcmFts)),'glcmHaralickFeatures.joblib')
+# # # dump(np.hstack((haralickFts, glcmFts)),'glcmHaralickFeatures.joblib')
 print('haralick done')
+
+# Alexnet ##########################################################################################################
+
+# alex = Alex(load('featureExtraction.joblib'))
+# alexFts = alex.GetFeaturesFromList(e.lungs)
+# alexFts = alex.ChangeDimAndStandardize(alexFts)
+# alexFts = alex.DoPCA(alexFts, n=50)
+# print('alex done')
+
+
+def dump_alex_features(name):
+    global alexFts
+    dump(alexFts, 'alexFeatures_{}.joblib'.format(name))
+    print('dump alex done')
+
+
+# alexFts = load('alexFeatures_{}.joblib'.format(train_name))
+# print("load alex done")
 
 # Classifier ########################################################################################################
 cc = ClassifierCombination()
 cc.make_array2(haralickFts, glcmFts)
+# cc.make_array1(alexFts)
 cc.get_labels()
 
+
 print("Cross evaluate cv 5")
-tn, fp, fn, tp = cc.cross_evaluate(cv=5)
+tn, fp, fn, tp = cc.cross_evaluateLD(cv=5)
 sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
-print(acc, sen, spe, ppv, npv)
+print(sen, spe, ppv, npv, acc)
 
 print("Cross evaluate cv 10")
-tn, fp, fn, tp = cc.cross_evaluate(cv=10)
+tn, fp, fn, tp = cc.cross_evaluateLD(cv=10)
 sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
-print(acc, sen, spe, ppv, npv)
+print(sen, spe, ppv, npv, acc)
 
 print("Cross evaluate cv 15")
-tn, fp, fn, tp = cc.cross_evaluate(cv=15)
+tn, fp, fn, tp = cc.cross_evaluateLD(cv=15)
 sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
-print(acc, sen, spe, ppv, npv)
-
-
+print(sen, spe, ppv, npv, acc)
