@@ -10,7 +10,8 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import Grayscale as gray
-from LungSegmentation.LungSegmentationUtilities import *
+# from LungSegmentation.LungSegmentationUtilities import
+from LungSegmentation.LungSegmentationUtilities import crop_mask_image, fill_contours
 
 
 def make_lungmask(img, crop=True, display=False):
@@ -30,15 +31,13 @@ def make_lungmask(img, crop=True, display=False):
     img_copy = img_copy - mean
     img_copy = img_copy / std
 
-    # Find the average pixel value near the lungs
-    # to renormalize washed out images
+    # Find the average pixel value near the lungs to renormalize washed out images
     middle = img_copy[int(col_size / 5):int(col_size / 5 * 4), int(row_size / 5):int(row_size / 5 * 4)]
     mean = np.mean(middle)
     max_tone = np.max(img_copy)
     min_tone = np.min(img_copy)
 
-    # To improve threshold finding, I'm moving the
-    # underflow and overflow on the pixel spectrum
+    # To improve threshold finding, I'm moving the underflow and overflow on the pixel spectrum
     img_copy[img_copy == max_tone] = mean
     img_copy[img_copy == min_tone] = mean
 
@@ -78,18 +77,16 @@ def make_lungmask(img, crop=True, display=False):
         mask = mask + np.where(labels == N, 1, 0)
 
     # Oryginal mask
-    mask_dil = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
+    # mask_dil = morphology.dilation(mask, np.ones([10, 10]))  # one last dilation
     # Improved due to covid changes
-    mask_close = morphology.area_closing(mask_dil, connectivity=2)
+    mask_close = morphology.area_closing(mask, connectivity=2)
 
     if crop:
         # Cropped image and mask
         crop_img, crop_mask = crop_mask_image(img, mask_close)
-        # Find contours and fill mask
-        final_mask = fill_contours(crop_mask, min_length=100)
         final_img = crop_img
     else:
-        final_mask = fill_contours(mask_close, min_length=100)
+        final_mask = mask_close
         final_img = img.copy()
 
     final_segment = final_mask * final_img
