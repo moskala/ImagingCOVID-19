@@ -1,4 +1,6 @@
 from enum import Enum
+
+
 class ExaminationType(Enum):
     CT = 0
     XRAY = 1

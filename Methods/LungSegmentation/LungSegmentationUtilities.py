@@ -18,9 +18,8 @@ def crop_mask_image(img, mask):
     max_col = (max(regions, key=lambda region: region.bbox[3])).bbox[3]
 
     # Crop images
-    shift = 4
-    crop_mask = mask[(min_row - shift):(max_row + shift), (min_col - shift):(max_col + shift)]
-    crop_image = img[(min_row - shift):(max_row + shift), (min_col - shift):(max_col + shift)]
+    crop_mask = mask[min_row:max_row, min_col:max_col]
+    crop_image = img[min_row:max_row, min_col:max_col]
 
     return crop_image, crop_mask
 
@@ -68,7 +67,6 @@ def fill_contours(mask, min_length=0, smoothing=True):
         for contour in contours:
             points = list(zip(contour[:, 1], contour[:, 0]))
             mask_spline = fill_polygon_points(mask_spline, points)
-    
 
     return mask_spline
 

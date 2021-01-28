@@ -1,13 +1,16 @@
 import pickle
 from joblib import dump, load
-import sys,os
+import sys
+import os
 from pathlib import Path
-from Haralick import *
+from Haralick import Haralick
+from Glcm import ImageEnsemble
 
-def PredictHaralick(folder,file,model_path):
-    model = load(model_path) 
+
+def PredictHaralick(folder, file, model_path):
+    model = load(model_path)
     e = ImageEnsemble()
-    e.MakeDicoms(folder,file)
+    e.MakeDicoms(folder, file)
     e.GetLungs()
     h = Haralick()
     fts = h.GetHaralickFts(e.lungs[0])

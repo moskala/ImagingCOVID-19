@@ -155,6 +155,7 @@ def get_grayscale_from_nifti(filename: str, src_folder: str, global_gray=False):
 
 
 def get_grayscale_from_nifti_slice(filename: str, src_solder: str, slice_number):
+    """Function reads NIfTI file and return grayscale array of given slice number."""
     # After loading, rescale operation is already applied
     img = nib.load(Path(src_solder) / filename)
     ct_arrays = img.get_fdata()
@@ -165,6 +166,7 @@ def get_grayscale_from_nifti_slice(filename: str, src_solder: str, slice_number)
 
 
 def get_grayscale_from_normal_array(array):
+    """Function converts normalized values to grayscale."""
     if np.max(array) <= 1:
         gray_array = 255 * array
         return np.array(gray_array, dtype='uint8')

@@ -32,8 +32,6 @@ class CTWindow(Enum):
         return dictionary[self.value]
 
 
-
-
 # types of CT windows with levels and widths
 CT_windows_parameters = {
   CTWindow.GrayscaleWindow: (127.5, 255),
@@ -45,6 +43,7 @@ CT_windows_parameters = {
 
 
 def get_window_interval(window_type):
+    """Function return interval for given window type."""
     return CT_windows_parameters[window_type]
 
 

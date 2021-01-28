@@ -14,6 +14,7 @@ total_severity_score = {
 
 
 def calculate_ratio_tts(lung_mask, infection_mask):
+    """Function calculates percentage of covid changes and total severity score"""
     lung_area = np.count_nonzero(lung_mask)
     if lung_area == 0:
         return -1, -1
@@ -31,6 +32,7 @@ def calculate_ratio_tts(lung_mask, infection_mask):
 
 
 def check_examination(lung_slices, infection_slices):
+    """Function calculate severity in all lung slices given infection slices"""
     analyzed_slices = []
     results = []
     for i in range(len(lung_slices)):
@@ -42,6 +44,7 @@ def check_examination(lung_slices, infection_slices):
 
 
 def create_report_severity(lung_slices, infection_slices):
+    """Function creates report od severity for given lung and infection slices"""
     # Total number of slices of analyzed image
     total_slices = len(lung_slices)
     result = check_examination(lung_slices, infection_slices)
@@ -66,6 +69,7 @@ def create_report_severity(lung_slices, infection_slices):
 
 
 def create_dataframe_from_nitfi_images(folder_path, save_path=None):
+    """Function create reports for all patients in NIfTI format in given folder"""
     path = Path(folder_path)
     lungs_path = path / "lung_mask"
     infection_path = path / "infection_mask"

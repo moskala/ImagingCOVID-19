@@ -15,7 +15,7 @@ import numpy as np
 
 
 class Alex:
-    '''this class uses pytorch pretrained alexnet to extract deep features from pixel arrays'''
+    """this class uses pytorch pretrained AlexNet to extract deep features from pixel arrays"""
 
     alex = None
 

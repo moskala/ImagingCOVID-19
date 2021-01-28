@@ -55,8 +55,6 @@ def show_jpg_png(file_path):
     plt.show()
 
 
-
-
 def get_pixel_array_dicom(file_path):
     return pydicom.dcmread(file_path).pixel_array
 

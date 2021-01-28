@@ -36,7 +36,6 @@ def show_jpg_png(file_path):
     plt.show()
 
 
-
 def get_plot_data_dicom(file_path):
     return pydicom.dcmread(file_path).pixel_array
 
@@ -60,6 +59,7 @@ def get_plot_data_nii(file_path, value):
         value = len(ct_array) - 1
 
     return ct_array[value]
+
 
 def get_plot_data_nii_all(file_path):
 

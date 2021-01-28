@@ -142,9 +142,5 @@ def get_segmented_lungs_and_mask(image_array, threshold=604):
     edges = roberts(binary)
     binary = ndi.binary_fill_holes(edges)
 
-    # Superimpose the mask on the input image
-    # get_high_vals = binary == 0
-    # im = image_array.copy()
-    # im[get_high_vals] = 0
     segmented = np.where(binary == 1, image_array, -2000 * np.ones((len(image_array), len(image_array[0]))))
     return segmented, binary

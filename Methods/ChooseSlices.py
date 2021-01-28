@@ -9,6 +9,7 @@ class LayerChoiceType(Enum):
 
 
 class LayerChoice:
+    """This class have functionalities to set layers choice."""
 
     def __init__(self):
         self.choice_type = LayerChoiceType.SINGLE

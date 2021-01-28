@@ -1,4 +1,5 @@
-' this file contains Result class, which represents a single analysis result '
+"""this file contains Result class, which represents a single analysis result"""
+
 
 class Result:
     result = None
