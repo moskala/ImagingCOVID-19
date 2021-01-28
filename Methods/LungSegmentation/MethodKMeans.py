@@ -14,6 +14,13 @@ from LungSegmentation.LungSegmentationUtilities import *
 
 
 def make_lungmask(img, crop=True, display=False):
+    """
+    Function makes lungmask for given image.
+    :param img: image array
+    :param crop: boolean if mask supposed to be cropped
+    :param display: if true, results are displayed
+    :return: tuple of segment and mask
+    """
     img_copy = img.copy()
     row_size = img.shape[0]
     col_size = img.shape[1]

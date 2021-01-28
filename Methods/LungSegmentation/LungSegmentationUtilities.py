@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def crop_mask_image(img, mask):
-
+    """Crops images to regions boundaries"""
     labels = measure.label(mask)
     regions = measure.regionprops(labels)
     if len(regions) == 0:
@@ -25,6 +25,7 @@ def crop_mask_image(img, mask):
 
 
 def apply_convex_polygon(img, mask):
+    """Function finds convex polygon of mask"""
     labels = measure.label(mask)
     regions = measure.regionprops(labels)
 
@@ -48,7 +49,7 @@ def apply_convex_polygon(img, mask):
 
 
 def fill_contours(mask, min_length=0, smoothing=True):
-
+    """Function finds and fills contours of mask"""
     # Create an empty image to store the masked array
     mask_spline = np.ndarray(mask.shape, dtype=np.int8)
     mask_spline[:] = 0
@@ -72,6 +73,7 @@ def fill_contours(mask, min_length=0, smoothing=True):
 
 
 def smooth_contours(x, y):
+    """Function smooths contours"""
     if len(x) >= 4:
         tck, u = interpolate.splprep([x, y], s=0)
         out = interpolate.splev(u, tck)
@@ -81,6 +83,7 @@ def smooth_contours(x, y):
 
 
 def fill_polygon_points(img, points):
+    """Function fill polygon by given points"""
     image = Image.fromarray(img)
     ImageDraw.Draw(image).polygon(points, outline=1, fill=1)
     mask = np.array(image)
@@ -88,6 +91,7 @@ def fill_polygon_points(img, points):
 
 
 def fill_selected_regions_on_mask(image_size, regions_points):
+    """Functions creates mask of given size and fill polygons by given points"""
     # Check dimension of image
     if len(image_size) != 2:
         raise ValueError("Image size should have 2 dim but has {0}".format(len(image_size)))
@@ -102,10 +106,12 @@ def fill_selected_regions_on_mask(image_size, regions_points):
 
 
 def flip_mask_vertically(mask):
+    """Function flips mask vertically"""
     return np.flip(mask, 0)
 
 
 def compare_plots(image1, image2):
+    """Functions display double plot"""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
     ax1.imshow(image1)
     ax2.imshow(image2)
@@ -113,6 +119,7 @@ def compare_plots(image1, image2):
 
 
 def draw_lines_on_image(gray_image, regions_points):
+    """Function draw lines on image by given points"""
     img = Image.fromarray(gray_image)
     rgb_img = Image.new("RGB", img.size)
     rgb_img.paste(img)
@@ -125,6 +132,7 @@ def draw_lines_on_image(gray_image, regions_points):
 
 
 def get_segmentation_figure(figures, titles):
+    """Function creates figure with 2 or 4 subplots. Used as lung segmentation comparison"""
 
     if len(figures) < 2:
         raise ValueError("Too few figures.")

@@ -19,11 +19,7 @@ INPUT_DIMENSION = 512
 
 
 def unet(input_size=(256, 256, 1)):
-    """
-    Creates model architecture
-    :param input_size:
-    :return:
-    """
+    """Creates model architecture"""
     inputs = Input(input_size)
 
     conv1 = Conv2D(32, (3, 3), activation='relu', padding='same')(inputs)
@@ -67,12 +63,14 @@ def unet(input_size=(256, 256, 1)):
 
 
 def prepare_model(dim=INPUT_DIMENSION, model_weights_path=MODEL_WEIGHTS):
+    """Loads model weights from given path"""
     model = unet(input_size=(dim, dim, 1))
     model.load_weights(model_weights_path)
     return model
 
 
 def predict_single_lung_mask(image_name, image_folder, dim=INPUT_DIMENSION, model_weights_path=MODEL_WEIGHTS):
+    """Predicts single lungmask for image in given folder"""
     img = get_grayscale_from_jpg_png(image_name, image_folder)
     resized = cv2.resize(img, (dim, dim))
     reshaped = np.array(resized).reshape(dim, dim, 1)
@@ -82,6 +80,7 @@ def predict_single_lung_mask(image_name, image_folder, dim=INPUT_DIMENSION, mode
 
 
 def predict_multiple_lung_mask(images_names, images_folder, dim=INPUT_DIMENSION, model_weights_path=MODEL_WEIGHTS):
+    """Predicts multiple lungmasks for images in given folder"""
     images = [get_grayscale_from_jpg_png(name, images_folder) for name in images_names]
     resized = [cv2.resize(img, (dim, dim)) for img in images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
@@ -91,6 +90,7 @@ def predict_multiple_lung_mask(images_names, images_folder, dim=INPUT_DIMENSION,
 
 
 def predict_single_lung_mask_from_array(grayscale_image, dim=INPUT_DIMENSION, model_weights_path=MODEL_WEIGHTS):
+    """Predicts single lungmask for given image"""
     resized = cv2.resize(grayscale_image, (dim, dim))
     reshaped = np.array(resized).reshape(dim, dim, 1)
     model = prepare_model(dim, model_weights_path)
@@ -99,6 +99,7 @@ def predict_single_lung_mask_from_array(grayscale_image, dim=INPUT_DIMENSION, mo
 
 
 def predict_multiple_lung_mask_from_array(grayscale_images, dim=INPUT_DIMENSION, model_weights_path=MODEL_WEIGHTS):
+    """Predicts multiple lungmasks for given images"""
     resized = [cv2.resize(img, (dim, dim)) for img in grayscale_images]
     reshaped = [np.array(img).reshape(dim, dim, 1) for img in resized]
     model = prepare_model(dim, model_weights_path)
@@ -107,6 +108,7 @@ def predict_multiple_lung_mask_from_array(grayscale_images, dim=INPUT_DIMENSION,
 
 
 def adjust_mask(mask):
+    """Convert mask to binary array and smooth contours"""
     mask = np.where(mask > 0.1, 1, 0)
     mask = fill_contours(mask, min_length=100)
     mask = ndimage.gaussian_filter(mask, sigma=0.2)
@@ -114,6 +116,7 @@ def adjust_mask(mask):
 
 
 def prepare_image_to_segmentation(image):
+    """Prepare image to segmentation by size and normalization"""
     img = image.copy()
     if np.max(img) <= 1:
         img *= 255
@@ -122,16 +125,8 @@ def prepare_image_to_segmentation(image):
     return equ / 255
 
 
-def make_lungmask_multiple(filenames, folder):
-    images = [get_grayscale_from_jpg_png(filename, folder) for filename in filenames]
-    img_to_process = [prepare_image_to_segmentation(image) for image in images]
-    masks = predict_multiple_lung_mask_from_array(img_to_process)
-    masks = [adjust_mask(mask) for mask in masks]
-    segments = [mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION)) for image, mask in zip(images, masks)]
-    return segments, masks
-
-
 def make_lungmask(filename, folder, model_weights_path=MODEL_WEIGHTS):
+    """Make single lungmask for image in given folder"""
     image = get_grayscale_from_jpg_png(filename, folder)
     img_to_process = prepare_image_to_segmentation(image)
     mask = predict_single_lung_mask_from_array(img_to_process, model_weights_path=model_weights_path)
@@ -141,10 +136,10 @@ def make_lungmask(filename, folder, model_weights_path=MODEL_WEIGHTS):
 
 
 def make_lungmask_multiple(filenames, folder, model_weights_path=MODEL_WEIGHTS):
+    """Makes multiple lungmasks for images in given folder"""
     images = [get_grayscale_from_jpg_png(filename, folder) for filename in filenames]
     img_to_process = [prepare_image_to_segmentation(image) for image in images]
     masks = predict_multiple_lung_mask_from_array(img_to_process, model_weights_path=model_weights_path)
     masks = [adjust_mask(mask) for mask in masks]
     segments = [mask * cv2.resize(image, (INPUT_DIMENSION, INPUT_DIMENSION)) for image, mask in zip(images, masks)]
     return segments, masks
-
