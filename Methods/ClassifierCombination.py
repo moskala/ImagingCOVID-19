@@ -25,7 +25,9 @@ class ClassifierCombination:
         self.array = alex
 
     def get_labels(self):
-        self.labels = Model.GetLabels()
+        covid_labels = ['covid'] * 600
+        normal_labels = ['normal'] * 600
+        self.labels = covid_labels + normal_labels
 
     def get_labels_xray(self):
         labels = []
