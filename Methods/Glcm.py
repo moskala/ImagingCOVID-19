@@ -60,10 +60,13 @@ class Model:
     modelLogisticRegression = None
 
     def __init__(self, kernel='rbf', max_features='auto', solver='liblinear'):
-        self.model = svm.SVC(kernel='linear')
+        self.model = svm.SVC(kernel=kernel)
         self.modelRandomForest = RandomForestClassifier(max_features=max_features)
         self.modelLogisticRegression = LogisticRegression(max_iter=1000, solver=solver)
-        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+        if solver == 'liblinear':
+            self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='liblinear', shrinkage='auto')
+        else:
+            self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')
 
     def FitModel(self, data, labels):
         self.model.fit(data, labels)
@@ -103,11 +106,9 @@ class Model:
 
     @staticmethod
     def GetLabels():
-        labels = []
-        for i in range(50):
-            labels.append('covid')
-        for i in range(50):
-            labels.append('normal')
+        normal_labels = ['normal'] * 600
+        covid_labels = ['covid'] * 600
+        labels = normal_labels + covid_labels
         return labels
 
     @staticmethod

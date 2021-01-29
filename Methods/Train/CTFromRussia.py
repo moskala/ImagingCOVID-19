@@ -38,6 +38,7 @@ e = ImageEnsemble(gotFolders=False)
 
 
 def append_study(folder, study_name, image_indexes):
+    return
     global e
     io = CTNiftiImage(folder, study_name)
     for idx in image_indexes:
@@ -732,62 +733,140 @@ def subset_image_ensemble():
 
 
 # # Odkomentować wybrane
-dump_image_ensemble(train_name)
+# dump_image_ensemble(train_name)
+
 # load_image_ensemble(train_name)
 # subset_image_ensemble()
 
-
-print("Number of layers: {0}".format(len(e.lungs)))
+# print("Number of layers: {0}".format(len(e.lungs)))
 
 # GLCM #############################################################################################################
-e.GetMatrices()
-e.GetProps()
-glcmFts = e.props
-dump(glcmFts, 'glcmFeatures{0}.joblib'.format(train_name))
-print('glcm done')
+# e.GetMatrices()
+# e.GetProps()
+# glcmFts = e.props
+# # dump(glcmFts, 'glcmFeatures{0}.joblib'.format(train_name))
+# print('glcm done')
 
 # Haralick ##########################################################################################################
-h = Haralick(e.lungs)
-haralickFts = h.GetHaralickFtsAll()
-# # # dump(np.hstack((haralickFts, glcmFts)),'glcmHaralickFeatures.joblib')
-print('haralick done')
+# h = Haralick(e.lungs)
+# haralickFts = h.GetHaralickFtsAll()
+# dump(np.hstack((haralickFts, glcmFts)), 'glcmHaralickData.joblib')
+# print('haralick done')
 
 # Alexnet ##########################################################################################################
 
 # alex = Alex(load('featureExtraction.joblib'))
 # alexFts = alex.GetFeaturesFromList(e.lungs)
 # alexFts = alex.ChangeDimAndStandardize(alexFts)
+# dump(alexFts, 'prePCAFeatures50.joblib')
 # alexFts = alex.DoPCA(alexFts, n=50)
 # print('alex done')
-
-
-def dump_alex_features(name):
-    global alexFts
-    dump(alexFts, 'alexFeatures_{}.joblib'.format(name))
-    print('dump alex done')
+#
+#
+# def dump_alex_features(name):
+#     global alexFts
+#     dump(alexFts, 'alexFeatures_{}.joblib'.format(name))
+#     print('dump alex done')
 
 
 # alexFts = load('alexFeatures_{}.joblib'.format(train_name))
 # print("load alex done")
 
 # Classifier ########################################################################################################
+# cc = ClassifierCombination()
+# cc.make_array2(haralickFts, glcmFts)
+# # cc.make_array1(alexFts)
+# cc.get_labels()
+#
+#
+# print("Cross evaluate cv 5")
+# tn, fp, fn, tp = cc.cross_evaluateLD(cv=5)
+# sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
+# print(sen, spe, ppv, npv, acc)
+#
+# print("Cross evaluate cv 10")
+# tn, fp, fn, tp = cc.cross_evaluateLD(cv=10)
+# sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
+# print(sen, spe, ppv, npv, acc)
+#
+# print("Cross evaluate cv 15")
+# tn, fp, fn, tp = cc.cross_evaluateLD(cv=15)
+# sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
+# print(sen, spe, ppv, npv, acc)
+
+# Fit GLCM+Haralick ################################################################################################
+features = load('glcmHaralickData.joblib')
+
+# # SVM linear #####################################
+# cc = ClassifierCombination()
+# cc.make_array1(features)
+# cc.get_labels()
+# cc.fit()
+# dump(cc.svm.model, 'glcmHaralickSvmLinear.joblib')
+# print("SVM liner done")
+#
+# # LinearDiscriminantAnalysis lsqr #################
+# cc = ClassifierCombination()
+# cc.make_array1(features)
+# cc.get_labels()
+# cc.FitModelLinearDiscriminant()
+# dump(cc.svm.modelLinearDicriminant, 'glcmHaralickLinearDiscriminant.joblib')
+# print("LinearDiscr done")
+
+
+# SVM rbf ########################################
 cc = ClassifierCombination()
-cc.make_array2(haralickFts, glcmFts)
-# cc.make_array1(alexFts)
+cc.make_array1(features)
 cc.get_labels()
+cc.fit()
+dump(cc.svm.model, 'glcmHaralickSvmRbf.joblib')
+print("SVM rbf done")
+
+# LinearDiscriminantAnalysis lsqr
+cc = ClassifierCombination()
+cc.make_array1(features)
+cc.get_labels()
+cc.FitModelLinearDiscriminant()
+dump(cc.svm.modelLinearDicriminant, 'glcmHaralickLinearDiscriminantSvd.joblib')
+print("LinearDiscr svd done")
 
 
-print("Cross evaluate cv 5")
-tn, fp, fn, tp = cc.cross_evaluateLD(cv=5)
-sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
-print(sen, spe, ppv, npv, acc)
+# Fit Alexnet ################################################################################################
+features_alex = load('prePCAFeatures50.joblib')
+alex = Alex(load('featureExtraction.joblib'))
+alexFts = alex.DoPCA(features_alex, n=50)
+# dump(alexFts, 'alexnet_features.joblib')
 
-print("Cross evaluate cv 10")
-tn, fp, fn, tp = cc.cross_evaluateLD(cv=10)
-sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
-print(sen, spe, ppv, npv, acc)
 
-print("Cross evaluate cv 15")
-tn, fp, fn, tp = cc.cross_evaluateLD(cv=15)
-sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
-print(sen, spe, ppv, npv, acc)
+# SVM rbf ######################################################
+cc = ClassifierCombination()
+cc.make_array1(alexFts)
+cc.get_labels()
+cc.fit()
+dump(cc.svm.model, 'alexnetSvmRbf.joblib')
+print("SVM rbf done")
+
+# LinearDiscriminantAnalysis lsqr ##################################
+cc = ClassifierCombination()
+cc.make_array1(alexFts)
+cc.get_labels()
+cc.FitModelLinearDiscriminant()
+dump(cc.svm.modelLinearDicriminant, 'alexnetLinearDiscriminantSvd.joblib')
+print("LinearDiscr svd done")
+
+# # SVM linear ######################################################
+# cc = ClassifierCombination()
+# cc.make_array1(alexFts)
+# cc.get_labels()
+# cc.fit()
+# dump(cc.svm.model, 'alexnetSvmLinear.joblib')
+# print("SVM liner done")
+
+# # LinearDiscriminantAnalysis lsqr ###################################
+# cc = ClassifierCombination()
+# cc.make_array1(alexFts)
+# cc.get_labels()
+# cc.FitModelLinearDiscriminant()
+# dump(cc.svm.modelLinearDicriminant, 'alexnetLinearDiscriminantLsqr.joblib')
+# print("LinearDiscr lsqr done")
+#

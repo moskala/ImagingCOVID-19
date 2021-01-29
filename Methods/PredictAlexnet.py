@@ -22,7 +22,7 @@ def PredictAlex(image_object, index, modelAlex, features, classifier, examinatio
     testft = alex.ChangeDimAndStandardize(testft, isTensor=False)
     newfts = load(features)
     newfts.append(testft[0])
-    pcafts = alex.DoPCA(newfts)
+    pcafts = alex.DoPCA(newfts, n=50)
 
     if isPretrained:
         model = load(classifier)

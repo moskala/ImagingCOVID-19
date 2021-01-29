@@ -85,6 +85,7 @@ def make_lungmask(img, crop=True, display=False):
         # Cropped image and mask
         crop_img, crop_mask = crop_mask_image(img, mask_close)
         final_img = crop_img
+        final_mask = crop_mask
     else:
         final_mask = mask_close
         final_img = img.copy()
