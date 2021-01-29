@@ -62,11 +62,9 @@ class Model:
     def __init__(self, kernel='rbf', max_features='auto', solver='liblinear'):
         self.model = svm.SVC(kernel=kernel)
         self.modelRandomForest = RandomForestClassifier(max_features=max_features)
-        self.modelLogisticRegression = LogisticRegression(max_iter=1000, solver=solver)
-        if solver == 'liblinear':
-            self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='liblinear', shrinkage='auto')
-        else:
-            self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')
+        self.modelLogisticRegression = LogisticRegression(max_iter=10000, solver=solver)
+        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='lsqr', shrinkage='auto')
+        # self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')
 
     def FitModel(self, data, labels):
         self.model.fit(data, labels)
