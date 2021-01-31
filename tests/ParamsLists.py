@@ -3,6 +3,4 @@ param_list_jpg = ["covid1.jpg", "covid2.jpg", "covid3.jpg", "covid4.jpg", "covid
 param_list_dcm_gray = ["Italy_case010050.dcm", "Italy_case010051.dcm", "Italy_case010052.dcm",
                        "Italy_case010053.dcm", "Italy_case010054.dcm"]
 param_list_dcm_hu = ["testcase_hounsfield1.dcm", "testcase_hounsfield2.dcm"]
-param_list_nii = ["coronacases_org_001.nii.gz", "coronacases_org_002.nii.gz",
-                  "coronacases_org_003.nii.gz", "coronacases_org_004.nii.gz",
-                  "coronacases_org_005.nii.gz"]
+param_list_nii = ["coronacases_org_002.nii.gz"]
