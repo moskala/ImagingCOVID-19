@@ -118,6 +118,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def automatic_layer_choice(self):
+        """
+        Function opens LayersPopup.
+        :return: None
+        """
         try:
             self.layers_popup = LayersPopup(self.layer_choice,
                                             max_layers_range=self.image_object.total_slice_number)
@@ -127,6 +131,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def save_layer_selection(self, *args):
+        """
+        Function sets layers selection to layer_choice and closes popup.
+        :return: None
+        """
         try:
             settings = self.layers_popup.get_settings()
             if settings is not None:
@@ -137,6 +145,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def layer_selection(self):
+        """
+        Function adds single layer to layers collection and sets text of button.
+        :return: None
+        """
         try:
             number = self.image_object.current_slice_number
             if self.layer_choice.check_collection_layer(number):
@@ -149,6 +161,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def set_layers_button(self):
+        """
+        Function sets button text depending on whether layer is already in layers collection.
+        :return: None
+        """
         try:
             if self.layer_choice.check_collection_layer(self.image_object.current_slice_number):
                 self.add_remove_layer.text = "Remove layer\nfrom analysis"
@@ -159,6 +175,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def reset_layers_choice(self):
+        """
+        Function resets layers choice. Should be call when new image is being loaded.
+        :return: None
+        """
         try:
             self.layer_choice = LayerChoice()
             self.set_layers_button()
@@ -232,6 +252,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def lung_tissue_segmentation(self):
+        """
+        Functions opens segmentation popup with segmentation results.
+        :return: None
+        """
         try:
             popup = LungSegmentationPopup(self.image_object)
             popup.open()
@@ -240,6 +264,12 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def add_result_to_analysis_neural_network(self, prediction, layer_number):
+        """
+        Function add result of neural network analysis to all results.
+        :param prediction: result prediction
+        :param layer_number: number of analyzed layer
+        :return: None
+        """
         try:
             properties = self.image_object.get_info()
             result = NeuralNetworkResult(prediction,
@@ -305,6 +335,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def update_analysis(self):
+        """
+        Function update analysis field. Should be call when new image is being loaded.
+        :return: None
+        """
         try:
             self.analysis.result_list.append([])
             self.analysis.dictionary.append({})
@@ -316,6 +350,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def update_panel(self):
+        """
+        Function updates main panel by disabling buttons and adding figure.
+        :return: None
+        """
         try:
             if self.result is not None:
                 self.left_panel.remove_widget(self.result)
@@ -346,6 +384,12 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def load_xray(self, path, filename):
+        """
+        Function loads X-Ray image from filesystem.
+        :param path: path to selected file
+        :param filename: filename of selected file
+        :return: None
+        """
         try:
             image_folder = path
             if not filename:
@@ -370,7 +414,12 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def load_ct(self, path, filename):
-        """This function runs the load process for an image selected in the load dialog"""
+        """
+        Function loads CT image from filesystem.
+        :param path: path to selected file
+        :param filename: filename of selected file
+        :return: None
+        """
         try:
             image_folder = path
             if not filename:
@@ -413,6 +462,10 @@ class RootWidget(FloatLayout):
             self._error_popup = ErrorPopup(message=str(error))
 
     def show_analysis_popup(self):
+        """
+        Function opens analysis popup and sets panel.
+        :return: None
+        """
         try:
             indexes = self.layer_choice.choose_indexes()
             if self.analysis_popup is not None:
