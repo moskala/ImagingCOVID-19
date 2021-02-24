@@ -13,8 +13,10 @@ from sklearn.metrics import confusion_matrix
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__))))
 from Grayscale import *
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'ImageMedical')))
 from ImageClass import *
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'LungSegmentation')))
 from MethodKMeans import *
 import MethodUNetXRay as Xray
@@ -65,12 +67,12 @@ class Model:
 
     def __init__(self, kernel='rbf', max_features='auto', solver='liblinear'):
         self.model = svm.SVC(kernel='linear')  # linear
-        self.modelRandomForest = RandomForestClassifier(max_features='sqrt')    # max_features
-        self.modelLogisticRegression = LogisticRegression(max_iter=10000, solver='saga')    # solver
-        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')   # lsqr, shrinkage='auto'
+        self.modelRandomForest = RandomForestClassifier(max_features='sqrt')  # max_features
+        self.modelLogisticRegression = LogisticRegression(max_iter=10000, solver='saga')  # solver
+        self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')  # lsqr, shrinkage='auto'
 
-    def FitModel(self,data,labels):
-        self.model.fit(data,labels)
+    def FitModel(self, data, labels):
+        self.model.fit(data, labels)
 
     def FitModelRandomForest(self, data, labels):
         self.modelRandomForest.fit(data, labels)
@@ -93,37 +95,37 @@ class Model:
     def PredictModelLinearDiscriminant(self, data):
         return self.modelLinearDicriminant.predict(data)
 
-    def GetModelEvaluation(self,data,labels,cv=5):
+    def GetModelEvaluation(self, data, labels, cv=5):
         labels_pred = cross_val_predict(self.model, data, labels, cv=cv)
-        tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred, labels=['normal', 'covid']).ravel()
         return tn, fp, fn, tp
 
-    def GetModelEvaluationLR(self,data,labels,cv=5):
+    def GetModelEvaluationLR(self, data, labels, cv=5):
         labels_pred = cross_val_predict(self.modelLogisticRegression, data, labels, cv=cv)
-        tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred, labels=['normal', 'covid']).ravel()
         return tn, fp, fn, tp
 
-    def GetModelEvaluationRF(self,data,labels,cv=5):
+    def GetModelEvaluationRF(self, data, labels, cv=5):
         labels_pred = cross_val_predict(self.modelRandomForest, data, labels, cv=cv)
-        tn, fp, fn, tp = confusion_matrix(labels, labels_pred,labels=['normal','covid']).ravel()
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred, labels=['normal', 'covid']).ravel()
         return tn, fp, fn, tp
 
-    def GetModelEvaluationLD(self,data,labels,cv=5):
+    def GetModelEvaluationLD(self, data, labels, cv=5):
         labels_pred = cross_val_predict(self.modelLinearDicriminant, data, labels, cv=cv)
-        tn, fp, fn, tp = confusion_matrix(labels, labels_pred ,labels=['normal','covid']).ravel()
+        tn, fp, fn, tp = confusion_matrix(labels, labels_pred, labels=['normal', 'covid']).ravel()
         return tn, fp, fn, tp
 
-    def CrossValidate(self,data,labels,scoring='accuracy',cv=5):
-        return cross_val_score(self.model,data,labels,cv=cv)
+    def CrossValidate(self, data, labels, scoring='accuracy', cv=5):
+        return cross_val_score(self.model, data, labels, cv=cv)
 
-    def CrossValidateRandomForest(self,data,labels,scoring=['accuracy', 'precision','recall','f1'],cv=5):
-        return cross_val_score(self.modelRandomForest,data,labels,scoring,cv=cv)
+    def CrossValidateRandomForest(self, data, labels, scoring=['accuracy', 'precision', 'recall', 'f1'], cv=5):
+        return cross_val_score(self.modelRandomForest, data, labels, scoring, cv=cv)
 
-    def CrossValidateLogisticRegression(self,data,labels,scoring=['accuracy', 'precision','recall','f1'],cv=5):
-        return cross_val_score(self.modelRandomForest,data,labels,scoring,cv=cv)
+    def CrossValidateLogisticRegression(self, data, labels, scoring=['accuracy', 'precision', 'recall', 'f1'], cv=5):
+        return cross_val_score(self.modelRandomForest, data, labels, scoring, cv=cv)
 
-    def CrossValidateLinearDiscriminant(self,data,labels,scoring=['accuracy', 'precision','recall','f1'],cv=5):
-        return cross_val_score(self.modelLinearDicriminant,data,labels,scoring,cv=cv)
+    def CrossValidateLinearDiscriminant(self, data, labels, scoring=['accuracy', 'precision', 'recall', 'f1'], cv=5):
+        return cross_val_score(self.modelLinearDicriminant, data, labels, scoring, cv=cv)
 
     @staticmethod
     def GetLabels():
@@ -155,10 +157,10 @@ class ImageEnsemble:
         self.lungs = []
         if gotFolders:
             self.folders = folders
-    
-    def MakeDicoms(self,single_folder=None,single_file=None):
+
+    def MakeDicoms(self, single_folder=None, single_file=None):
         if self.folders is None and single_file is not None:
-            self.dicoms=[]
+            self.dicoms = []
             self.dicoms.append(DicomImage(single_folder, single_file))
         else:
             self.dicoms = []
@@ -166,10 +168,9 @@ class ImageEnsemble:
                 for fl in os.listdir(folder):
                     self.dicoms.append(DicomImage(folder, fl))
 
-    
-    def MakeImage(self,image_object,index):
+    def MakeImage(self, image_object, index):
         image_object.get_next_slice(index)
-        print('image object slice: ',image_object.current_slice_number)
+        print('image object slice: ', image_object.current_slice_number)
         lungs = image_object.get_segmented_lungs()
         self.lungs.append(lungs)
 
