@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from ClassifierCombination import *
 from ImageMedical.CTImageClass import CTNiftiImage
+from LungSegmentation.LungSegmentationUtilities import compare_plots
+
 
 data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', '..', '..',
                                            'data', 'COVID19_1110', 'studies'))
@@ -30,7 +32,6 @@ ct4_indexes = list(range(1109, 1110, 1))
 def get_study_name(study_id):
     return "study_{0}.nii.gz".format(study_id)
 
-
 number_of_covid_layers = 0
 number_of_normal_layers = 0
 
@@ -38,7 +39,6 @@ e = ImageEnsemble(gotFolders=False)
 
 
 def append_study(folder, study_name, image_indexes):
-    # return    # Uncomment in case of loading ImageEnsemble from file
     global e
     io = CTNiftiImage(folder, study_name)
     for idx in image_indexes:
@@ -737,45 +737,46 @@ dump_image_ensemble(train_name)
 # load_image_ensemble(train_name)
 # subset_image_ensemble()
 
+
 print("Number of layers: {0}".format(len(e.lungs)))
 
 # GLCM #############################################################################################################
 e.GetMatrices()
 e.GetProps()
 glcmFts = e.props
+dump(glcmFts, 'glcmFeatures{0}.joblib'.format(train_name))
 print('glcm done')
 
 # Haralick ##########################################################################################################
 h = Haralick(e.lungs)
 haralickFts = h.GetHaralickFtsAll()
+# # # dump(np.hstack((haralickFts, glcmFts)),'glcmHaralickFeatures.joblib')
 print('haralick done')
-
-# GLCM+Haralick #####################################################################################################
-dump(np.hstack((haralickFts, glcmFts)), 'glcmHaralickData.joblib')
-print('dump haralick+glcm done')
 
 # Alexnet ##########################################################################################################
 
-alex = Alex(load('featureExtraction.joblib'))
-alexFts = alex.GetFeaturesFromList(e.lungs)
-alexFts = alex.ChangeDimAndStandardize(alexFts)
-dump(alexFts, 'prePCAFeatures50.joblib')
-alexFts = alex.DoPCA(alexFts, n=50)
-print('alex done')
+# alex = Alex(load('featureExtraction.joblib'))
+# alexFts = alex.GetFeaturesFromList(e.lungs)
+# alexFts = alex.ChangeDimAndStandardize(alexFts)
+# alexFts = alex.DoPCA(alexFts, n=50)
+# print('alex done')
+
+
+def dump_alex_features(name):
+    global alexFts
+    dump(alexFts, 'alexFeatures_{}.joblib'.format(name))
+    print('dump alex done')
+
 
 # alexFts = load('alexFeatures_{}.joblib'.format(train_name))
 # print("load alex done")
 
-# Classifier Evaluation ###############################################################################################
+# Classifier ########################################################################################################
 cc = ClassifierCombination()
 cc.make_array2(haralickFts, glcmFts)
 # cc.make_array1(alexFts)
 cc.get_labels()
 
-# cc.cross_evaluate     - SVM model
-# cc.cross_evaluateLD   - LinearDiscriminantAnalysis model
-# cc.cross_validateRF   - RandomForestClassifier
-# cc.cross_validateLR   - LogisticRegression
 
 print("Cross evaluate cv 5")
 tn, fp, fn, tp = cc.cross_evaluateLD(cv=5)
@@ -791,84 +792,3 @@ print("Cross evaluate cv 15")
 tn, fp, fn, tp = cc.cross_evaluateLD(cv=15)
 sen, spe, ppv, npv, acc, mcc = cc.get_measures(tp, tn, fp, fn)
 print(sen, spe, ppv, npv, acc)
-
-# Fit #############################################################################################################
-"""
-To fit model you need to set parameters in init of class Model in Glcm.py module 
-and uncomment chosen features and classifier model from list below.
-"""
-
-# Fit GLCM+Haralick ################################################################################################
-features = load('glcmHaralickData.joblib')
-
-# # SVM linear #####################################
-# cc = ClassifierCombination()
-# cc.make_array1(features)
-# cc.get_labels()
-# cc.fit()
-# dump(cc.svm.model, 'glcmHaralickSvmLinear.joblib')
-# print("SVM liner done")
-
-# # LinearDiscriminantAnalysis lsqr #################
-# cc = ClassifierCombination()
-# cc.make_array1(features)
-# cc.get_labels()
-# cc.FitModelLinearDiscriminant()
-# dump(cc.svm.modelLinearDicriminant, 'glcmHaralickLinearDiscriminant.joblib')
-# print("LinearDiscr done")
-
-# # SVM rbf ########################################
-# cc = ClassifierCombination()
-# cc.make_array1(features)
-# cc.get_labels()
-# cc.fit()
-# dump(cc.svm.model, 'glcmHaralickSvmRbf.joblib')
-# print("SVM rbf done")
-
-# # LinearDiscriminantAnalysis lsqr
-# cc = ClassifierCombination()
-# cc.make_array1(features)
-# cc.get_labels()
-# cc.FitModelLinearDiscriminant()
-# dump(cc.svm.modelLinearDicriminant, 'glcmHaralickLinearDiscriminantSvd.joblib')
-# print("LinearDiscr svd done")
-
-
-# Fit Alexnet ################################################################################################
-features_alex = load('prePCAFeatures50.joblib')
-alex = Alex(load('featureExtraction.joblib'))
-alexFts = alex.DoPCA(features_alex, n=50)
-# dump(alexFts, 'alexnet_features.joblib')
-
-
-# # SVM rbf ######################################################
-# cc = ClassifierCombination()
-# cc.make_array1(alexFts)
-# cc.get_labels()
-# cc.fit()
-# dump(cc.svm.model, 'alexnetSvmRbf.joblib')
-# print("SVM rbf done")
-
-# # LinearDiscriminantAnalysis lsqr ##################################
-# cc = ClassifierCombination()
-# cc.make_array1(alexFts)
-# cc.get_labels()
-# cc.FitModelLinearDiscriminant()
-# dump(cc.svm.modelLinearDicriminant, 'alexnetLinearDiscriminantSvd.joblib')
-# print("LinearDiscr svd done")
-
-# # SVM linear ######################################################
-# cc = ClassifierCombination()
-# cc.make_array1(alexFts)
-# cc.get_labels()
-# cc.fit()
-# dump(cc.svm.model, 'alexnetSvmLinear.joblib')
-# print("SVM liner done")
-
-# # LinearDiscriminantAnalysis lsqr ###################################
-# cc = ClassifierCombination()
-# cc.make_array1(alexFts)
-# cc.get_labels()
-# cc.FitModelLinearDiscriminant()
-# dump(cc.svm.modelLinearDicriminant, 'alexnetLinearDiscriminantLsqr.joblib')
-# print("LinearDiscr lsqr done")

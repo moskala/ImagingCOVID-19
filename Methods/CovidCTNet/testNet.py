@@ -1,12 +1,12 @@
-from CovidCTNet.model import CovidNet
 import torch
 from PIL import Image
 from torchvision import transforms
 from torch.autograd import Variable
 import h5py
 import numpy as np
-import os
-
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from model import CovidNet
 
 MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'ct', 'best_checkpoint.pth'))
 

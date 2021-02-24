@@ -110,11 +110,11 @@ def flip_mask_vertically(mask):
     return np.flip(mask, 0)
 
 
-def compare_plots(image1, image2):
+def compare_plots(image1, image2, color='gray'):
     """Functions display double plot"""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5])
-    ax1.imshow(image1)
-    ax2.imshow(image2)
+    ax1.imshow(image1, cmap=color)
+    ax2.imshow(image2, cmap=color)
     plt.show()
 
 

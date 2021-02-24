@@ -12,7 +12,8 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Grayscale import get_grayscale_from_jpg_png
-from LungSegmentation.LungSegmentationUtilities import fill_contours
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','LungSegmentation')))
+from LungSegmentationUtilities import fill_contours
 
 MODEL_WEIGHTS = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'xray', "cxr_reg_weights.best.hdf5"))
 INPUT_DIMENSION = 512

@@ -1,3 +1,5 @@
+from Glcm import *
+import mahotas
 # import torch
 # import torchvision.transforms as transforms
 # from PIL import Image
@@ -10,9 +12,6 @@
 # import glob
 # from sklearn import svm
 # from sklearn import metrics
-import mahotas
-from Glcm import *
-
 
 class Haralick:
     lungs_list = None

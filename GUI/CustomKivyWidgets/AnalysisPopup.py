@@ -20,9 +20,10 @@ from PredictAlexnet import *
 from PredictGlcmHaralick import *
 from ChooseSlices import *
 from Grayscale import *
-from Analysis.Analysis import *
-from Analysis.Result import *
 from ExaminationType import ExaminationType
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'Methods','Analysis')))
+from Analysis import *
+from Result import *
 
 # Paths
 MODELS_CT_FOLDER_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'models', 'ct'))

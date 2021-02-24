@@ -7,13 +7,15 @@ from enum import Enum
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import Grayscale as gray
 import CTWindowing as ctwindow
-import LungSegmentation.LungSegmentationUtilities as sgUtils
 from SeverityScoringSystem import calculate_ratio_tts
-import Anonymize.Anonymization as anonym
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','LungSegmentation')))
+import LungSegmentationUtilities as sgUtils
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','Anonymize')))
+import Anonymization as anonym
 
 
 class ImageType(Enum):

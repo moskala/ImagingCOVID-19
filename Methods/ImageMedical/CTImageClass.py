@@ -1,13 +1,17 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__))))
+from Grayscale import *
+from ImageClass import *
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..','LungSegmentation')))
+import MethodWatershed as sgWatershed
+import MethodBinary as sgBinary
+import MethodKMeans as sgKmeans
+from LungSegmentationUtilities import crop_mask_image
+import CTWindowing as ctwindow
+import matplotlib.pyplot as plt
 
-from ImageMedical.ImageClass import *
-
-import LungSegmentation.MethodWatershed as sgWatershed
-import LungSegmentation.MethodBinary as sgBinary
-import LungSegmentation.MethodKMeans as sgKmeans
-from LungSegmentation.LungSegmentationUtilities import crop_mask_image
 
 
 class CTDicomImage(DicomImage):
