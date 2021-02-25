@@ -66,9 +66,9 @@ class Model:
     modelLogisticRegression = None
 
     def __init__(self, kernel='rbf', max_features='auto', solver='liblinear'):
-        self.model = svm.SVC(kernel='linear')  # linear
-        self.modelRandomForest = RandomForestClassifier(max_features='sqrt')  # max_features
-        self.modelLogisticRegression = LogisticRegression(max_iter=10000, solver='saga')  # solver
+        self.model = svm.SVC(kernel=kernel)  # linear
+        self.modelRandomForest = RandomForestClassifier(max_features=max_features)
+        self.modelLogisticRegression = LogisticRegression(max_iter=10000, solver=solver)
         self.modelLinearDicriminant = LinearDiscriminantAnalysis(solver='svd')  # lsqr, shrinkage='auto'
 
     def FitModel(self, data, labels):
@@ -173,6 +173,7 @@ class ImageEnsemble:
         print('image object slice: ', image_object.current_slice_number)
         lungs = image_object.get_segmented_lungs()
         self.lungs.append(lungs)
+
 
     def GetLungsXray(self):
         self.lungs = []

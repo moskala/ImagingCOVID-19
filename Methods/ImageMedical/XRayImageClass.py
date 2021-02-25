@@ -3,9 +3,10 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from ImageClass import JpgImage, PngImage
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..','LungSegmentation')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'LungSegmentation')))
 import LungSegmentationUtilities as sgUtils
 import MethodUNetXRay as sgUnet
+import Grayscale as gray
 
 
 class XRayJpgImage(JpgImage):
@@ -18,7 +19,7 @@ class XRayJpgImage(JpgImage):
 
     def get_segmented_lungs(self):
         segment, mask = sgUnet.make_lungmask(self.src_filename, self.src_folder)
-        return segment
+        return gray.convert_array_to_grayscale(segment)
 
     def get_segmentation_figure(self):
         segment = self.get_segmented_lungs()
@@ -40,7 +41,7 @@ class XRayPngImage(PngImage):
 
     def get_segmented_lungs(self):
         segment, mask = sgUnet.make_lungmask(self.src_filename, self.src_folder)
-        return segment
+        return gray.convert_array_to_grayscale(segment)
 
     def get_segmentation_figure(self):
         segment = self.get_segmented_lungs()
