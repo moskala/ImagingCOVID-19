@@ -8,6 +8,7 @@ from kivy.uix.popup import Popup
 from pathlib import Path
 import sys
 import os
+from PIL import Image as PilImage
 import logging
 
 # Custom kivy widgets imports

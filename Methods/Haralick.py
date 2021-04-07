@@ -1,17 +1,6 @@
-from Glcm import *
 import mahotas
-# import torch
-# import torchvision.transforms as transforms
-# from PIL import Image
-# import Grayscale as gray
-# from sklearn.decomposition import PCA
-# from sklearn.preprocessing import StandardScaler
-# from joblib import dump, load
-# import numpy as np
-# import os
-# import glob
-# from sklearn import svm
-# from sklearn import metrics
+from Glcm import *
+
 
 class Haralick:
     lungs_list = None
