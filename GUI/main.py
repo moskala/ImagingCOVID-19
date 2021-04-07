@@ -9,33 +9,16 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 
 # Python imports
-import matplotlib
 from pathlib import Path
 import sys
 import os
 import logging
 import copy
 
-
-# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-# from alexnet_pytorch import AlexNet
-
-# from sklearn import metrics
-
-import pylibjpeg
-import tensorflow
-from keras.models import *
-from keras.layers import *
-import cv2
-import h5py
-matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
-
 # Custom kivy widgets imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'CustomKivyWidgets')))
 from AnalysisPopup import AnalysisPopup
-from DialogWidgets import LoadDialog, MySaveDialog, SaveDialog
+from DialogWidgets import LoadDialog, SaveDialog
 from DrawLesionsWidgets import DrawFigure, DrawPopup
 from ErrorPopup import ErrorPopup
 from LayersPopup import LayersPopup
@@ -47,16 +30,20 @@ from ShowImageWidget import MyFigure, START_IMAGE
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods')))
 from ChooseSlices import LayerChoice
 from ExaminationType import ExaminationType
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','Analysis')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods', 'Analysis')))
 from Analysis import Analysis
 from Result import NeuralNetworkResult, SeverityResult
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','LungSegmentation')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods', 'LungSegmentation')))
 from LungSegmentationUtilities import draw_lines_on_image
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','ImageMedical')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods', 'ImageMedical')))
 from ImageClass import ImageType, DicomImage, NiftiImage, JpgImage, PngImage
 from CTImageClass import CTDicomImage, CTNiftiImage, CTJpgImage, CTPngImage
 from XRayImageClass import XRayJpgImage, XRayPngImage
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods','CovidCTNet')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Methods', 'CovidCTNet')))
 from testNet import Net
 
 import win32timezone
@@ -164,7 +151,7 @@ class RootWidget(FloatLayout):
                 self.layer_choice = settings
                 self.layers_popup.dismiss()
         except Exception as error:
-            logging.error("Save layer selection: "+str(error))
+            logging.error("Save layer selection: " + str(error))
             self._error_popup = ErrorPopup(message=str(error))
 
     def layer_selection(self):
@@ -331,8 +318,7 @@ class RootWidget(FloatLayout):
     def show_save(self):
         """This function runs save dialog"""
         try:
-            # save=self.save,
-            content = MySaveDialog(cancel=self.dismiss_popup)
+            content = SaveDialog(save=self.save, cancel=self.dismiss_popup)
             self._popup = Popup(title="Save file",
                                 content=content,
                                 size_hint=(0.9, 0.9))
@@ -549,7 +535,6 @@ class Main(App):
 Factory.register('RootWidget', cls=RootWidget)
 Factory.register('AnalysisPopup', cls=AnalysisPopup)
 Factory.register('LoadDialog', cls=LoadDialog)
-Factory.register('MySaveDialog', cls=MySaveDialog)
 Factory.register('SaveDialog', cls=SaveDialog)
 Factory.register('DrawFigure', cls=DrawFigure)
 Factory.register('ErrorPopup', cls=ErrorPopup)
@@ -557,7 +542,6 @@ Factory.register('LayersPopup', cls=LayersPopup)
 Factory.register('LungSegmentationPopup', cls=LungSegmentationPopup)
 Factory.register('ResultPopup', cls=ResultPopup)
 Factory.register('MyFigure', cls=MyFigure)
-
 
 if __name__ == '__main__':
     Main().run()
