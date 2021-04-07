@@ -7,8 +7,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from ClassifierCombination import *
 from ImageMedical.CTImageClass import CTNiftiImage
-from LungSegmentation.LungSegmentationUtilities import compare_plots
-
 
 data_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', '..', '..',
                                            'data', 'COVID19_1110', 'studies'))
@@ -31,6 +29,7 @@ ct4_indexes = list(range(1109, 1110, 1))
 
 def get_study_name(study_id):
     return "study_{0}.nii.gz".format(study_id)
+
 
 number_of_covid_layers = 0
 number_of_normal_layers = 0
